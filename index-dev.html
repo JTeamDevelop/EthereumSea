@@ -1,0 +1,86 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="description" content="CPX Plane Network">
+    <meta name="keywords" content="HTML,JavaScript">
+    <title>CPX Net</title>
+  </head>
+  <link rel="stylesheet" href="lib/noty.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <link rel="stylesheet" href="dev/main.css">
+  <body>
+    <div id="app">
+      <!-- NAVBAR -->
+      <nav class="navbar navbar-default">
+        <div class="container-fluid">
+          <!-- Brand and toggle get grouped for better mobile display -->
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a href="#" class="navbar-brand">EtherSea                
+            </a>
+          </div>
+          <!-- Collect the nav links, forms, and other content for toggling -->
+          <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                  About <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="#">Islands</a>
+                  </li>
+                  <li>
+                    <a href="#">People</a>
+                  </li>
+                  <li>
+                    <a href="#" @click="nationsUI.show.main=!nationsUI.show.main">Nations</a>
+                  </li>
+                </ul>
+              </li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                  Save <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="#" @click="saveGame()">Save</a>
+                  </li>
+                  <li>
+                    <a href="#" @click="newGame()">New</a>
+                  </li>
+                  <li role="separator" class="divider" v-if="savedGames.length>0"></li>
+                  <li v-for="S in savedGames">
+                    <a href="#" @click="load(S)">{{S}}</a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+            <p class="navbar-text navbar-right">
+              <span v-if="eBlock>0">Block: {{eBlock}}</span>
+            </p>
+          </div>
+          <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container-fluid -->
+      </nav>
+      <!-- NAVBAR END -->
+      <div>
+      </div>
+      <h3 v-if="gameID.length>0" class="center" v-cloak>{{gameID}}</h3>
+      <svg class="center-div" width="960" height="800"></svg>
+    </div>
+    <div id="nations" class="top-over content" v-if="show.main" v-cloak>
+      <div v-for="N in nations">
+        <span class="colorBlock" v-bind:style="N.style"></span> {{N.name}}
+        <div>Islands: {{N.islandNames.join(', ')}}</div>
+      </div>
+    </div>
+  </body>
+  <script data-main="dev/app.js" src="require.js"></script>
+</html>
