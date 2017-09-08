@@ -7,6 +7,9 @@ EthereumSea is a sandbox for roleplaying.  The app uses the ethereum blockchain 
 
 You can save the app's state to return to it later.  However, when you do the islands will also shift.  
 
+The DEV app is playable:
+[https://jteamdevelop.github.io/EthereumSea/index-dev.html](https://jteamdevelop.github.io/EthereumSea/index-dev.html)
+
 ### Librabries
 EthereumSea is built using the following libraries:
 - [rot.js](https://github.com/ondras/rot.js) - A roguelike toolkit for JS.  
