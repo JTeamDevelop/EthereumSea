@@ -64,6 +64,35 @@ html, body {
 .island {
   stroke: black;
 }
+.island.water {
+  stroke: blue;
+}
+.island.rock {
+  stroke: peru;
+}
+.island.wood {
+  stroke: green;
+}
+.island.star {
+  stroke: red;
+}
+.island.cog {
+  stroke: black;
+  stroke-dasharray: 2,2;
+}
+.island.ruin {
+  stroke: darkslateblue;
+  stroke-dasharray: 3,3;
+}
+
+.nation {
+  
+}
+.islandName {
+  padding-right: 5px;
+  text-decoration: underline;
+  cursor:pointer;
+}
 
 table#blockTable tr:nth-child(even) {
     background-color: rgba(171, 250, 250, 0.5);
@@ -72,6 +101,15 @@ table#blockTable tr:nth-child(even) {
 .colorBlock {
   padding: 0px 10px;
   margin-right: 5px;
+}
+
+.aboutIsland {
+	width: 50px;
+	height: 50px;
+	background-color: #ddd;
+	-moz-border-radius: 25px;
+	-webkit-border-radius: 25px;
+	border-radius: 25px;
 }
 
 .top-over {

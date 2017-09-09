@@ -4,7 +4,7 @@ define(function(require) {
   return (App)=>{
     const islandMaker = require("island")(App)
       , orgMaker = require("organization")(App)
-      , Data = App.Data;
+      , Data = App.Data.nations;
     let Actives = App.Actives;
 
     var ethScanUrl = "https://api.etherscan.io/api?module=proxy&action="
@@ -44,6 +44,7 @@ define(function(require) {
                     //check for core nations
                     if (Data.hasOwnProperty(miner)) {
                       properties.childIDs = [orgMaker(Data[miner]).id];
+                      properties.name = Data[miner].name;
                     }
                     //create island
                     let I = islandMaker(properties);
@@ -56,7 +57,7 @@ define(function(require) {
                       parentID: I.orgs[0].id
                     });
                     //push to closest 
-                    I.closestNoOrg()[0].addOrg(c);
+                    I.biggestNoOrg()[0].addOrg(c);
                   }
                 }
 

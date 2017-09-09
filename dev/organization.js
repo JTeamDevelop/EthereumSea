@@ -1,7 +1,24 @@
 define(function(require) {
 
   return (App)=>{
-    let Actives = App.Actives;
+    let Actives = App.Actives,
+    People = App.Data.people;
+
+    const peopleMaker = () => {
+        //number of people types
+        let n = App.chance.pickone([1,1,1,1,2]),
+        p = [];
+        
+        if(n==1){
+            p.push([App.chance.pickone(People).id,1]);
+        }
+        else{
+            let s = App.chance.integer({min:55,max:75})/100;
+            p.push([App.chance.pickone(People).id,s],[App.chance.pickone(People).id,1-s]);
+        }
+
+        return p;
+    }
 
     class Organization {
       constructor(properties) {
@@ -9,23 +26,32 @@ define(function(require) {
 
         this._id = properties.id || App.id();
         this._type = 'organization';
-        this._name = properties.name || App.newName();
+        this._nameBase = properties.nameBase || App.chance.pickone(App.nameBases);
+        this._name = properties.name || this.genIslandName();
         this._color = properties.color || "#" + App.makeColor(this._id);
         this._level = properties.level || 1;
         this._stats = properties.stats || [];
         this._parentID = properties.parentID || '';
+        this._people = properties.people || peopleMaker();
         this._childIDs = properties.childIDs || [];
+         //for stats
+        this._stats = properties.stats || [];
+        this._focus = properties.focus || [];
 
         //add to parent on creation
         if (this._parentID.length > 0) {
           this.parent.addChild(this);
+          this._nameBase = this.parent._nameBase;
         }
 
-        //for stats
-        this._focus = [];
-        //if no stats on creation add random focus
-        if (this._stats.length == 0) {
-          this._focus = chance.shuffle([0, 1, 2, 3, 4, 5]);
+        //if no focus add random 
+        if (this._focus.length == 0) {
+          this._focus = App.chance.shuffle([0, 1, 2, 3, 4, 5]);
+        }
+        else {
+            let O =this;
+            let fa = [0, 1, 2, 3, 4, 5].filter((el)=>{ return !O._focus.includes(el); })
+            this._focus = this._focus.concat(App.chance.shuffle(fa));
         }
       }
       save() {
@@ -36,8 +62,11 @@ define(function(require) {
           color: this.color,
           level: this._level,
           stats: this._stats,
+          people: this._people,
           parentID: this.parentID,
-          childIDs: this._childIDs
+          childIDs: this._childIDs,
+          nameBase: this._nameBase,
+          focus: this._focus
         }
       }
       get id() {
@@ -48,6 +77,22 @@ define(function(require) {
       }
       get name() {
         return this._name;
+      }
+      get people() {
+        return this._people;
+      }
+      get focus() {
+          return this._focus;
+      }
+      get peopleList() {
+        return this._people.map((p)=>{
+            let n = p[1]*100;
+
+            return p[0][0].toUpperCase()+p[0].slice(1)+": "+n.toFixed(0)+"%"
+        });
+      }
+      genIslandName () {
+          return App.nameGen[this._nameBase].generate();
       }
       get style() {
         return {

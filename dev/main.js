@@ -3,6 +3,7 @@ define(function(require) {
   var LF = require("localforage")
     , Chance = require("chance")
     , Noty = require('Noty')
+    , nameGen = require('placeNames')
     , SimplexNoise = require('simplex');
 
   require("bootstrap");
@@ -33,6 +34,16 @@ define(function(require) {
         length: 6,
         pool: "ABCDEF"
       });
+    },
+
+    //name generators
+    nameGen : nameGen,
+    get nameBases () {
+      let l =[];
+      for(let x in this.nameGen){
+        l.push(x);
+      }
+      return l;
     },
 
     //active objects

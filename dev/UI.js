@@ -24,7 +24,8 @@ define(function(require) {
         savedGames () {
           return App.savedGames;
         },
-        nationsUI () { return App.nationsUI; }
+        nationsUI () { return App.nationsUI; },
+        islandsUI () { return App.islandsUI; }
       },
       methods: {
         saveGame(){
@@ -38,12 +39,24 @@ define(function(require) {
           localStorage.setItem("gameID",id);
           App.load();
         },
+        show(sUI){
+          if(sUI.show.main) {
+            sUI.show.main = false;
+            return;
+          }
+
+          this.nationsUI.show.main = false;
+          this.islandsUI.show.main = false;
+
+          sUI.show.main = true;
+        },
         move(){},
         zoom(){}
       }
     })
 
     App.nationsUI = require("nationsUI")(App);
+    App.islandsUI = require("islandsUI")(App);
 
     return UI;
 
