@@ -33,13 +33,13 @@
                 </a>
                 <ul class="dropdown-menu">
                   <li>
-                    <a href="#">Islands</a>
+                    <a href="#" @click="show(islandsUI)">Islands</a>
                   </li>
                   <li>
                     <a href="#">People</a>
                   </li>
                   <li>
-                    <a href="#" @click="nationsUI.show.main=!nationsUI.show.main">Nations</a>
+                    <a href="#" @click="show(nationsUI)">Nations</a>
                   </li>
                 </ul>
               </li>
@@ -76,9 +76,17 @@
       <svg class="center-div" width="960" height="800"></svg>
     </div>
     <div id="nations" class="top-over content" v-if="show.main" v-cloak>
-      <div v-for="N in nations">
-        <span class="colorBlock" v-bind:style="N.style"></span> {{N.name}}
-        <div>Islands: {{N.islandNames.join(', ')}}</div>
+      <div v-for="N in nations" class="nation content-minor">
+        <h4><span class="colorBlock" v-bind:style="N.style"></span> {{N.name}}</h4>
+        <div>Core Professions: {{professions[N.focus[0]] | capitalize }} and {{professions[N.focus[1]] | capitalize }}</div>
+        <div>People: {{N.peopleList.join(', ')}}</div>
+        <div>Islands: <span class="islandName" @click=focus(I.id) v-for="I in N.islands">{{I.name}}</span></div>
+      </div>
+    </div>
+    <div id="islands" class="top-over content" v-if="show.main" v-cloak>
+      <div v-for="t in types">
+        <h3>{{t[0].toUpperCase()+t.slice(1)}}</h3>
+        <div class="aboutIsland" v-bind:style="styles[t]"></div>
       </div>
     </div>
   </body>
