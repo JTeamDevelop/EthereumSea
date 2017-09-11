@@ -8,16 +8,13 @@ define(function(require) {
 
     //creates the VUE js instance
     return new Vue({
-      el: '#nations',
+      el: '#people',
       data: {
         show: {
           main: false
-        },
-        nations: []
+        }
       },
-      mounted() {
-        this.showMe();
-      },
+      mounted() {},
       filters: {
         capitalize: function(value) {
           if (!value)
@@ -30,18 +27,11 @@ define(function(require) {
         professions() {
           return App.Data.professions;
         },
+        people() {
+          return Data.people;
+        }
       },
       methods: {
-        showMe() {
-          this.nations = [].concat(App.allNations);
-        },
-        focus(id) {
-          let I = Actives[id]
-            , w = d3.select("svg").attr("width")
-            , h = d3.select("svg").attr("height");
-
-          App.zoom.translateTo(d3.select("g.islands"), I.x+w/2, I.y+h/2);
-        }
       }
     })
 

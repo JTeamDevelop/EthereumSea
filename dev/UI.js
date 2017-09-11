@@ -24,8 +24,11 @@ define(function(require) {
         savedGames () {
           return App.savedGames;
         },
+        seaUI () { return App.seaUI; },
+        peopleUI () { return App.peopleUI; },
         nationsUI () { return App.nationsUI; },
-        islandsUI () { return App.islandsUI; }
+        islandsUI () { return App.islandsUI; },
+        islandInfoUI () { return App.islandInfoUI; }
       },
       methods: {
         saveGame(){
@@ -40,23 +43,33 @@ define(function(require) {
           App.load();
         },
         show(sUI){
-          if(sUI.show.main) {
+          if(sUI.show.main && !sUI.hasOwnProperty("island")) {
             sUI.show.main = false;
             return;
           }
 
           this.nationsUI.show.main = false;
+          this.peopleUI.show.main = false;
+          this.seaUI.show.main = false;
           this.islandsUI.show.main = false;
+          this.islandInfoUI.show.main = false;
 
           sUI.show.main = true;
+          this.nationsUI.showMe();
+        },
+        newMonth(){
+          App.newMonth();
         },
         move(){},
         zoom(){}
       }
     })
 
+    App.seaUI = require("seaUI")(App);
+    App.peopleUI = require("peopleUI")(App);
     App.nationsUI = require("nationsUI")(App);
     App.islandsUI = require("islandsUI")(App);
+    App.islandInfoUI = require("islandInfoUI")(App);
 
     return UI;
 

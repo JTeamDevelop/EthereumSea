@@ -4,6 +4,9 @@ define(function(require) {
     const orgMaker = require("organization")(App);
     let Actives = App.Actives;
 
+    //resources
+    //["grain","vegtable","fruit","livestock","dairy","ore","textile","garments","lumber","lumber products","machinery","metal products","chemicals","ether"]
+
     //create a clas for every ethereum transaction from/to
     class Island {
       constructor(properties) {
@@ -21,7 +24,10 @@ define(function(require) {
         this._childIDs = properties.childIDs || [];
 
         if (this._core && this._childIDs.length == 0) {
-          this.addOrg(orgMaker());
+          this.addOrg(orgMaker({
+            level: 5,
+            class: ["nation", "core"]
+          }));
         }
 
         //generate a name based upon organization
@@ -39,11 +45,10 @@ define(function(require) {
             }
           } else {
             if (this.val < 1) {
-                //%3 ruin
-              if(parseInt(this._seed.slice(2,4), 16) == 0){
-                this._class.push("ruin");    
-              }
-              //if small ~50% rocks
+              //%3 ruin
+              if (parseInt(this._seed.slice(2, 4), 16) == 0) {
+                this._class.push("ruin");
+              }//if small ~50% rocks
               else if (parseInt(this._seed[2], 16) <= 7) {
                 this._class.push("rock");
               }
@@ -55,10 +60,13 @@ define(function(require) {
               //~10% cogs
               if (parseInt(this._seed[2], 16) < 2) {
                 this._class.push("cog");
-              }
-              //10% wood
+              }//10% wood
               else if (parseInt(this._seed[2], 16) < 4) {
                 this._class.push("wood");
+              }
+              //18% water
+              else if (parseInt(this._seed[2], 16) < 7) {
+                this._class.push("water");
               }
             }
           }
@@ -67,8 +75,10 @@ define(function(require) {
       save() {
         return {
           id: this.id,
+          seed: this._seed,
           type: this.type,
           name: this._name,
+          class: this._class,
           val: this.val,
           x: this.x,
           y: this.y,
@@ -90,12 +100,6 @@ define(function(require) {
       }
       get children() {
         return this._childIDs.map((id)=>(Actives[id]));
-      }
-      get orgs() {
-        return this.children.filter((c)=>{
-          return c.type == "organization";
-        }
-        );
       }
       get color() {
         if (this.orgs.length == 0)
@@ -130,7 +134,11 @@ define(function(require) {
       }
       //noise
       get noise() {
-        return App.force.noise3D(this.x / 14, this.y / 48, App.M);
+        return App.force.noise3D(this.x / 14, this.y / 48, App.M / 12);
+      }
+      //temp
+      get temp() {
+        return App.temp.noise2D(this.x / 84, this.y / 84);
       }
       closest() {
         let N = this
@@ -141,7 +149,7 @@ define(function(require) {
           let dx = N.x - n.x
             , dy = N.y - n.y;
           //return index and distance
-          return [i, Math.sqrt(dx * dx + dy * dy),n.orgs.length,n.r,n.class];
+          return [i, Math.sqrt(dx * dx + dy * dy), n.orgs.length, n.r, n.class];
         }
         )//sort by distance - least to greatest
         .sort(function(a, b) {
@@ -152,8 +160,8 @@ define(function(require) {
       }
       biggestNoOrg() {
         //closest nodes
-        let C = this.closest(),
-        s = App.simNodes()
+        let C = this.closest()
+          , s = App.simNodes()
           , R = [];
 
         //loop through closest
@@ -166,8 +174,11 @@ define(function(require) {
 
         //sort based on size and distance - biggest to smallest
         R = R.sort(function(a, b) {
-          return b[3]/b[1] - a[3]/a[1];
-        }).map((c)=>{ return s[c[0]]; })
+          return b[3] / b[1] - a[3] / a[1];
+        }).map((c)=>{
+          return s[c[0]];
+        }
+        )
 
         return R;
       }
@@ -177,11 +188,41 @@ define(function(require) {
           this._childIDs.push(org.id);
           //if the only org - name the island
           if (this.orgs.length == 1) {
-            this._name = this.orgs[0].genIslandName();
+            this._name = org.genIslandName();
             //name t after the org if core
-            if(this.core) this._name = org.name;
+            if (this.core)
+              this._name = org.name;
           }
         }
+      }
+      get orgs() {
+        return this.children.filter((c)=>{
+          return c.type == "organization";
+        }
+        );
+      }
+      get states() {
+        return this.orgs.filter((o)=>{
+          return o.class.includes("state");
+        }
+        );
+      }
+      get nations() {
+        return this.orgs.filter((o)=>{
+          return o.class.includes("nation");
+        }
+        );
+      }
+      get people() {
+        let p = [];
+        this.orgs.forEach((o)=>{
+          p = p.concat(o.people.map((pi)=>{
+            return pi[0];
+          }
+          ))
+        }
+        )
+        return p
       }
     }
 

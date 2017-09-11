@@ -1,23 +1,34 @@
 define(function(require) {
 
   return (App)=>{
-    let Actives = App.Actives,
-    People = App.Data.people;
+    let Actives = App.Actives
+      , Data = App.Data
+      , People = App.Data.people;
 
-    const peopleMaker = () => {
-        //number of people types
-        let n = App.chance.pickone([1,1,1,1,2]),
-        p = [];
-        
-        if(n==1){
-            p.push([App.chance.pickone(People).id,1]);
-        }
-        else{
-            let s = App.chance.integer({min:55,max:75})/100;
-            p.push([App.chance.pickone(People).id,s],[App.chance.pickone(People).id,1-s]);
-        }
+    const peopleMaker = ()=>{
+      //number of people types
+      let n = App.chance.pickone([1, 1, 1, 1, 2])
+        , p = [];
 
-        return p;
+      if (n == 1) {
+        p.push([App.chance.pickone(People).id, 1]);
+      } else {
+        let s = App.chance.integer({
+          min: 55,
+          max: 75
+        }) / 100;
+        p.push([App.chance.pickone(People).id, s], [App.chance.pickone(People).id, 1 - s]);
+      }
+
+      p.forEach((pi)=>{
+        if (pi[0].includes("klik"))
+          pi[0] = "klik";
+        if (pi[0].includes("l'na"))
+          pi[0] = "l'na";
+      }
+      )
+
+      return p;
     }
 
     class Organization {
@@ -26,6 +37,7 @@ define(function(require) {
 
         this._id = properties.id || App.id();
         this._type = 'organization';
+        this._class = properties.class || [];
         this._nameBase = properties.nameBase || App.chance.pickone(App.nameBases);
         this._name = properties.name || this.genIslandName();
         this._color = properties.color || "#" + App.makeColor(this._id);
@@ -34,7 +46,7 @@ define(function(require) {
         this._parentID = properties.parentID || '';
         this._people = properties.people || peopleMaker();
         this._childIDs = properties.childIDs || [];
-         //for stats
+        //for stats
         this._stats = properties.stats || [];
         this._focus = properties.focus || [];
 
@@ -47,17 +59,20 @@ define(function(require) {
         //if no focus add random 
         if (this._focus.length == 0) {
           this._focus = App.chance.shuffle([0, 1, 2, 3, 4, 5]);
-        }
-        else {
-            let O =this;
-            let fa = [0, 1, 2, 3, 4, 5].filter((el)=>{ return !O._focus.includes(el); })
-            this._focus = this._focus.concat(App.chance.shuffle(fa));
+        } else {
+          let O = this;
+          let fa = [0, 1, 2, 3, 4, 5].filter((el)=>{
+            return !O._focus.includes(el);
+          }
+          )
+          this._focus = this._focus.concat(App.chance.shuffle(fa));
         }
       }
       save() {
         return {
           id: this.id,
           type: this.type,
+          class: this._class,
           name: this._name,
           color: this.color,
           level: this._level,
@@ -75,6 +90,9 @@ define(function(require) {
       get type() {
         return this._type;
       }
+      get class() {
+        return this._class;
+      }
       get name() {
         return this._name;
       }
@@ -82,17 +100,18 @@ define(function(require) {
         return this._people;
       }
       get focus() {
-          return this._focus;
+        return this._focus;
       }
       get peopleList() {
         return this._people.map((p)=>{
-            let n = p[1]*100;
+          let n = p[1] * 100;
 
-            return p[0][0].toUpperCase()+p[0].slice(1)+": "+n.toFixed(0)+"%"
-        });
+          return p[0][0].toUpperCase() + p[0].slice(1) + ": " + n.toFixed(0) + "%"
+        }
+        );
       }
-      genIslandName () {
-          return App.nameGen[this._nameBase].generate();
+      genIslandName() {
+        return App.nameGen[this._nameBase].generate();
       }
       get style() {
         return {
@@ -125,7 +144,7 @@ define(function(require) {
         let I = [];
         for (let x in Actives) {
           if (Actives[x].type == "island") {
-              //those belonging to this organization
+            //those belonging to this organization
             if (Actives[x]._childIDs.includes(this.id))
               I.push(Actives[x]);
             //find those belonging to children

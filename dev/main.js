@@ -37,10 +37,10 @@ define(function(require) {
     },
 
     //name generators
-    nameGen : nameGen,
-    get nameBases () {
-      let l =[];
-      for(let x in this.nameGen){
+    nameGen: nameGen,
+    get nameBases() {
+      let l = [];
+      for (let x in this.nameGen) {
         l.push(x);
       }
       return l;
@@ -48,6 +48,42 @@ define(function(require) {
 
     //active objects
     Actives: {},
+    get islands () {
+      let I = [];
+      for (let x in this.Actives) {
+        let a = this.Actives[x];
+
+        if (a.type == "island" ) {
+          I.push(a);
+        }
+      }
+      return I;
+    },
+    get coreNations() {
+      return this.allNations.filter((n)=> {return n.class.includes("core");} )
+    },
+    get allNations() {
+      let n = [];
+      for (let x in this.Actives) {
+        let N = this.Actives[x];
+
+        if (N.type == "organization" && N.class.includes("nation")) {
+          n.push(N);
+        }
+      }
+      return n;
+    },
+    get allStates () {
+      let n = [];
+      for (let x in this.Actives) {
+        let N = this.Actives[x];
+
+        if (N.type == "organization" && N.class.includes("state")) {
+          n.push(N);
+        }
+      }
+      return n;
+    },
 
     start: 0,
     observed: 0,

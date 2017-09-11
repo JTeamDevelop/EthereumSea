@@ -1,6 +1,5 @@
 define(function(require) {
-  const Vue = require("vue")
-    , d3 = require("d3");
+  const Vue = require("vue");
 
   return (App)=>{
     const Data = App.Data;
@@ -8,15 +7,14 @@ define(function(require) {
 
     //creates the VUE js instance
     return new Vue({
-      el: '#nations',
+      el: '#islandInfo',
       data: {
         show: {
           main: false
         },
-        nations: []
+        id: ''
       },
       mounted() {
-        this.showMe();
       },
       filters: {
         capitalize: function(value) {
@@ -27,22 +25,22 @@ define(function(require) {
         }
       },
       computed: {
-        professions() {
-          return App.Data.professions;
+        island () {
+          return Actives[this.id];
         },
-      },
-      methods: {
-        showMe() {
-          this.nations = [].concat(App.allNations);
+        type () {
+          return this.island.class.length == 0 ? "standard" : this.island.class[0];
         },
-        focus(id) {
-          let I = Actives[id]
-            , w = d3.select("svg").attr("width")
-            , h = d3.select("svg").attr("height");
-
-          App.zoom.translateTo(d3.select("g.islands"), I.x+w/2, I.y+h/2);
+        d () {
+          return this.island.r*2*10;
+        },
+        nationNames () {
+          let n = this.island.nations.map((n)=>{ return n.name; })
+          s = this.island.states.map((s)=>{ return s.parent.name; })
+          return n.concat(s);
         }
-      }
+      },
+      methods: {}
     })
 
   }

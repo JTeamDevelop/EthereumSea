@@ -35,18 +35,23 @@ define(function(require) {
 
     //handle initial expansion
     App.coreExpand = ()=>{
-      var cn = simNodes().filter((n)=>{
-        return n.core;
+      let S = App.allStates;
+      S.forEach((s)=>{
+        //give levels to the children of the core
+        s._level = s._level > 7 ? 7 : s._level + 1;
       }
       )
+      //get the core nations
+      var cn = App.coreNations;
 
       cn.forEach((n)=>{
         //create child
         let c = orgMaker({
-          parentID: n.orgs[0].id
+          parentID: n.id,
+          class: ["state"],
         });
         //push to closest 
-        n.biggestNoOrg()[0].addOrg(c);
+        n.islands[0].biggestNoOrg()[0].addOrg(c);
       }
       )
     }
@@ -62,8 +67,8 @@ define(function(require) {
       }).attr("fill", function(d) {
         return d.color;
       }).attr("class", function(d) {
-          let c = ["island"].concat(d.class);
-          return c.join(" ")
+        let c = ["island"].concat(d.class);
+        return c.join(" ")
       })
     }
 
@@ -73,26 +78,28 @@ define(function(require) {
     //zoom function
     function zoomed() {
       //collect zoom event data
-      let e = d3.event,
-      //set global and allow the ticked event to handle drawing
-      tx = Number(e.transform.x)+width / 2,
-      ty = Number(e.transform.y)+height / 2,
-      s = e.transform.k;
+      let e = d3.event
+        , //set global and allow the ticked event to handle drawing
+      tx = Number(e.transform.x) + width / 2
+        , ty = Number(e.transform.y) + height / 2
+        , s = e.transform.k;
 
       gIslands.attr("transform", "translate(" + tx + "," + ty + ") scale(" + s + "," + s + ")");
     }
 
     //start the simulation
     function startSim() {
-        //select all the islands an enable click and tap
+      //select all the islands an enable click and tap
       d3.select("g.islands").selectAll("circle").data(simNodes()).enter().append("circle").attr("class", "island").on("click tap", function(d) {
         var e = d3.event;
-        let p = d3.mouse(this)
-          , n = this;
-          console.log(d);
+        let p = d3.mouse(this);
+
+        //show island info
+        App.islandInfoUI.id = d.id;
+        App.UI.show(App.islandInfoUI); 
       });
-        
-        //add the nodes to the simulation
+
+      //add the nodes to the simulation
       simulation.nodes(App.simNodes());
     }
 
@@ -121,6 +128,27 @@ define(function(require) {
 
       //pull initial data
       IO.initialize(simulation).then(()=>{
+        //add levels based upon the number of colonies
+        App.coreNations.forEach((N)=>{
+          let l = 5 + Math.floor(N._childIDs.length / 2);
+          N._level = l > 10 ? 10 : l;
+        }
+        )
+
+        //fill the rest of open islands with nations
+        App.islands.forEach((I)=>{
+          //only claim standard cog and wood
+          if (I.r > 2 && I.orgs.length == 0) {
+            if (I.class.length == 0 || I.class.includes("cog") || I.class.includes("wood")) {
+              I.addOrg(orgMaker({
+                level: App.chance.weighted([1, 2, 3], [6, 3, 1]),
+                class: ["nation"]
+              }));
+            }
+          }
+        }
+        )
+
         App.UI.gameID = App.start.toString() + "@" + App.gameTime.toString();
         App.notify("Finished!");
 
@@ -158,7 +186,7 @@ define(function(require) {
 
         //start the simulation
         startSim();
-        simulation.alpha(1);
+        simulation.alpha(0.5);
       }
       )
     }
@@ -174,6 +202,27 @@ define(function(require) {
       //pull initial data
       IO.initialize(simulation).then(()=>{
         App.UI.gameID = App.start.toString() + "@" + App.gameTime.toString();
+
+        //add levels based upon the number of colonies
+        App.coreNations.forEach((N)=>{
+          let l = 5 + Math.floor(N._childIDs.length / 2);
+          N._level = l > 10 ? 10 : l;
+        }
+        )
+
+        //fill the rest of open islands with nations
+        App.islands.forEach((I)=>{
+          //only claim standard cog and wood
+          if (I.r > 2 && I.orgs.length == 0) {
+            if (I.class.length == 0 || I.class.includes("cog") || I.class.includes("wood")) {
+              I.addOrg(orgMaker({
+                level: App.chance.weighted([1, 2, 3], [6, 3, 1]),
+                class: ["nation"]
+              }));
+            }
+          }
+        }
+        )
 
         App.notify("Finished!");
         App.notify("If you don't like it you can always reload the page.", {
@@ -193,33 +242,27 @@ define(function(require) {
       App.load();
     }
 
+    App.newMonth = function() {
+      //recalculate force
+      simulation.force("collide", d3.forceCollide().radius(function(d) {
+        return d.f();
+      }).iterations(4));
+
+      simulation.alpha(0.5);
+
+      //months
+      App.M++;
+    }
+
     //look for new block every 5 seconds
     var eBlockTimer = setInterval(function() {
       IO.blockCheck();
     }, 5000);
     //tick the simulation every 100ms
     var simTick = setInterval(function() {
-      //recalculate force
-      if (App.t % 600 == 0) {
-        simulation.force("collide", d3.forceCollide().radius(function(d) {
-          return d.f();
-        }).iterations(4));
-
-        simulation.alpha(1);
-      }
-
-      App.t++;
-      //months
-      App.M += 1 / 3000;
-
       simulation.tick();
       ticked();
     }, 100);
-
-    return {
-      clear: clear,
-      newGame: newGame
-    }
 
   }
 })

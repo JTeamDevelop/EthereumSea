@@ -2,10 +2,14 @@ html, body {
   font-size: 16px;
 }
 
-.block {
-  cursor: pointer;
-  color: blue;
-  text-decoration: underline;
+.strong {
+	font-weight: bolder;
+}
+.green {
+	color: green;
+}
+.red {
+	color:red;
 }
 
 .center-div {
@@ -22,6 +26,9 @@ html, body {
 }
 .content-minor {
   padding: 5px;
+}
+.pad-right{
+	padding-right:5px;
 }
 
 #main{
@@ -104,6 +111,8 @@ table#blockTable tr:nth-child(even) {
 }
 
 .aboutIsland {
+	float: left;
+	margin-right: 10px;
 	width: 50px;
 	height: 50px;
 	background-color: #ddd;
@@ -115,4 +124,7 @@ table#blockTable tr:nth-child(even) {
 .top-over {
   position: absolute;
   top: 60px;
+  background-color: rgba(255,255,255,0.75);
+  margin: 5px;
+  border: 2px solid black;
 }

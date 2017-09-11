@@ -54,7 +54,8 @@ define(function(require) {
                     let I = Actives[miner];
                     //create child
                     let c = orgMaker({
-                      parentID: I.orgs[0].id
+                      parentID: I.orgs[0].id,
+                      class: ["state"],
                     });
                     //push to closest 
                     I.biggestNoOrg()[0].addOrg(c);
