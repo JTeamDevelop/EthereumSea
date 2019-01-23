@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Ethereum Sea</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="lib/noty.3.1.4.min.css">
+    <link rel="stylesheet" type="text/css" href="lib/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="src/main.css">
+  </head>
+  <body>
+    <div class="modal fade" id="ui-find" role="dialog">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">Finds</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <button type="button" class="btn btn-success btn-block" data-dismiss="modal" v-for="f in findText" @click="makeFind(f.i)">{{f.text}}</button>
+          </div>
+          <div class="modal-footer">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="ui-main" align="center">
+      <div style="max-width:800px;">
+        <div style="position:absolute;right:20px;" v-if="address" v-cloak>
+          <div>{{address}}</div>
+          <span class="m-1">RETH: {{RETH}}</span>
+          <span class="m-1">CPX: {{CPX}}</span>
+        </div>
+        <h1>Ethereum Sea</h1>
+        <h5>{{planeAddress}}</h5>
+        <div>
+          <div class="input-group">
+            <select class="custom-select" v-model="newPlaneAddress">
+              <option v-for="pid in allPlanes" v-bind:value="pid">{{pid}}</option>
+            </select>
+            <div class="input-group-append">
+              <button class="btn btn-success" type="button" @click="viewPlane()">View</button>
+            </div>
+          </div>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">txns</span>
+            </div>
+            <select class="custom-select" v-model="newPlaneAddress">
+              <option v-for="pid in links" v-bind:value="pid">{{pid}}</option>
+            </select>
+            <div class="input-group-append">
+              <button class="btn btn-success" type="button" @click="viewPlane()">View</button>
+            </div>
+          </div>
+        </div>
+        <div v-if="factionId > -1" v-cloak>
+          <h2>{{faction.name}}</h2>
+        </div>
+      </div>
+      <div align="left" v-if="menuId>-1" v-cloak>
+        <div class="card p-1" style="max-width:200px;"></div>
+      </div>
+    </div>
+    <div style="width:100%" align="center">
+      <svg id="outlandsSVG" height="800" width="800">
+        <clipPath id="outlandsClip">
+          <circle cx="400" cy="400" r="400"/>
+        </clipPath>
+        <defs>
+          <radialGradient id="outGrad" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+            <stop offset="0%" style="stop-color:white;stop-opacity:1"/>
+            <stop offset="5%" style="stop-color:white;stop-opacity:1"/>
+            <stop offset="75%" style="stop-color:silver;stop-opacity:1"/>
+            <stop offset="100%" style="stop-color:grey;stop-opacity:1"/>
+          </radialGradient>
+        </defs>
+        <g id="dBox"></g>
+      </svg>
+    </div>
+  </body>
+  <script src="lib/ethers-v4.min.js"></script>
+  <script src="lib/three.min.js"></script>
+  <script src="lib/topojson-server.js"></script>
+  <script src="lib/topojson.v1.min.js"></script>
+  <script src="lib/d3.v5.min.js"></script>
+  <script src="lib/d3-delaunay.min.js"></script>
+  <script src="lib/d3-geo-voronoi.min.js"></script>
+  <script src="lib/simplex-noise.js"></script>
+  <script src="lib/vue.2.5.16.min.js"></script>
+  <script src="lib/noty.3.1.4.min.js"></script>
+  <script src="lib/popper.1.12.3.min.js"></script>
+  <script src="lib/jquery-3.3.1.min.js"></script>
+  <script src="lib/bootstrap.min.js"></script>
+  <script type="module" src="src/main.js"></script>
+</html>
