@@ -1,79 +1,165 @@
-import "../../src/OrbitControls.js"
+//import "../../src/OrbitControls.js"
 
 let glTest = ()=>{
   let tc = document.createElement('canvas')
   return tc.getContext("webgl") || tc.getContext("experimental-webgl")
 }
 
-function init(app) {
+let vertexShader = `
+void main() {
+  gl_Position = vec4( position, 1.0 );
+}
+`
+
+let fragmentShader = `
+#define HASHSCALE3 vec3(443.897, 441.423, 437.195)
+
+uniform vec2 u_resolution;
+uniform float u_time;
+
+///  2 out, 2 in...
+vec2 hash22(vec2 p)
+{
+	vec3 p3 = fract(vec3(p.xyx) * HASHSCALE3);
+    p3 += dot(p3, p3.yzx+19.19);
+    return fract((p3.xx+p3.yz)*p3.zy);
+
+}
+
+vec3 voronoi( in vec2 x ) {
+    vec2 n = floor(x);
+    vec2 f = fract(x);
+
+    // first pass: regular voronoi
+    vec2 mg, mr;
+    float md = 8.0;
+    for (int j= -1; j <= 1; j++) {
+        for (int i= -1; i <= 1; i++) {
+            vec2 g = vec2(float(i),float(j));
+            vec2 o = hash22( n + g );
+
+            vec2 r = g + o - f;
+            float d = dot(r,r);
+
+            if( d<md ) {
+                md = d;
+                mr = r;
+                mg = g;
+            }
+        }
+    }
+
+    // second pass: distance to borders
+    md = 8.0;
+    for (int j= -2; j <= 2; j++) {
+        for (int i= -2; i <= 2; i++) {
+            vec2 g = mg + vec2(float(i),float(j));
+            vec2 o = hash22( n + g );
+
+            vec2 r = g + o - f;
+
+            if ( dot(mr-r,mr-r)>0.00001 ) {
+                md = min(md, dot( 0.5*(mr+r), normalize(r-mr) ));
+            }
+        }
+    }
+    return vec3(md, mr);
+}
+
+void main() {
+    vec2 st = gl_FragCoord.xy/u_resolution.xy;
+    st.x *= u_resolution.x/u_resolution.y;
+    vec3 color = vec3(0.);
+
+    // Scale
+    st *= 3.;
+    vec3 c = voronoi(st);
+
+    // borders
+    color = mix( vec3(1.0), color, smoothstep( 0.01, 0.02, c.x ) );
+    // feature points
+    float dd = length( c.yz );
+    color += vec3(1.)*(1.0-smoothstep( 0.0, 0.04, dd));
+
+    gl_FragColor = vec4(color,.1);
+}
+`
+
+function threeScene(app) {
   if (!glTest())
     return null
 
-  var scene = new THREE.Scene();
-  scene.background = new THREE.Color("gray");
-  let camera = new THREE.PerspectiveCamera(60,window.innerWidth / window.innerHeight,1,2000);
-  camera.position.set(800, 400, 0);
+  var container;
+  var camera, scene, renderer;
+  var uniforms;
 
-  //var canvas = document.createElement( 'canvas' );
-  //var context = canvas.getContext( 'webgl2' );
-  var renderer = new THREE.WebGLRenderer({
-    antialias: true
-  });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.domElement.id = "output"
-  document.body.appendChild(renderer.domElement);
-
-  //controlls
-  let controls = new THREE.OrbitControls(camera,renderer.domElement);
-  controls.enableDamping = true;
-  // an animation loop is required when either damping or auto-rotation are enabled
-  controls.dampingFactor = 0.25;
-  controls.screenSpacePanning = false;
-  controls.minDistance = 100;
-  controls.maxDistance = 1000;
-  controls.maxPolarAngle = Math.PI / 2;
-
-  var animate = function() {
-    requestAnimationFrame(animate);
-    controls.update();
-    renderer.render(scene, camera);
-  };
-
+  init();
   animate();
 
-  window.addEventListener('resize', onWindowResize, false);
-  function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+  function init() {
+    container = document.getElementById('container');
 
+    camera = new THREE.Camera();
+    camera.position.z = 1;
+
+    scene = new THREE.Scene();
+
+    var geometry = new THREE.PlaneBufferGeometry(2,2);
+
+    uniforms = {
+      u_time: {
+        type: "f",
+        value: 1.0
+      },
+      u_resolution: {
+        type: "v2",
+        value: new THREE.Vector2()
+      },
+      u_mouse: {
+        type: "v2",
+        value: new THREE.Vector2()
+      }
+    };
+
+    var material = new THREE.ShaderMaterial({
+      uniforms: uniforms,
+      vertexShader: vertexShader,
+      fragmentShader: fragmentShader
+    });
+
+    var mesh = new THREE.Mesh(geometry,material);
+    scene.add(mesh);
+
+    renderer = new THREE.WebGLRenderer();
+    renderer.setPixelRatio(window.devicePixelRatio);
+
+    container.appendChild(renderer.domElement);
+
+    onWindowResize();
+    window.addEventListener('resize', onWindowResize, false);
+
+    document.onmousemove = function(e) {
+      uniforms.u_mouse.value.x = e.pageX
+      uniforms.u_mouse.value.y = e.pageY
+    }
   }
 
-  app.scene = scene
-  app.camera = camera
+  function onWindowResize(event) {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    uniforms.u_resolution.value.x = renderer.domElement.width;
+    uniforms.u_resolution.value.y = renderer.domElement.height;
+  }
 
-  renderer.domElement.addEventListener('mousemove', onDocumentMouseMove, false);
+  function animate() {
+    requestAnimationFrame(animate);
+    render();
+  }
 
-  var raycaster = new THREE.Raycaster();
-  var mouse = new THREE.Vector2();
-  var intersected;
-
-  function onDocumentMouseMove(event) {
-    event.preventDefault();
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-    raycaster.setFromCamera(mouse, camera);
-    let intersections = raycaster.intersectObjects(app.scene.children);
-
-    var baseColor = 0x333333;
-    var intersectColor = 0x00D66B;
-
-    if (intersections.length > 0) {
-      console.log(intersections[0])
-    } 
+  function render() {
+    uniforms.u_time.value += 0.05;
+    renderer.render(scene, camera);
   }
 
 }
 
-export {init}
+export {threeScene}

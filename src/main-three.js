@@ -27,7 +27,7 @@ import {forceFactory} from "./forceFactory.js"
 //factions 
 import {factionFactory} from "./factionFactory.js"
 //scene
-//import {threeScene} from "./threeScene.js"
+import {threeScene} from "./threeScene.js"
 //UI
 import {UI} from "./UI.js"
 
@@ -52,7 +52,7 @@ let app = {
 
 //Set up the simple entity component system 
 app.ECS = ECSFactory(app)
-//threeScene(app)
+threeScene(app)
 //connect to the blockchain
 EthereumConnect(app)
 //player 

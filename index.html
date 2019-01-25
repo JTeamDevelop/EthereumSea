@@ -63,24 +63,14 @@
       <div align="left" v-if="menuId>-1" v-cloak>
         <div class="card p-1" style="max-width:200px;"></div>
       </div>
+      <canvas id="display" align="center" height="800" width="800">
+      </canvas>
     </div>
     <div style="width:100%" align="center">
-      <svg id="outlandsSVG" height="800" width="800">
-        <clipPath id="outlandsClip">
-          <circle cx="400" cy="400" r="400"/>
-        </clipPath>
-        <defs>
-          <radialGradient id="outGrad" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-            <stop offset="0%" style="stop-color:white;stop-opacity:1"/>
-            <stop offset="5%" style="stop-color:white;stop-opacity:1"/>
-            <stop offset="75%" style="stop-color:silver;stop-opacity:1"/>
-            <stop offset="100%" style="stop-color:grey;stop-opacity:1"/>
-          </radialGradient>
-        </defs>
-        <g id="dBox"></g>
-      </svg>
+      
     </div>
   </body>
+  <script src="lib/gpu.min.js"></script>
   <script src="lib/ethers-v4.min.js"></script>
   <script src="lib/three.min.js"></script>
   <script src="lib/topojson-server.js"></script>
