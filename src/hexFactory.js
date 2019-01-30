@@ -137,7 +137,6 @@ let hexFactory = (app)=>{
     constructor(opts) {
       opts = opts || {}
 
-      this.block = opts.block || 0
       this.seed = opts.seed || chance.hash()
       this.size = opts.size || 25
 
@@ -151,39 +150,6 @@ let hexFactory = (app)=>{
 
       //create noise for elevation
       this._noise = new SimplexNoise(this.seed)
-    }
-    get findings() {
-      let rarity = ["common","uncommon","rare","very rare","mythic"]
-      //now compute the findings 
-      let nf = Math.round(this.size * 1 / 2)
-      //find types 
-      let ft = ["resource", "luxury", "luxury", "luxury", "tool", "tool", "tool", "character", "character", "character"]
-      let find = []
-      for (let i = 0; i < nf; i++) {
-        let f = {}
-        //compute hash for each 
-        let hash = ethers.utils.solidityKeccak256(['uint256', 'address', 'address', 'uint8'], [this.block, app.contracts.ESPlanes.address, app.contracts.inPlaneFinds.address, i])
-        //first is type
-        let fti = parseInt(hash.slice(2, 4), 16) % 10;
-        f.what = ft[fti];
-        //next two makes rarity 
-        let r = (parseInt(hash.slice(4, 6), 16) * 256 + parseInt(hash.slice(6, 8), 16)) % 1000;
-        //assign rarity
-        if (r < 500)
-          f.r = 0;
-        else if (r < 850)
-          f.r = 1;
-        else if (r < 989)
-          f.r = 2;
-        else if (r < 998)
-          f.r = 3;
-        else
-          f.r = 4;
-        //now push 
-        f.rarity = rarity[f.r]
-        find.push(f)
-      }
-      return find
     }
     //hex data for THREEJS use 
     get threeHex() {
@@ -283,7 +249,7 @@ let hexFactory = (app)=>{
   })
 
   //now create a hex display, given a hex data
-  app.hexDisplay = (id)=>{
+  app.hexDisplay = (hex)=>{
     let scene = app.scene
     //clear scene 
     if (scene) {
@@ -304,11 +270,6 @@ let hexFactory = (app)=>{
       scene.add(light);
     }
 
-    let hash = app.planeHash(id)
-    let hex = new Hex({
-      block: id,
-      seed: hash
-    })
     //display the hexes 
     hex.threeHex.forEach(h=>{
       let mesh = app.hexMesh[h.t].clone()
@@ -325,19 +286,6 @@ let hexFactory = (app)=>{
         scene.add(mesh)
     }
     )
-    //display findings 
-    hex.findings.forEach((f,i) => {
-      let h = hex.threeHex.find(th => th._ij.join(",") === 2*i+","+10)
-      let mesh = app.findingMesh[f.what].clone()
-      //position based on centroid
-      let c = h.centroid
-      mesh.position.set(c.x, h.h*1.2, c.y)
-      //add to scene
-      //add hex data 
-      mesh.userData = f
-      if (scene)
-        scene.add(mesh)
-    })
   }
 }
 

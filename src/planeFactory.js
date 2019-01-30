@@ -1,3 +1,8 @@
+let glTest = ()=>{
+  let tc = document.createElement('canvas')
+  return tc.getContext("webgl") || tc.getContext("experimental-webgl")
+}
+
 const CHAINS = ["ETH"]
 
 let getFindName = (id)=>{
@@ -154,11 +159,35 @@ let planeFactory = (app)=>{
   //track max balance
   let maxBalance = 0
 
+  //get random points for voronoi display use 
+  let NP = [2000,4000,8000,12000]
+  let vP = NP.map(n => {
+    let RNG = app.chance
+    return d3.range(n).map(_=> [RNG.random(),RNG.random()])
+  })
+
+
   //plane functions 
   app.planes = {
     _current: {},
     get currentEntity() {
       return app.ECS.getCollection("planes")[this._current._id]
+    },
+    get bbox() {
+      //get bounding box 
+      let R = 39.71*1.2
+      return this._current._hex.reduce((b,h)=>{
+        if (h.centroid.x - R < b[0])
+          b[0] = h.centroid.x - R
+        if (h.centroid.y - R < b[1])
+          b[1] = h.centroid.y - R
+        if (h.centroid.x + R > b[2])
+          b[2] = h.centroid.x + R
+        if (h.centroid.y + R > b[3])
+          b[3] = h.centroid.y + R
+
+        return b
+      }, [0, 0, 0, 0])
     },
     get all() {
       return app.ECS.getCollection("planes")
@@ -225,7 +254,7 @@ let planeFactory = (app)=>{
       let nhash = ethers.utils.solidityKeccak256(['bytes32', 'uint256', 'address'], [app.seed, chain, address])
 
       let maxArea = P.balance
-      let maxR = maxArea / (64 * 64)
+      let maxR = maxArea / (128 * 128)
       maxR = maxR < 1 ? 1 : Math.floor(maxR)
 
       //determine whether a continent, random, archipelago, or islands
@@ -304,60 +333,29 @@ let planeFactory = (app)=>{
       }
       )
     },
-    display(r, z) {
-      canvas = d3.select("#display")
-      /*
-      //clear svg - used for temporary storage
-      svg = d3.select(svg)
-      svg.html("")
-
-      //append hex 
-      //let hex = plane._hex.filter(d => d.i < plane._raw.regions.length)
-      let hex = this._current._hex
-      let gHex = svg.append("g").attr("id", "hex")
-      gHex.attr("class", "hexagon").selectAll("polygon").data(hex).enter().append("polygon").attr("points", (d)=>{
-        return d.points
-      }
-      ).attr("stroke", "black").attr("fill","none").on("click", (d)=>{
-        console.log(d)
-      }
-      )
-      */
-
-      this.zoom(r, z)
-    },
     /*
       @param ri - index of region to focus on
       @param z - zoom : 0 to 3
     */
-    zoom(ri, z) {
+    canvasDisplay (ri,z) {
+      canvas = d3.select("#display")
+
       ri = ri || 0
       z = z || 0
-
-      //get bounding box 
-      let R = 39.71*1.2
-      bbox = this._current._hex.reduce((b,h)=>{
-        if (h.centroid.x - R < b[0])
-          b[0] = h.centroid.x - R
-        if (h.centroid.y - R < b[1])
-          b[1] = h.centroid.y - R
-        if (h.centroid.x + R > b[2])
-          b[2] = h.centroid.x + R
-        if (h.centroid.y + R > b[3])
-          b[3] = h.centroid.y + R
-
-        return b
-      }
-      , [0, 0, 0, 0])
+      
+      bbox = this.bbox
       let w = bbox[2] - bbox[0]
       let h = bbox[3] - bbox[1]
       //get canvas dimensions for compare
-      let cw = canvas.node().width
-      let ch = canvas.node().height
+      let cw = window.innerWidth < canvas.node().width ? window.innerWidth : canvas.node().width
+      let ch = window.innerHeight < canvas.node().height ? window.innerHeight : canvas.node().height
       //find min scale dimensions
       scale = cw / w < ch / h ? cw / w : ch / h
-      //reset canvas height and width
-      //canvas.attr("width",cw*scale).attr("height",ch*scale)
+      //new dimension 
+      let newD = cw < ch ? cw : ch 
+      if(newD < 800) {
+        canvas.attr("width",newD).attr("height",newD)
+      }
 
       let RNG = new Chance(this._current._raw.id)
       let noise = this.noise(this._current)
@@ -375,6 +373,7 @@ let planeFactory = (app)=>{
 
       let el = []
       let iHex = []
+      //translate to unit area 
       let dP = d3.range(np).map(_=>{
         let p = [bbox[0] + RNG.random() * w, bbox[1] + RNG.random() * h]
         let hi = app.planes.within(...p)
@@ -394,11 +393,6 @@ let planeFactory = (app)=>{
       )
       let V = d3.Delaunay.from(dP).voronoi([bbox[0], bbox[1], bbox[2], bbox[3]])
       let polys = [...V.cellPolygons()]
-      //.filter((p,i) => el[i] > -2)
-
-      function polygon(d) {
-        return "M" + d.join("L") + "Z";
-      }
 
       //canvas context
       let ctx = canvas.node().getContext("2d")
@@ -412,11 +406,7 @@ let planeFactory = (app)=>{
       //heightmap colors 
       let sealevel = [0, 0, 0.02, 0.02][this._current._layout]
       let hColor = d3.scaleSequential(d3.interpolateRdYlGn)
-
-      //translate/scale accordingly
-      //ctx.setTransform(scale,0,0,scale,-bbox[0],-bbox[1]);
-      //ctx.setTransform(1,0,0,1,-bbox[0],-bbox[1]);
-      
+      //run polys 
       polys.forEach((p,i)=>{
         ctx.beginPath()
         ctx.globalAlpha = el[i] < -1 ? 0 : 1
@@ -425,36 +415,21 @@ let planeFactory = (app)=>{
         ctx.fill()
       }
       )
-      /*
-      let path = d3.select("#dBox").append("g").attr("id","polys").selectAll("path")  
-      path.data(polys).enter().append("path")
-          .attr("fill",(d,i) => {
-             return el[i] < sealevel ? el[i] < -1 ? "none" : "aqua" : hColor(1-(el[i]-sealevel))
-          }) 
-          .attr("stroke","none") 
-          .attr("opacity",0.75)
-          .attr("d", polygon)
-          .on("click", (d,i) => { 
-            if(iHex[i] > -1) {
-              let h = HEX[iHex[i]]
-              console.log(h) 
-              //set finds 
-              app.UI.findModal.ri = h.i 
-              app.UI.findModal.finds = h.finds
-              //open modal
-              if(app.UI.findModal.findText.length > 0) $('#ui-find').modal('show')
-              //else 
-              else app.notify({h:"No Finds"})
-            }
-          })
-      
-      //set view box 
-      d3.select("#outlandsSVG").attr("viewBox",btxt)
-      */
 
       //handle click 
       canvas.node().removeEventListener("click tap", canvasClick)
       canvas.on("click tap", canvasClick)
+    },
+    threeDisplay() {
+      let hex = new app.Hex({
+        seed: this._current._hash,
+        size : this._current._hex.length
+      })
+      app.hexDisplay(hex)
+    },
+    display(ri, z) {
+      if (!glTest()) this.canvasDisplay(ri,z)
+      else this.threeDisplay()
     },
     /* Make a Find
       @param ri - the region index   
@@ -518,3 +493,34 @@ let planeFactory = (app)=>{
 }
 
 export {planeFactory}
+
+
+/*
+      let path = d3.select("#dBox").append("g").attr("id","polys").selectAll("path")  
+      path.data(polys).enter().append("path")
+          function polygon(d) {
+            return "M" + d.join("L") + "Z";
+          }
+          .attr("fill",(d,i) => {
+             return el[i] < sealevel ? el[i] < -1 ? "none" : "aqua" : hColor(1-(el[i]-sealevel))
+          }) 
+          .attr("stroke","none") 
+          .attr("opacity",0.75)
+          .attr("d", polygon)
+          .on("click", (d,i) => { 
+            if(iHex[i] > -1) {
+              let h = HEX[iHex[i]]
+              console.log(h) 
+              //set finds 
+              app.UI.findModal.ri = h.i 
+              app.UI.findModal.finds = h.finds
+              //open modal
+              if(app.UI.findModal.findText.length > 0) $('#ui-find').modal('show')
+              //else 
+              else app.notify({h:"No Finds"})
+            }
+          })
+      
+      //set view box 
+      d3.select("#outlandsSVG").attr("viewBox",btxt)
+      */

@@ -1,4 +1,4 @@
-//import "../../src/OrbitControls.js"
+import "../lib/OrbitControls.js"
 
 let glTest = ()=>{
   let tc = document.createElement('canvas')
@@ -90,7 +90,7 @@ function threeScene(app) {
     return null
 
   var container;
-  var camera, scene, renderer;
+  var camera, scene, renderer, controls;
   var uniforms;
 
   init();
@@ -99,12 +99,24 @@ function threeScene(app) {
   function init() {
     container = document.getElementById('container');
 
-    camera = new THREE.Camera();
-    camera.position.z = 1;
-
     scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xcccccc);
 
-    var geometry = new THREE.PlaneBufferGeometry(2,2);
+    renderer = new THREE.WebGLRenderer({
+      antialias: true
+    });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    container.appendChild(renderer.domElement);
+
+    camera = new THREE.PerspectiveCamera(45,window.innerWidth / window.innerHeight,1,2000);
+    camera.position.set( 500, 500, 0 );
+
+    controls = new THREE.OrbitControls(camera,renderer.domElement);
+    controls.screenSpacePanning = false;
+    controls.minDistance = 100;
+    controls.maxDistance = 2000;
+    controls.maxPolarAngle = Math.PI / 2;
 
     uniforms = {
       u_time: {
@@ -121,19 +133,13 @@ function threeScene(app) {
       }
     };
 
+    /*
     var material = new THREE.ShaderMaterial({
       uniforms: uniforms,
       vertexShader: vertexShader,
       fragmentShader: fragmentShader
     });
-
-    var mesh = new THREE.Mesh(geometry,material);
-    scene.add(mesh);
-
-    renderer = new THREE.WebGLRenderer();
-    renderer.setPixelRatio(window.devicePixelRatio);
-
-    container.appendChild(renderer.domElement);
+    */
 
     onWindowResize();
     window.addEventListener('resize', onWindowResize, false);
@@ -148,10 +154,15 @@ function threeScene(app) {
     renderer.setSize(window.innerWidth, window.innerHeight);
     uniforms.u_resolution.value.x = renderer.domElement.width;
     uniforms.u_resolution.value.y = renderer.domElement.height;
+
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
   }
 
   function animate() {
     requestAnimationFrame(animate);
+    controls.update();
+    // only required if controls.enableDamping = true, or if controls.autoRotate = true
     render();
   }
 
@@ -160,6 +171,9 @@ function threeScene(app) {
     renderer.render(scene, camera);
   }
 
+
+  app.camera = camera
+  app.scene = scene
 }
 
 export {threeScene}

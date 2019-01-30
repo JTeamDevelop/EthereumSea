@@ -94,6 +94,7 @@ let UI = (app) => {
         this.currentBlock = n 
       })
       this.getAllPlanes()
+      // DOM updated
       this.viewPlane()
     },
     computed : {
@@ -165,8 +166,10 @@ let UI = (app) => {
           //generate it 
           app.planes.generate(address, chain)
           //display it 
-          app.planes.display(0,3)
           V.planeAddress = address
+          Vue.nextTick(() => {
+            app.planes.display(0,3)
+          })
           //get concurrently
           this.getLinks()
         })
