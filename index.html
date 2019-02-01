@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="src/main.css">
   </head>
   <body>
+    <div id="spinner" class="lds-dual-ring"></div>
     <div class="modal fade" id="ui-find" role="dialog">
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -21,8 +22,7 @@
           <div class="modal-body">
             <button type="button" class="btn btn-success btn-block" data-dismiss="modal" v-for="f in findText" @click="makeFind(f.i)">{{f.text}}</button>
           </div>
-          <div class="modal-footer">
-          </div>
+          <div class="modal-footer"></div>
         </div>
       </div>
     </div>
@@ -63,12 +63,9 @@
       <div align="left" v-if="menuId>-1" v-cloak>
         <div class="card p-1" style="max-width:200px;"></div>
       </div>
-      <canvas id="display" align="center" height="800" width="800">
-      </canvas>
+      <canvas id="display" align="center" height="800" width="800"></canvas>
     </div>
-    <div style="width:100%" align="center">
-      
-    </div>
+    <div id="container"></div>
   </body>
   <script src="lib/gpu.min.js"></script>
   <script src="lib/ethers-v4.min.js"></script>

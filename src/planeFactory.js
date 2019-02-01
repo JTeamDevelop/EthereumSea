@@ -119,6 +119,8 @@ const FINDS = {
   },
 }
 
+//"character","creature","item"
+
 let planeFactory = (app)=>{
   let svg = document.createElement("svg")
   let canvas = d3.select("#display"), bbox, scale;
@@ -159,35 +161,14 @@ let planeFactory = (app)=>{
   //track max balance
   let maxBalance = 0
 
-  //get random points for voronoi display use 
-  let NP = [2000,4000,8000,12000]
-  let vP = NP.map(n => {
-    let RNG = app.chance
-    return d3.range(n).map(_=> [RNG.random(),RNG.random()])
-  })
-
-
   //plane functions 
   app.planes = {
     _current: {},
     get currentEntity() {
       return app.ECS.getCollection("planes")[this._current._id]
     },
-    get bbox() {
-      //get bounding box 
-      let R = 39.71*1.2
-      return this._current._hex.reduce((b,h)=>{
-        if (h.centroid.x - R < b[0])
-          b[0] = h.centroid.x - R
-        if (h.centroid.y - R < b[1])
-          b[1] = h.centroid.y - R
-        if (h.centroid.x + R > b[2])
-          b[2] = h.centroid.x + R
-        if (h.centroid.y + R > b[3])
-          b[3] = h.centroid.y + R
-
-        return b
-      }, [0, 0, 0, 0])
+    within(x, y) {
+      return this._current._hex.within(x,y)
     },
     get all() {
       return app.ECS.getCollection("planes")
@@ -225,22 +206,11 @@ let planeFactory = (app)=>{
 
       return P
     },
-    noise(plane) {
-      //set noise2d function
-      let n2D = (x,y)=>plane._simplex.noise2D(x, y)
-      let scale = [4000, 400, 400, 125][plane._layout]
-
-      return (x,y)=>{
-        let nm, os = 1.875, e = 0;
-        //determine noise value - give four octives
-        for (let j = 0; j < 4; j++) {
-          nm = Math.pow(2, j)
-          e += n2D(nm * x / scale, nm * y / scale) / nm
-        }
-        e = e >= 0 ? Math.pow(e, 6) : e
-        //clamp
-        e = e > 1 ? 1 : e < -1 ? -1 : e
-        return e
+    get creatures () {
+      let hash = this._current._hash
+      return {
+        land : d3.range(5).map(v => ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [hash, "landCreature", v])),
+        water : d3.range(5).map(v => ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [hash, "waterCreature", v]))
       }
     },
     makeNames(address, lang, n) {
@@ -257,8 +227,6 @@ let planeFactory = (app)=>{
       let maxR = maxArea / (128 * 128)
       maxR = maxR < 1 ? 1 : Math.floor(maxR)
 
-      //determine whether a continent, random, archipelago, or islands
-      let layout = [0, 1, 1, 2, 2, 2, 3, 3][parseInt(nhash.slice(2, 4), 16) % 8]
       //determine the max number of regions 
       let bR = [1, 2, 4, 6, 8, 12, 16, 20, 24, 30, 36, 42, 48, 56, 64, 72]
       let mR = [1, 1.1, 1.2, 1.3, 1.5, 1.75, 2, 3]
@@ -271,9 +239,10 @@ let planeFactory = (app)=>{
         a: parseInt(nhash.slice(10, 12), 16) % maxLang
       }
 
-      //hexagons area 4096
-      //side = 39.71
-      let HEX = app.hex.generateHexes(nhash, nR)
+      let HEX = new app.Hex({
+          seed: nhash,
+          size : nR
+      })
       let RNG = new Chance(nhash)
       //place 
       this._current = {
@@ -281,57 +250,36 @@ let planeFactory = (app)=>{
         _hash: nhash,
         _lang: lang,
         names: this.makeNames(nhash, lang.p, nR),
-        _simplex: new SimplexNoise(nhash),
         _raw: P,
-        _layout: layout
-      }
-      //set after declaired because it is referenced
-      this._current._hex = HEX.map((qr,i)=>{
-        //address(this), p, _planes[p][r].finder, _planes[p][r].hash
-        let hash = ethers.utils.solidityKeccak256(['bytes32', 'uint256'], [nhash, i])
-        let ni = parseInt(hash.slice(2, 4), 16) % 16
-        let nf
-        if (ni >= 8)
-          nf = 2;
-        else if (ni >= 1)
-          nf = 1;
-        else
-          nf = 3;
+        _hex : HEX,
+        _data : HEX._major.map((h,i) =>{
+          let T = HEX._majT[i]
+          let hash = ethers.utils.solidityKeccak256(['bytes32', 'uint256'], [nhash, i])
+          let ni = parseInt(hash.slice(2, 4), 16) % 16
+          let nf
+          if (ni >= 8)
+            nf = 2;
+          else if (ni >= 1)
+            nf = 1;
+          else
+            nf = 3;
 
-        //noise - for elevation
-        let noise = this.noise(this._current)
-        //locate hex for return and determining elevation
-        let hex = app.hex.place(...qr, 39.71)
-        let p = hex.centroid
-        let e = noise(p.x, p.y)
-        //run finds 
-        let finds = d3.range(nf).map(v=>{
-          let fid = 1 + parseInt(hash.slice(4 + (v * 2), 6 + (v * 2)), 16)
-          let name = getFindName(fid)
-          //cities wont be on water or above a certain altitude 
-          if (name === "city" && (e <= 0 || e >= 0.55)) {
-            name = ["enigma", "dwelling", "ruin"][fid % 3]
-          }
+            //run finds 
+          let finds = d3.range(nf).map(v=>{
+            let fid = 1 + parseInt(hash.slice(4 + (v * 2), 6 + (v * 2)), 16)
+            let name = getFindName(fid)
+            let color = parseInt(hash.slice(10 + (v * 2), 12 + (v * 2)), 16)%6
+            //cities wont be on water or above a certain altitude 
+            if (name === "city" && ["deepWater", "shallowWater","mountains"].includes(T)) {
+              name = ["enigma", "dwelling", "ruin"][fid % 3]
+            }
 
-          return name
-        }
-        )
+            return {name,color}
+          })
 
-        return Object.assign({
-          i: i,
-          hash,
-          finds
-        }, hex)
+          return { i, hash, finds }  
+        })
       }
-      )
-    },
-    within(x, y) {
-      return this._current._hex.findIndex(h=>{
-        let dx = h.centroid.x - x
-        let dy = h.centroid.y - y
-        return (dx * dx + dy * dy) < 39.71 * 39.71
-      }
-      )
     },
     /*
       @param ri - index of region to focus on
@@ -343,7 +291,8 @@ let planeFactory = (app)=>{
       ri = ri || 0
       z = z || 0
       
-      bbox = this.bbox
+      let Hex = this._current._hex
+      bbox = Hex.bbox
       let w = bbox[2] - bbox[0]
       let h = bbox[3] - bbox[1]
       //get canvas dimensions for compare
@@ -357,42 +306,7 @@ let planeFactory = (app)=>{
         canvas.attr("width",newD).attr("height",newD)
       }
 
-      let RNG = new Chance(this._current._raw.id)
-      let noise = this.noise(this._current)
-      //always generate points for voronoi display 
-      let nH = this._current._hex.length
-      let np;
-      if (nH < 20)
-        np = 2000;
-      else if (nH < 40)
-        np = 4000;
-      else if (nH < 80)
-        np = 8000;
-      else
-        np = 12000;
-
-      let el = []
-      let iHex = []
-      //translate to unit area 
-      let dP = d3.range(np).map(_=>{
-        let p = [bbox[0] + RNG.random() * w, bbox[1] + RNG.random() * h]
-        let hi = app.planes.within(...p)
-        //keep hex index 
-        iHex.push(hi)
-
-        let e = 0;
-        if (hi === -1)
-          e = -2
-        else
-          e = noise(...p)
-        //push 
-        el.push(e)
-        //return point 
-        return p
-      }
-      )
-      let V = d3.Delaunay.from(dP).voronoi([bbox[0], bbox[1], bbox[2], bbox[3]])
-      let polys = [...V.cellPolygons()]
+      let tH = Hex.threeHex()
 
       //canvas context
       let ctx = canvas.node().getContext("2d")
@@ -404,32 +318,51 @@ let planeFactory = (app)=>{
       ctx.translate(-bbox[0], -bbox[1]);
       
       //heightmap colors 
-      let sealevel = [0, 0, 0.02, 0.02][this._current._layout]
+      let hexDraw = app.hex.draw
       let hColor = d3.scaleSequential(d3.interpolateRdYlGn)
-      //run polys 
-      polys.forEach((p,i)=>{
-        ctx.beginPath()
-        ctx.globalAlpha = el[i] < -1 ? 0 : 1
-        ctx.fillStyle = el[i] < sealevel ? "aqua" : hColor(1 - (el[i] - sealevel))
-        V.renderCell(i, ctx)
+      //run hexes 
+      tH.forEach((hex,i)=>{
+        hexDraw(ctx,hex.points)
+        ctx.fillStyle = ["deepWater", "shallowWater"].includes(hex.t) ? "aqua" : hColor(1-(hex.h-1)/30)
         ctx.fill()
       }
       )
 
+      //remove spinner
+      d3.select("#spinner").attr("class", "lds-dual-ring hidden")
       //handle click 
       canvas.node().removeEventListener("click tap", canvasClick)
       canvas.on("click tap", canvasClick)
     },
     threeDisplay() {
-      let hex = new app.Hex({
-        seed: this._current._hash,
-        size : this._current._hex.length
-      })
-      app.hexDisplay(hex)
+      //give it a click call back
+      function onClick() {
+        //send the index
+        app.planes.clickFind(this._ij[0])
+      }
+      //call 
+      app.hexDisplay(this._current._hex, onClick)
+      //remove spinner
+      d3.select("#spinner").attr("class", "lds-dual-ring hidden")
     },
     display(ri, z) {
       if (!glTest()) this.canvasDisplay(ri,z)
       else this.threeDisplay()
+    },
+    clickFind(hi) {
+      let h = this._current._data[hi]
+      console.log(h)
+      //set finds 
+      app.UI.findModal.ri = h.i
+      app.UI.findModal.finds = h.finds
+      //open modal
+      if (app.UI.findModal.findText.length > 0)
+        $('#ui-find').modal('show')
+        //else 
+      else
+        app.notify({
+          h: "No Finds"
+        })
     },
     /* Make a Find
       @param ri - the region index   
@@ -442,25 +375,26 @@ let planeFactory = (app)=>{
       if (!app.ECS.hasComponent(P, "hasFinds"))
         app.ECS.addComponent(P, "hasFinds")
       //get what the find is 
-      let what = this._current._hex[ri].finds[fi]
-      let data = FINDS[what]
+      let what = this._current._data[ri].finds[fi]
+      let name = what.name
+      let data = FINDS[name]
       //one time event - push 
       if (data.tags.includes("once")) {
         P.once.push(ri + "." + fi)
         //push ui update 
-        app.UI.findModal.finds = this._current._hex[ri].finds.slice()
+        app.UI.findModal.finds = this._current._data[ri].finds.slice()
       }
       //track a lead 
       if (data.tags.includes("lead")) {
         //random pick 
-        what = app.chance.pickone(data.lead)
-        data = FINDS[what]
+        name = app.chance.pickone(data.lead)
+        data = FINDS[name]
       }
       let reward = app.chance.pickone(data.reward)
 
       let address = P.id
       let hash = ethers.utils.solidityKeccak256(['bytes32', 'uint256', 'uint256', 'uint256'], [this._current._hash, ri, fi, Date.now()])
-      return hash
+      return {name,hash,reward,color:what.color}
     },
   }
 
@@ -471,20 +405,7 @@ let planeFactory = (app)=>{
     let x = bbox[0] + coords[0] / scale
       , y = bbox[1] + coords[1] / scale;
     let hi = app.planes.within(x, y)
-
-    let h = app.planes._current._hex[hi]
-    console.log(h)
-    //set finds 
-    app.UI.findModal.ri = h.i
-    app.UI.findModal.finds = h.finds
-    //open modal
-    if (app.UI.findModal.findText.length > 0)
-      $('#ui-find').modal('show')
-      //else 
-    else
-      app.notify({
-        h: "No Finds"
-      })
+    app.planes.clickFind(hi)
   }
 
   //create 0x
@@ -524,3 +445,51 @@ export {planeFactory}
       //set view box 
       d3.select("#outlandsSVG").attr("viewBox",btxt)
       */
+
+      /*
+      let RNG = new Chance(this._current._raw.id)
+      let noise = this.noise(this._current)
+      //always generate points for voronoi display 
+      let nH = this._current._hex.length
+      let np;
+      if (nH < 20)
+        np = 2000;
+      else if (nH < 40)
+        np = 4000;
+      else if (nH < 80)
+        np = 8000;
+      else
+        np = 12000;
+
+      let el = []
+      let iHex = []
+      //translate to unit area 
+      let dP = d3.range(np).map(_=>{
+        let p = [bbox[0] + RNG.random() * w, bbox[1] + RNG.random() * h]
+        let hi = app.planes.within(...p)
+        //keep hex index 
+        iHex.push(hi)
+
+        let e = 0;
+        if (hi === -1)
+          e = -2
+        else
+          e = noise(...p)
+        //push 
+        el.push(e)
+        //return point 
+        return p
+      }
+      )
+      let V = d3.Delaunay.from(dP).voronoi([bbox[0], bbox[1], bbox[2], bbox[3]])
+      let polys = [...V.cellPolygons()]
+      */
+
+/*
+  //get random points for voronoi display use 
+  let NP = [2000,4000,8000,12000]
+  let vP = NP.map(n => {
+    let RNG = app.chance
+    return d3.range(n).map(_=> [RNG.random(),RNG.random()])
+  })
+  */

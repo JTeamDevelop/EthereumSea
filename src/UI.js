@@ -41,7 +41,7 @@ let UI = (app) => {
         return this.finds.reduce((all,f,i) => {
           if(P.once.includes(this.ri+"."+i)) return all
 
-          all.push({i,text:f})
+          all.push({i,text:f.name})
           return all 
         },[])
       }
@@ -49,7 +49,11 @@ let UI = (app) => {
     methods : {
       makeFind(fi) {
         let find = app.planes.makeFind(this.ri, fi)
-        app.notify({text:find})
+        let rare = parseInt(find.hash.slice(2,8), 16)%(2097150)
+        let lv = app.rarity(rare)
+        let color = app.colors[find.color]
+        let text = find.reward + " level "+lv+" "+color
+        app.notify({text:text})
       }
     }
   })
@@ -143,6 +147,8 @@ let UI = (app) => {
         this.CPX = CPX
       },
       viewPlane () {
+        d3.select("#spinner").attr("class", "lds-dual-ring")
+        
         let V = this
         let address = this.newPlaneAddress
         let li = this.links.indexOf(address)

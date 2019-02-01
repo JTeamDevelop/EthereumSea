@@ -240,7 +240,7 @@ let factionFactory = (app)=>{
   app.Faction = Faction
 
   //now compute the factions 
-  let factionsAtRank = [30, 45, 19, 19, 10, 5]
+  let factionsAtRank = [10, 15, 15, 15, 5, 4]
   app.factions = []
   //get random faction 
   app.randomFaction = (RNG, opts) => {
@@ -259,7 +259,7 @@ let factionFactory = (app)=>{
     else RNG.pickone(F.filter(f => !f.isTrouble))
   }
   //trouble 
-  let troubleAtRank = [12, 16, 8, 8, 4, 2]
+  let troubleAtRank = [5, 7, 8, 7, 3, 2]
   //handle island claims and names 
   app.claims = {}
   app.findNames = new Map()
@@ -267,26 +267,19 @@ let factionFactory = (app)=>{
   factionsAtRank.forEach((n,r)=>{
     for (let i = 0; i < n; i++) {
       let nf = app.factions.length
-      let fid = ethers.utils.solidityKeccak256(['address', 'string', 'uint256'], [app.ETH.addresses.ESPlanes, "factions", nf])
+      let fid = ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [app.seed, "factions", nf])
       app.factions.push(new app.Faction({
         id: fid,
         rank: r+1
       }))
       //now set index
       app.factions[nf]._i = nf
-      /*Handle faction islands 
-      */
-      let di = parseInt(fid[2],16)%4
-      let j = parseInt(fid.slice(3,7),16)%128
-      let find = app.Outlands._setFind(di,j,3)
-      //push claim 
-      app.factions[nf].addClaim(find)
     }
   })
   troubleAtRank.forEach((n,r)=>{
     for (let i = 0; i < n; i++) {
       let nf = app.factions.length
-      let fid = ethers.utils.solidityKeccak256(['address', 'string', 'uint256'], [app.ETH.addresses.ESPlanes, "trouble", nf])
+      let fid = ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [app.seed, "trouble", nf])
       app.factions.push(new app.Faction({
         id: fid,
         rank: r
@@ -294,13 +287,6 @@ let factionFactory = (app)=>{
       //now set index
       app.factions[nf]._i = nf
       app.factions[nf]._trouble = true
-      /*Handle faction islands 
-      */
-      let di = parseInt(fid[2],16)%4
-      let j = parseInt(fid.slice(3,7),16)%128
-      let find = app.Outlands._setFind(di,j,3)
-      //push claim 
-      app.factions[nf].addClaim(find)
     }
   })
 

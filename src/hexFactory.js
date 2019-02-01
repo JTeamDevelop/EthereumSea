@@ -33,6 +33,7 @@ let hexPlacement = (q,r,R)=>{
     _qr: [q, r],
     qr: [q, r].join(","),
     centroid: c,
+    R : R,
     points: hexPoints(c, R),
     neighbors: hexNeighbors(q,r),
     _subQR: subQR(q,r)
@@ -60,6 +61,15 @@ let generateHexes = (seed,n)=>{
 
   //have to turn back into array
   return hexids.map(qr=>qr.split(",").map(Number))
+}
+
+let hexDraw = (ctx, points) => {
+  ctx.beginPath();
+  ctx.moveTo(...points[0]);
+  for(let i = 1; i < points.length; i++){
+    ctx.lineTo(...points[i]);  
+  }
+  ctx.closePath();
 }
 
 let chance = new Chance()
@@ -139,6 +149,7 @@ let hexFactory = (app)=>{
 
       this.seed = opts.seed || chance.hash()
       this.size = opts.size || 25
+      this.R = opts.R || 20
 
       //generate hex qr 
       this._hexqr = generateHexes(this.seed, this.size)
@@ -148,48 +159,79 @@ let hexFactory = (app)=>{
       this._majT = majT.slice()
       this._minT = minT.slice()
 
+      //major hexes
+      this._major = this._hexqr.map(qr => hexPlacement(...qr, this.R))
+
       //create noise for elevation
       this._noise = new SimplexNoise(this.seed)
     }
+    get bbox() {
+      //get bounding box 
+      let R = this.R*1.2
+      return this._major.reduce((b,h)=>{
+        if (h.centroid.x - R < b[0])
+          b[0] = h.centroid.x - R
+        if (h.centroid.y - R < b[1])
+          b[1] = h.centroid.y - R
+        if (h.centroid.x + R > b[2])
+          b[2] = h.centroid.x + R
+        if (h.centroid.y + R > b[3])
+          b[3] = h.centroid.y + R
+
+        return b
+      }, [0, 0, 0, 0])
+    }
+    within(x, y) {
+      return this._major.findIndex(h=>{
+        let dx = h.centroid.x - x
+        let dy = h.centroid.y - y
+        return (dx * dx + dy * dy) < h.R * h.R
+      }
+      )
+    }
     //hex data for THREEJS use 
-    get threeHex() {
+    //takes radius 
+    threeHex(hR) {
+      hR = hR || this.R
+      
       let minT = this._minT
       let majT = this._majT
       let noise = (x,y)=>{
         return this._noise.noise3D(x, y, 0)
       }
       const HEIGHTS = {
-        "deepWater": 1,
-        "shallowWater": 1,
-        "swamp": 2,
-        "desert": 5,
-        "plains": 5,
-        "forest": 5,
-        "hills": 25,
-        "mountains": 50
+        "deepWater": {base:-1, d:0, peak: 0},
+        "shallowWater": {base:0, d:0, peak: 0},
+        "swamp": {base:0.1, d:0.1, peak: 0},
+        "desert": {base:0.5, d:0.25, peak: 0},
+        "plains": {base:0.5, d:0.25, peak: 0},
+        "forest": {base:0.5, d:0.25, peak: 0},
+        "hills": {base:2, d:1, peak: 4},
+        "mountains": {base:12, d:2, peak: 16}
       }
 
       //for all major hexes loop to get hex data
       return this._hexqr.reduce(function(all, qr, i) {
-        let hp = hexPlacement(...qr, 100)
+        let hp = hexPlacement(...qr, hR)
         let T = majT[i]
-        let baseHeight = HEIGHTS[T]
+        let HT = HEIGHTS[T]
 
         hp._subQR.forEach(function(sqr, j) {
           //terrain 
           let t = minT[i][j]
           //push sub hex 
-          let sh = hexPlacement(...sqr, 20)
-          let height = baseHeight + (HEIGHTS[t] * (1 + noise(...sqr)) / 2)
+          let sh = hexPlacement(...sqr, hR/5)
+          let height = HT.base + (HT.d * noise(...sqr)) + (HEIGHTS[t].peak * (0.5+noise(...sqr)/2)) 
           all.push({
             _ij: [i, j],
             _qr: sh._qr,
             qr: sh.qr,
+            points : sh.points,
             centroid: sh.centroid,
             neighbors: sh.neighbors,
-            R: 20,
+            R: hR/5,
             t: t,
-            h: ["deepWater", "shallowWater"].includes(t) ? 1 : height
+            h: ["deepWater", "shallowWater"].includes(t) ? 1 : 1+height
           })
         })
 
@@ -249,7 +291,7 @@ let hexFactory = (app)=>{
   })
 
   //now create a hex display, given a hex data
-  app.hexDisplay = (hex)=>{
+  app.hexDisplay = (hex, clickCB)=>{
     let scene = app.scene
     //clear scene 
     if (scene) {
@@ -271,7 +313,7 @@ let hexFactory = (app)=>{
     }
 
     //display the hexes 
-    hex.threeHex.forEach(h=>{
+    hex.threeHex().forEach(h=>{
       let mesh = app.hexMesh[h.t].clone()
       let ns = h.R / 100
       //scale based on R 
@@ -279,6 +321,8 @@ let hexFactory = (app)=>{
       //position based on centroid
       let c = h.centroid
       mesh.position.set(c.x, 0, c.y)
+      //add click
+      h.onClick = clickCB
       //add to scene
       //add hex data 
       mesh.userData = h
@@ -289,4 +333,4 @@ let hexFactory = (app)=>{
   }
 }
 
-export {hexFactory, generateHexes, hexPlacement}
+export {hexFactory, generateHexes, hexPlacement, hexDraw}

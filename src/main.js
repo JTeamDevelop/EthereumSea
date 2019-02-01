@@ -13,7 +13,7 @@ import {playerFactory} from "./playerFactory.js"
 //characters  
 import {characterFactory} from "./characterFactory.js"
 //handle hex creation
-import {hexFactory, generateHexes, hexPlacement} from "./hexFactory.js"
+import {hexFactory, generateHexes, hexPlacement, hexDraw} from "./hexFactory.js"
 //load planes 
 import {planeFactory} from "./planeFactory.js"
 //people 
@@ -27,7 +27,7 @@ import {forceFactory} from "./forceFactory.js"
 //factions 
 import {factionFactory} from "./factionFactory.js"
 //scene
-//import {threeScene} from "./threeScene.js"
+import {threeScene} from "./threeScene.js"
 //UI
 import {UI} from "./UI.js"
 
@@ -46,13 +46,19 @@ let app = {
     UI : {},
     hex : {
         generateHexes : generateHexes,
-        place : hexPlacement
-    }
+        place : hexPlacement,
+        draw : hexDraw
+    },
+    _rarity : [1048576,1572864,1835008,1966080,2031616,2064384,2080768,2088960,2093056,2095104,2096128,2096640,2096896,2097024,2097088,2097120,2097136,2097144,2097148,2097150],
+    rarity (r) {
+        return 1 + this._rarity.findIndex(v => r < v)               
+    },
+    colors : ["ruby","topaz","citrine","emerald","sapphire","amethyst"]
 }
 
 //Set up the simple entity component system 
 app.ECS = ECSFactory(app)
-//threeScene(app)
+threeScene(app)
 //connect to the blockchain
 EthereumConnect(app)
 //player 

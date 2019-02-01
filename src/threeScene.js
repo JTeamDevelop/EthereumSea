@@ -85,16 +85,44 @@ void main() {
 }
 `
 
+class PickHelper {
+  constructor() {
+    this.raycaster = new THREE.Raycaster();
+    this.pickedObject = null;
+    this.pickedObjectSavedColor = 0;
+  }
+  pick(normalizedPosition, scene, camera) {
+    // restore the color if there is a picked object
+    if (this.pickedObject) {
+      this.pickedObject.material.emissive.setHex(this.pickedObjectSavedColor);
+      this.pickedObject = undefined;
+    }
+ 
+    // cast a ray through the frustum
+    this.raycaster.setFromCamera(normalizedPosition, camera);
+    // get the list of objects the ray intersected
+    const intersectedObjects = this.raycaster.intersectObjects(scene.children);
+    if (intersectedObjects.length) {
+      // pick the first object. It's the closest one
+      this.pickedObject = intersectedObjects[0].object;
+      let data = this.pickedObject.userData
+      //see if on click 
+      if(data.onClick) data.onClick()
+      // save its color
+      //this.pickedObjectSavedColor = this.pickedObject.material.emissive.getHex();
+      // set its emissive color to yellow
+      //this.pickedObject.material.emissive.setHex(0xFF0000);
+    }
+  }
+}
+
 function threeScene(app) {
   if (!glTest())
     return null
 
-  var container;
+  var container, canvas;
   var camera, scene, renderer, controls;
   var uniforms;
-
-  init();
-  animate();
 
   function init() {
     container = document.getElementById('container');
@@ -107,7 +135,8 @@ function threeScene(app) {
     });
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
-    container.appendChild(renderer.domElement);
+    canvas = renderer.domElement
+    container.appendChild(canvas);
 
     camera = new THREE.PerspectiveCamera(45,window.innerWidth / window.innerHeight,1,2000);
     camera.position.set( 500, 500, 0 );
@@ -159,18 +188,46 @@ function threeScene(app) {
     camera.updateProjectionMatrix();
   }
 
-  function animate() {
+  function animate(time) {
     requestAnimationFrame(animate);
     controls.update();
     // only required if controls.enableDamping = true, or if controls.autoRotate = true
-    render();
+    render(time);
   }
 
-  function render() {
+  const pickPosition = {x: 0, y: 0};
+  clearPickPosition();
+
+  const pickHelper = new PickHelper();
+  function render(time) {
+    time *= 0.001;  // convert to seconds;
     uniforms.u_time.value += 0.05;
     renderer.render(scene, camera);
   }
 
+  function setPickPosition(event) {
+    pickPosition.x = (event.clientX / canvas.clientWidth ) *  2 - 1;
+    pickPosition.y = (event.clientY / canvas.clientHeight) * -2 + 1;  // note we flip Y
+  }
+
+  function clearPickPosition() {
+    // unlike the mouse which always has a position
+    // if the user stops touching the screen we want
+    // to stop picking. For now we just pick a value
+    // unlikely to pick something
+    pickPosition.x = -100000;
+    pickPosition.y = -100000;
+  }
+ 
+  window.addEventListener('click', function(event) {
+    pickPosition.x = (event.clientX / canvas.clientWidth ) *  2 - 1;
+    pickPosition.y = (event.clientY / canvas.clientHeight) * -2 + 1;  // note we flip Y
+    pickHelper.pick(pickPosition, scene, camera);
+  });
+  
+  //start it 
+  init();
+  animate(0);
 
   app.camera = camera
   app.scene = scene

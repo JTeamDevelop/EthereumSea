@@ -13,7 +13,7 @@ import {playerFactory} from "./playerFactory.js"
 //characters  
 import {characterFactory} from "./characterFactory.js"
 //handle hex creation
-import {hexFactory, generateHexes, hexPlacement} from "./hexFactory.js"
+import {hexFactory, generateHexes, hexPlacement, hexDraw} from "./hexFactory.js"
 //load planes 
 import {planeFactory} from "./planeFactory.js"
 //people 
@@ -46,7 +46,8 @@ let app = {
     UI : {},
     hex : {
         generateHexes : generateHexes,
-        place : hexPlacement
+        place : hexPlacement,
+        hexDraw : hexDraw
     }
 }
 
