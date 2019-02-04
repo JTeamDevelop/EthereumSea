@@ -33,9 +33,17 @@
           <span class="m-1">RETH: {{RETH}}</span>
           <span class="m-1">CPX: {{CPX}}</span>
         </div>
-        <h1>Ethereum Sea</h1>
-        <h5>{{planeAddress}}</h5>
-        <div>
+        <h1>
+          <span>Ethereum Sea</span>
+          <button class="btn btn-outline-success" type="button" @click="showNav = !showNav">
+            <img src="media/iconic/globe.svg" height="24" width="24">
+          </button>
+        </h1>
+        <div v-if="name" v-cloak>
+          <div>{{name}} - {{planeAddress}}</div>
+          <div>Faction: {{faction.name}}</div>
+        </div>
+        <div v-if="showNav" v-cloak>
           <div class="input-group">
             <select class="custom-select" v-model="newPlaneAddress">
               <option v-for="pid in allPlanes" v-bind:value="pid">{{pid}}</option>
@@ -46,7 +54,7 @@
           </div>
           <div class="input-group">
             <div class="input-group-prepend">
-              <span class="input-group-text">txns</span>
+              <span class="input-group-text">Links (txns)</span>
             </div>
             <select class="custom-select" v-model="newPlaneAddress">
               <option v-for="pid in links" v-bind:value="pid">{{pid}}</option>
@@ -56,14 +64,11 @@
             </div>
           </div>
         </div>
-        <div v-if="factionId > -1" v-cloak>
-          <h2>{{faction.name}}</h2>
-        </div>
       </div>
       <div align="left" v-if="menuId>-1" v-cloak>
         <div class="card p-1" style="max-width:200px;"></div>
       </div>
-      <canvas id="display" align="center" height="800" width="800"></canvas>
+      <canvas id="display" align="center" height="800" width="800" v-if="twoD" v-cloak></canvas>
     </div>
     <div id="container"></div>
   </body>

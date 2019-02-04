@@ -1,3 +1,8 @@
+let glTest = ()=>{
+  let tc = document.createElement('canvas')
+  return tc.getContext("webgl") || tc.getContext("experimental-webgl")
+}
+
 let UI = (app) => {
   const TOP = ["0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2","0x742d35cc6634c0532925a3b844bc454e4438f44e","0x53d284357ec70ce289d6d64134dfac8e511c8a3d","0x4e9ce36e442e55ecd9025b9a6e0d88485d628a67","0xab7c74abc0c4d48d1bdad5dcb26153fc8780f83e","0xde0b295669a9fd93d5f28d9ec85e40f4cb697bae","0x267be1c1d684f78cb4f6a176c4911b741e4ffdc0","0x2140efd7ba31169c69dfff6cdc66c542f0211825"]
   let etherscanProvider = new ethers.providers.EtherscanProvider()
@@ -68,30 +73,24 @@ let UI = (app) => {
       newPlaneAddress : "",
       currentBlock : 0,
       links : [],
-      allTxnAges : ["< 7 days","> 7, <30 days"],
-      txnAge : 0,
       finds : {},
-      planeID : 6000000,
-      selectedPlane : 6000000,
-      searchId : 10000,
       name : "",
-      ifSearch : false,
       ifChangePlane : false,
       address : "",
       RETH : 0,
       CPX : 0,
-      freeSearch : {
-        reset : 0,
-        used : 0,
-        free : 0
-      },
       factionId : -1,
       menuItems : ["Islands","Forces"],
       menuId : -1,
       playerClaims : [],
       playerForces : [],
+      twoD: false,
+      showNav: false,
     },
     mounted () {
+      //enable 2d canvas if no WEBGL
+      if(!glTest()) this.twoD = true 
+
       this.newPlaneAddress =app.chance.pickone(TOP)
       //get current block 
       app.ETH.main.getBlockNumber().then(n => {
@@ -102,8 +101,7 @@ let UI = (app) => {
       this.viewPlane()
     },
     computed : {
-      faction () { return app.factions[this.factionId] },
-      forces () { return this.playerForces.map(id => app.forces.get(id)) }
+      faction () { return this.factionId > -1 ? app.planes._current.faction : null }
     },
     methods : {
       getAllPlanes () {
@@ -125,21 +123,6 @@ let UI = (app) => {
             if(ethers.utils.getAddress(r.to) !== cpa && !links.includes(r.to)) links.push(r.to)
           })
         })
-        /*
-        //get the last 7 days of history 
-        let start = this.currentBlock - (3600*24*7/15)
-        etherscanProvider.getHistory(this.planeAddress, start, "latest").then(history => {
-          history.forEach(h => {
-            if(h.from !== cpa && !links.includes(h.from)) links.push(h.from)
-            if(h.to !== cpa && !links.includes(h.to)) links.push(h.to)
-          })
-        })
-        */
-      },
-      islandName (si) { return app.islandNames.get(si) },
-      selectIsland(i) {
-        let island = this.playerIslands[i]
-        console.log(island)
       },
       account (address, RETH, CPX) {
         this.address = address
@@ -171,6 +154,10 @@ let UI = (app) => {
           V.getAllPlanes()
           //generate it 
           app.planes.generate(address, chain)
+          //name it 
+          V.name = app.planes._current.names[0]
+          //factionId
+          V.factionId = app.planes._current._fi
           //display it 
           V.planeAddress = address
           Vue.nextTick(() => {
@@ -178,44 +165,10 @@ let UI = (app) => {
           })
           //get concurrently
           this.getLinks()
+          //no show 
+          V.showNav = false
         })
-        //this.planeID = this.selectedPlane
-        //console.log(this.plane)
-        //now show a hex 
-        //if(app.scene) app.hexDisplay(this.planeID)
-        //no show 
-        //this.ifChangePlane = false
       },
-      conductSearch () {
-        //let id = Number(this.searchId)
-        let overrides = {
-          // The maximum units of gas for the transaction to use
-          gasLimit: 300000,
-          // The price (in wei) per unit of gas
-          gasPrice: ethers.utils.parseUnits('2.0', 'gwei'),
-        }
-        // start a search, which returns the transaction
-        app.contracts.ESPlanes.contract.Search(this.searchId,overrides).then(tx => {
-          //notify
-          app.notify({h:"Submitted", text:"TX: "+tx.hash})
-          //wait for tx 
-          tx.wait().then((receipt)=> {
-            let evt = receipt.events[0].args
-            let roll = evt.roll.toNumber()
-            let req = evt.req.toNumber()
-            let id = evt.id.toNumber()
-            console.log(id,roll,req,roll<req)
-            //notify
-            let h = roll < req ? "Success" : "Failure"
-            let type = roll < req ? "success" : "error"
-            let text = roll < req ? "You have added "+id+" to the Sea!" : "You can always try again."
-            app.notify({h, type, text})
-          })
-          .catch(er => {
-            console.log(er)
-          })   
-        })
-      }
     }
   })
 
@@ -231,7 +184,7 @@ let UI = (app) => {
     //init the outlands display 
     if(!app.player._init) app.player.init()
     //now update with current islands
-    app.UI.main.playerClaims = app.player.faction.claims 
+    //app.UI.main.playerClaims = app.player.faction.claims 
     
     return
     app.wallets.ropsten.getBalance().then(rb => {

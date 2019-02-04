@@ -72,8 +72,6 @@ let hexDraw = (ctx, points) => {
   ctx.closePath();
 }
 
-let chance = new Chance()
-
 const TERRAINCOLORS = {
   "deepWater": "blue",
   "shallowWater": "lightblue",

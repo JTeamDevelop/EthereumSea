@@ -123,20 +123,6 @@ let playerFactory = (app) => {
           //only initialize once
           if(this._init) return
           this._id = ethers.utils.solidityKeccak256(['address', 'address'], [app.ETH.addresses.ESPlanes, app.wallets.main.address])
-          this._fi = app.factions.length
-          app.factions.push(new app.Faction({
-              id: this._id,
-              rank: 2
-          }))
-          this.faction._i = this._fi
-          //player islands start at 2952790272
-          let di = parseInt(this.id[2],16)%4
-          let j = parseInt(this.id.slice(3,7),16)%128
-          let find = app.Outlands._setFind(di,j,3)
-          //push claim 
-          this.faction.addClaim(find)
-          //display the player dimension 
-          //app.Outlands.displayLevel(this.faction.dimensions[0])
         }
     }
 

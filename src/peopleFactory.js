@@ -180,39 +180,26 @@ let rareGens = {
   }
 }
 
-let shuffleTwo = (hash,max,start) => {
-  let i = start
-  let r = [parseInt(hash.slice(i,i+2), 16)%max]
-  i+=2
-  r.push(parseInt(hash.slice(i,i+2), 16)%max)
-  i+=2
-
-  while(r[0] === r[1] && i < hash.length) {
-    r[1] = parseInt(hash.slice(i,i+2), 16)%max
-    i+=2
-  }
-
-  return {
-    v : r,
-    i : i
-  }
-}
-
 let peopleFactory = (app) => {
-  app.peopleGen = (hash)=> {
-    hash = hash.slice(2)
-    let ti = parseInt(hash.slice(0,3), 16)%100
-    //determine the Kingdom = Animals, Plants, Fungi, Mineral, Fluidic
+
+  app.peopleGen = (seed)=> {
+    let RNG = new Chance(seed)
+
+    let ti = RNG.d100()-1
+    //determine the Kingdom = Animals, Droid, Plants, Fungi, Mineral, Fluidic
     let k = ""
-    if(ti < 55) k = "a"
-    else if (ti < 70) k = "p"
-    else if (ti < 75) k = "f"
+    if(ti < 60) k = "a"
+    else if (ti < 75) k = "d"
+    else if (ti < 85) k = "p"
+    else if (ti < 92) k = "f"
     else if (ti < 98) k = "m"
     else k = "l"
 
     let phylum = {
       //Animals - Arthropods, Chordates, Echinoderms, Molluscs, Worms
       "a" : ["c","a","c","a","a","c","c","a","c","c","c","c","m","m","e","w"],
+      //droids - Humanoid, Quad, Insectoid, Block, Cylinder, Sphere
+      "d" : ["h","q","i","b","c","s"],
       //Plants - Flowering, Fern, Conifer, Algae, Moss, Palm
       "p" : ["f","f","f","f","f","f","f","f","c","c","c","p","p","e","a","m"],
       //Fungi - mushroom, puff
@@ -222,16 +209,91 @@ let peopleFactory = (app) => {
       //FLuidic - liquid, gas
       "l" : ["l","g"]
     }
+    let ph = RNG.pickone(phylum[k])
 
-    let ph = phylum[k][parseInt(hash.slice(3,4), 16)%phylum[k].length]
+    let classes = {
+      //whale, orca, dolphin
+      "ac1" : ["w","o","d"],
+      //shark, ray, tuna, coelacanths, sturgeon, salmon, catfish, gar, eel, pufferfish
+      "ac2" : ["s","r","t","c","u","l","f","g","e","p"],
+      //frog, toad, salamander
+      "ac3" : ["f","t","s"],
+      //alligator, snake, lizard, turtle 
+      "ac4" : ["a","s","l","t"],
+      //ostrich, kiwi, turkey, chicken, duck/goose, crane, penguin, albatross, pellican, stork
+      "ac5" : ["o","k","t","c","d","r","p","a","l","s"],
+      //vulture, eagle, hawk, owl, plover, pigeon, parrot, swift, 
+      "ac6" : ["v","e","h","o","p","i","r","s"],
+      //quetzal, kingfisher, woodpecker, raven, songbird  
+      "ac7" : ["q","k","w","r","s"],
+      //bat, opossum, kangaroo, mole, aardvark/anteater, hyrax, elephant, armadillo, sloth, hedgehog
+      "ac8" : ["b","o","k","m","a","h","e","r","s","d"],
+      //colugo, lemur, monkey, ape
+      "ac9" : ["c","l","m","a"],
+      //rabbit, rat, squirrel, prarie dog, porcupine, beaver
+      "ac10" : ["r","t","s","d","p","b"],
+      //wolf, fox, badger, weasel, otter, raccoon, 
+      "ac11" : ["w","f","b","w","o","r"],
+      //bear, seal, walrus, cat, mongoose, hyeana,   
+      "ac12" : ["b","s","w","c","m","h"],
+      //horse, rhonoceros, tapir, pig, hippopotamus, camel, llama, deer, giraffe, antelope, sheep/goat, cattle/bison/buff
+      "ac13" : ["h","r","t","p","h","c","l","d","g","a","s","b"],
+      //spider, scorpian, tick, millipede, centipede, 
+      "aa1" : ["s","c","t","m","p"], 
+      //horseshoe crab, lobster, crab, shrimp
+      "aa2" : ["h","l","c","s"], 
+      //dragonfly, grashopper/cricket, stickbug, earwig, mantis, cockroach, 
+      "aa3" : ["d","g","s","e","m","c"], 
+      //wasp, bee, ant, beetle, butterfly, fly  
+      "aa4" : ["w","b","a","e","t","f"], 
+      //shield bug, assassin bug, cicada, treehopper, aphid 
+      "aa5" : ["s","a","c","t","p"], 
+      //snail, slug, clam, mussel, squid, octopus 
+      "am" : ["s","l","c","m","q","q","o","o"],
+      //star, urchin, cucumber
+      "ae" : ["s","u","c"],
+      //flatworm, round/segmented 
+      "aw" : ["f","s"],
+    }
 
-    let skills = shuffleTwo(hash,6,3)
-    let approaches = shuffleTwo(hash,6,skills.i)
+    let ch = []
+    let ci = -1
+    let cl = ""
+    if(k+ph === "ac") {
+      ci = RNG.rpg("1d13")[0]
+      cl = ci+RNG.pickone(classes["ac"+ci])  
+      //chimera 
+      let pc = RNG.d20()
+      if (pc > 13) {
+        //mark chimera
+        k = "ch"
+        ph = ""
+        //push to chimera array
+        ch.push("ac"+cl)
+        //reset
+        cl = ""
+        let base = RNG.pickone(["ac","ac","ac","aa"])
+        //reroll
+        ci = base === "ac" ? RNG.rpg("1d13")[0] : RNG.rpg("1d5")[0]
+        ch.push(base+ci+RNG.pickone(classes[base+ci]))
+      }
+    } 
+    else if (k+ph === "aa") {
+      ci = RNG.rpg("1d5")[0]
+      cl = ci+RNG.pickone(classes["aa"+ci])
+    }
+    else if (k+ph === "am") cl = RNG.pickone(classes.am)
+    else if (k+ph === "ae") cl = RNG.pickone(classes.ae)
+    else if (k+ph === "aw") cl = RNG.pickone(classes.aw)
+
+    let skills = RNG.shuffle([0,1,2,3,4,5]).slice(0,2)
+    let colors = RNG.shuffle([0,1,2,3,4,5]).slice(0,2)
 
     let P = {
-      name: k+ph,
-      skills: skills.v,
-      approaches: approaches.v 
+      bio : k+ph+cl,
+      ch : ch,
+      skills: skills,
+      colors: colors
     }
 
     return P

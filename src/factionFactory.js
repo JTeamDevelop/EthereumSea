@@ -38,11 +38,11 @@ let factionFactory = (app)=>{
       data = data || {}
       this.type = "faction"
 
-      this.id = data.id || chance.hash()
+      this.seed = data.seed || chance.hash()
       //keep data
       this._data = data
 
-      let RNG = new Chance(this.id)
+      let RNG = new Chance(this.seed)
       //rank 
       this._r = RNG.weighted([1, 2, 3, 4], [650, 300, 49, 1])
       this._rank = data.rank || this._r
@@ -59,15 +59,15 @@ let factionFactory = (app)=>{
       this._claims = []
       //people
       this._people = {
-        names: [],
+        bio: [],
         p: [55, 30, 15],
         special: [],
       }
       d3.range(3).map((i)=>{
-        let hash = ethers.utils.solidityKeccak256(['bytes32', 'uint256'], [this.id, i])
+        let hash = ethers.utils.solidityKeccak256(['bytes32', 'uint256'], [this.seed, i])
         let P = this._people
         let p = app.peopleGen(hash)
-        P.names.push(p.name)
+        P.bio.push(p.bio)
       }
       )
     }
@@ -237,57 +237,81 @@ let factionFactory = (app)=>{
     }
   }
 
-  app.Faction = Faction
+  app.ECS.newCollection("factions")
+  //general plane component 
+  app.ECS.newComponent({
+    name: "isESFaction",
+    description: "Ethereum Sea Faction Data",
+    state: {
+      r : -1,
+      isTrouble: false,
+    }
+  })
+
+  //faction functions 
+  app.factions = {
+    get all() {
+      return app.ECS.getCollection("factions")
+    },
+    factory(opts) {
+      opts = opts || {}
+
+      let all = this.all
+      let F = opts.id ? all[opts.id] : null
+
+      if (!F) {
+        let id = Object.keys(all).length
+        //do not call stard entity because we want to use different ids 
+        F = {
+          id: id,
+          //components 
+          _c: []
+        }
+        app.ECS.addComponent(F, "inHierarchy")
+        app.ECS.addComponent(F, "isESFaction")
+        //set entity 
+        all[id] = F
+      }
+      
+      if(opts.r) F.r = opts.r 
+      if(opts.isTrouble) F.isTrouble = opts.isTrouble
+
+      return F       
+    },
+    generate(id) {
+      let hash = ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [app.seed, "faction", id])
+      let F = Object.assign({seed:hash},this.all[id]) 
+
+      return new Faction(F)
+    },
+    //get random faction 
+    random (RNG, opts) {
+      RNG = RNG || app.chance
+      opts = opts || {}
+      //no player faction 
+      let F = app.factions.filter(f => !f.isPlayer)
+
+      if(opts.r) F = F.filter(f => f.r === opts.r)
+      else if (opts.lt) F = F.filter(f => f.r < opts.lt)
+      else if (opts.gt) F = F.filter(f => f.r > opts.gt)
+
+      //pick only factions / trouble 
+      if(opts.all) return RNG.pickone(F.slice())
+      else if (opts.trouble) return RNG.pickone(F.filter(f => f.isTrouble))
+      else RNG.pickone(F.filter(f => !f.isTrouble))
+    }
+  }
 
   //now compute the factions 
   let factionsAtRank = [10, 15, 15, 15, 5, 4]
-  app.factions = []
-  //get random faction 
-  app.randomFaction = (RNG, opts) => {
-    RNG = RNG || chance
-    opts = opts || {}
-    //no player faction 
-    let F = app.factions.filter(f => !f.isPlayer)
-
-    if(opts.r) F = F.filter(f => f.r === opts.r)
-    else if (opts.lt) F = F.filter(f => f.r < opts.lt)
-    else if (opts.gt) F = F.filter(f => f.r > opts.gt)
-    
-    //pick only factions / trouble 
-    if(opts.all) return RNG.pickone(F.slice())
-    else if (opts.trouble) return RNG.pickone(F.filter(f => f.isTrouble))
-    else RNG.pickone(F.filter(f => !f.isTrouble))
-  }
   //trouble 
   let troubleAtRank = [5, 7, 8, 7, 3, 2]
-  //handle island claims and names 
-  app.claims = {}
-  app.findNames = new Map()
 
   factionsAtRank.forEach((n,r)=>{
-    for (let i = 0; i < n; i++) {
-      let nf = app.factions.length
-      let fid = ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [app.seed, "factions", nf])
-      app.factions.push(new app.Faction({
-        id: fid,
-        rank: r+1
-      }))
-      //now set index
-      app.factions[nf]._i = nf
-    }
+    for (let i = 0; i < n; i++) app.factions.factory({r:r+1})
   })
   troubleAtRank.forEach((n,r)=>{
-    for (let i = 0; i < n; i++) {
-      let nf = app.factions.length
-      let fid = ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [app.seed, "trouble", nf])
-      app.factions.push(new app.Faction({
-        id: fid,
-        rank: r
-      }))
-      //now set index
-      app.factions[nf]._i = nf
-      app.factions[nf]._trouble = true
-    }
+    for (let i = 0; i < n; i++) app.factions.factory({r:r+1, isTrouble:true})
   })
 
   console.log("Factions Generated")

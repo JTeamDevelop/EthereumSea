@@ -213,8 +213,8 @@ let planeFactory = (app)=>{
         water : d3.range(5).map(v => ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [hash, "waterCreature", v]))
       }
     },
-    makeNames(address, lang, n) {
-      let RNG = new Chance(address)
+    makeNames(seed, lang, n) {
+      let RNG = new Chance(seed)
       return d3.range(n + 1).map(_=>app.names.generateName(lang, RNG))
     },
     generate(address, chain) {
@@ -232,26 +232,29 @@ let planeFactory = (app)=>{
       let mR = [1, 1.1, 1.2, 1.3, 1.5, 1.75, 2, 3]
       let nR = bR[parseInt(nhash.slice(4, 6), 16) % 16] * mR[parseInt(nhash.slice(6, 8), 16) % 8]
       nR = nR > maxR ? Math.floor(nR) : maxR
-      //handle language primary/ancient
-      let maxLang = app.names.defaultCultures.length
-      let lang = {
-        p: parseInt(nhash.slice(8, 10), 16) % maxLang,
-        a: parseInt(nhash.slice(10, 12), 16) % maxLang
-      }
-
+      //create the hex 
       let HEX = new app.Hex({
           seed: nhash,
           size : nR
       })
-      let RNG = new Chance(nhash)
+
+      //faction/culture
+      //certain factions are more likely based upon rank
+      let fr = [1,2,2,3,3,4,4,4,5,5,5,5,6,6,6,6][parseInt(nhash.slice(2,3),16)]
+      let fia = [0,10,25,40,55,60]
+      let fib = [10,15,15,15,5,4]
+      let fi = fia[fr-1]+parseInt(nhash.slice(3,4),16)%fib[fr-1]
+      let F = app.factions.generate(fi)
+            
       //place 
       this._current = {
         _id: chainID + address,
         _hash: nhash,
-        _lang: lang,
-        names: this.makeNames(nhash, lang.p, nR),
+        names: this.makeNames(nhash, F._nb, nR),
         _raw: P,
         _hex : HEX,
+        _fi : fi, 
+        get faction () { return app.factions.generate(this._fi) },
         _data : HEX._major.map((h,i) =>{
           let T = HEX._majT[i]
           let hash = ethers.utils.solidityKeccak256(['bytes32', 'uint256'], [nhash, i])

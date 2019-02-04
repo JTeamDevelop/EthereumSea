@@ -85,44 +85,12 @@ void main() {
 }
 `
 
-class PickHelper {
-  constructor() {
-    this.raycaster = new THREE.Raycaster();
-    this.pickedObject = null;
-    this.pickedObjectSavedColor = 0;
-  }
-  pick(normalizedPosition, scene, camera) {
-    // restore the color if there is a picked object
-    if (this.pickedObject) {
-      this.pickedObject.material.emissive.setHex(this.pickedObjectSavedColor);
-      this.pickedObject = undefined;
-    }
- 
-    // cast a ray through the frustum
-    this.raycaster.setFromCamera(normalizedPosition, camera);
-    // get the list of objects the ray intersected
-    const intersectedObjects = this.raycaster.intersectObjects(scene.children);
-    if (intersectedObjects.length) {
-      // pick the first object. It's the closest one
-      this.pickedObject = intersectedObjects[0].object;
-      let data = this.pickedObject.userData
-      //see if on click 
-      if(data.onClick) data.onClick()
-      // save its color
-      //this.pickedObjectSavedColor = this.pickedObject.material.emissive.getHex();
-      // set its emissive color to yellow
-      //this.pickedObject.material.emissive.setHex(0xFF0000);
-    }
-  }
-}
-
 function threeScene(app) {
   if (!glTest())
     return null
 
   var container, canvas;
-  var camera, scene, renderer, controls;
-  var uniforms;
+  var camera, scene, renderer, controls, raycaster, mouse;
 
   function init() {
     container = document.getElementById('container');
@@ -142,88 +110,54 @@ function threeScene(app) {
     camera.position.set( 500, 500, 0 );
 
     controls = new THREE.OrbitControls(camera,renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.12;
+    controls.rotateSpeed = 0.08;
     controls.screenSpacePanning = false;
     controls.minDistance = 100;
     controls.maxDistance = 2000;
     controls.maxPolarAngle = Math.PI / 2;
 
-    uniforms = {
-      u_time: {
-        type: "f",
-        value: 1.0
-      },
-      u_resolution: {
-        type: "v2",
-        value: new THREE.Vector2()
-      },
-      u_mouse: {
-        type: "v2",
-        value: new THREE.Vector2()
-      }
-    };
-
-    /*
-    var material = new THREE.ShaderMaterial({
-      uniforms: uniforms,
-      vertexShader: vertexShader,
-      fragmentShader: fragmentShader
-    });
-    */
-
     onWindowResize();
     window.addEventListener('resize', onWindowResize, false);
+    window.addEventListener('click', onDocumentMouseDown, false);
+  }
 
-    document.onmousemove = function(e) {
-      uniforms.u_mouse.value.x = e.pageX
-      uniforms.u_mouse.value.y = e.pageY
+  raycaster = new THREE.Raycaster(); // Needed for object intersection
+  mouse = new THREE.Vector2(); //Needed for mouse coordinates
+
+  function onDocumentMouseDown(event) {
+    // Welcome to the exciting world of raycasting !
+    // First let's get some mouse coordinates:
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    // This is basically converting 2d coordinates to 3d Space:
+    raycaster.setFromCamera(mouse, camera);
+    // And checking if it intersects with an array object
+    var intersects = raycaster.intersectObjects(scene.children);
+
+    // does your cursor intersect the object on click ? 
+    //console.log(intersects.length > 0 ? "yes" : "no");
+
+    // And finally change the color:
+    if (intersects.length > 0) {
+      let data = intersects[0].object.userData
+      //check for onclick
+      if(data.onClick) data.onClick()       
     }
   }
 
   function onWindowResize(event) {
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    uniforms.u_resolution.value.x = renderer.domElement.width;
-    uniforms.u_resolution.value.y = renderer.domElement.height;
-
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
   function animate(time) {
     requestAnimationFrame(animate);
     controls.update();
-    // only required if controls.enableDamping = true, or if controls.autoRotate = true
-    render(time);
-  }
-
-  const pickPosition = {x: 0, y: 0};
-  clearPickPosition();
-
-  const pickHelper = new PickHelper();
-  function render(time) {
-    time *= 0.001;  // convert to seconds;
-    uniforms.u_time.value += 0.05;
     renderer.render(scene, camera);
   }
-
-  function setPickPosition(event) {
-    pickPosition.x = (event.clientX / canvas.clientWidth ) *  2 - 1;
-    pickPosition.y = (event.clientY / canvas.clientHeight) * -2 + 1;  // note we flip Y
-  }
-
-  function clearPickPosition() {
-    // unlike the mouse which always has a position
-    // if the user stops touching the screen we want
-    // to stop picking. For now we just pick a value
-    // unlikely to pick something
-    pickPosition.x = -100000;
-    pickPosition.y = -100000;
-  }
- 
-  window.addEventListener('click', function(event) {
-    pickPosition.x = (event.clientX / canvas.clientWidth ) *  2 - 1;
-    pickPosition.y = (event.clientY / canvas.clientHeight) * -2 + 1;  // note we flip Y
-    pickHelper.pick(pickPosition, scene, camera);
-  });
   
   //start it 
   init();
