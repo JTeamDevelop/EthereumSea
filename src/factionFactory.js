@@ -50,24 +50,22 @@ let factionFactory = (app)=>{
       this._nb = RNG.pickone(app.names.defaultCultures).base
       this._name = this.placeName(RNG)
       //identifying color
-      this._color = d3.interpolateRainbow(RNG.random())
+      this._idColor = d3.interpolateRainbow(RNG.random())
       //skillset
       this._skills = d3.shuffle([0, 1, 2, 3, 4, 5])
-      //approaches
-      this._approaches = d3.shuffle([0, 1, 2, 3, 4, 5]).slice(0, 2)
+      //colors 
+      this._colors = d3.shuffle([0, 1, 2, 3, 4, 5]).slice(0, 2)
       //claims
       this._claims = []
       //people
       this._people = {
-        bio: [],
+        _raw : [],
         p: [55, 30, 15],
-        special: [],
       }
       d3.range(3).map((i)=>{
         let hash = ethers.utils.solidityKeccak256(['bytes32', 'uint256'], [this.seed, i])
         let P = this._people
-        let p = app.peopleGen(hash)
-        P.bio.push(p.bio)
+        P._raw.push(app.people.generate(hash))
       }
       )
     }
@@ -95,10 +93,10 @@ let factionFactory = (app)=>{
     get name() {
       return this._data.name || this._name
     }
-    set color(color) {
+    set idColor(color) {
       this._data.color = color
     }
-    get color() {
+    get idColor() {
       return this._data.color || this._color
     }
     set tech(tech) {
@@ -108,7 +106,7 @@ let factionFactory = (app)=>{
       return this._data.tech || this._tech
     }
     get people() {
-      return this._people.names
+      return this._people._raw.map(P => app.people.name(P))
     }
     get isPlayer () { return app.player._fi === this._i }
     addTag(tag) {

@@ -16,6 +16,8 @@ import {characterFactory} from "./characterFactory.js"
 import {hexFactory, generateHexes, hexPlacement, hexDraw} from "./hexFactory.js"
 //load planes 
 import {planeFactory} from "./planeFactory.js"
+//creatures 
+import * as creatures from "./creatureFactory.js"
 //people 
 import {peopleFactory} from "./peopleFactory.js"
 //jobs 
@@ -49,8 +51,10 @@ let app = {
         place : hexPlacement,
         draw : hexDraw
     },
+    creatures : creatures,
     _rarity : [1048576,1572864,1835008,1966080,2031616,2064384,2080768,2088960,2093056,2095104,2096128,2096640,2096896,2097024,2097088,2097120,2097136,2097144,2097148,2097150],
-    rarity (r) {
+    rarity (hash) {
+        let r = parseInt(hash.slice(2,8), 16)%(2097150)
         return 1 + this._rarity.findIndex(v => r < v)               
     },
     colors : ["ruby","topaz","citrine","emerald","sapphire","amethyst"]

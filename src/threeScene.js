@@ -121,6 +121,7 @@ function threeScene(app) {
     onWindowResize();
     window.addEventListener('resize', onWindowResize, false);
     window.addEventListener('click', onDocumentMouseDown, false);
+    window.addEventListener('tap', onDocumentMouseDown, false);
   }
 
   raycaster = new THREE.Raycaster(); // Needed for object intersection

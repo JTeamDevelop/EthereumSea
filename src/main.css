@@ -20,6 +20,12 @@ body {
   height: 100%
 }
 
+.moreInfo {
+  cursor: pointer;
+  text-decoration: underline;
+  color: blue;
+}
+
 #polys {
   z-index: -1;
 }

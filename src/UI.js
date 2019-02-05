@@ -54,8 +54,7 @@ let UI = (app) => {
     methods : {
       makeFind(fi) {
         let find = app.planes.makeFind(this.ri, fi)
-        let rare = parseInt(find.hash.slice(2,8), 16)%(2097150)
-        let lv = app.rarity(rare)
+        let lv = app.rarity(find.hash)
         let color = app.colors[find.color]
         let text = find.reward + " level "+lv+" "+color
         app.notify({text:text})
@@ -75,6 +74,9 @@ let UI = (app) => {
       links : [],
       finds : {},
       name : "",
+      cities : 0,
+      area: 0,
+      resources : [],
       ifChangePlane : false,
       address : "",
       RETH : 0,
@@ -86,6 +88,7 @@ let UI = (app) => {
       playerForces : [],
       twoD: false,
       showNav: false,
+      showFaction : false,
     },
     mounted () {
       //enable 2d canvas if no WEBGL
@@ -101,7 +104,14 @@ let UI = (app) => {
       this.viewPlane()
     },
     computed : {
-      faction () { return this.factionId > -1 ? app.planes._current.faction : null }
+      faction () { return this.factionId > -1 ? app.planes._current.faction : null },
+      CCPX () { 
+        let colors = ["red","orange","gold","green","blue","purple"]
+        let style = this.resources.map((n,i)=> [colors[i],n])
+          .filter(r => r[1]>0) 
+          .map(r => "height:1.3em;background-color:"+r[0]+";width:"+7*r[1]+"px;")
+        return style
+      }
     },
     methods : {
       getAllPlanes () {
@@ -156,8 +166,14 @@ let UI = (app) => {
           app.planes.generate(address, chain)
           //name it 
           V.name = app.planes._current.names[0]
+          //area
+          V.area = app.planes._current._data.length*(128*128)
           //factionId
           V.factionId = app.planes._current._fi
+          //resources
+          V.resources = app.planes._current._resources
+          //city
+          V.cities = app.planes._current._cities
           //display it 
           V.planeAddress = address
           Vue.nextTick(() => {

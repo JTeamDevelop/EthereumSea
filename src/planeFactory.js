@@ -245,7 +245,9 @@ let planeFactory = (app)=>{
       let fib = [10,15,15,15,5,4]
       let fi = fia[fr-1]+parseInt(nhash.slice(3,4),16)%fib[fr-1]
       let F = app.factions.generate(fi)
-            
+      
+      let resources = [0,0,0,0,0,0]
+      let cities = 0     
       //place 
       this._current = {
         _id: chainID + address,
@@ -276,12 +278,18 @@ let planeFactory = (app)=>{
             if (name === "city" && ["deepWater", "shallowWater","mountains"].includes(T)) {
               name = ["enigma", "dwelling", "ruin"][fid % 3]
             }
+            //check for resource
+            if(name === "resource") resources[color]++;
+            //check cities
+            if(name === "city") cities++;
 
             return {name,color}
           })
 
           return { i, hash, finds }  
-        })
+        }),
+        _resources : resources,
+        _cities : cities
       }
     },
     /*

@@ -40,8 +40,16 @@
           </button>
         </h1>
         <div v-if="name" v-cloak>
-          <div>{{name}} - {{planeAddress}}</div>
-          <div>Faction: {{faction.name}}</div>
+          <div>{{name}} <span style="font-size: 0.7rem;">({{planeAddress}})</span></div>
+          <div class="d-inline-flex">
+            <span class="px-1">Area: {{area}} mi<sup>2</sup></span>
+            <span class="px-1">Faction: <span class="moreInfo" @click="showFaction=true">{{faction.name}}</span></span>
+            <span class="px-1" v-if="cities>0" v-cloak>Cities: {{cities}}</span>
+            <div class="px-1 d-inline-flex" v-if="CCPX.length>0" v-cloak>
+              <span class="pr-1">CPX: </span>
+              <div v-for="c in CCPX" :style="c"></div>
+            </div>
+          </div>
         </div>
         <div v-if="showNav" v-cloak>
           <div class="input-group">
@@ -63,6 +71,14 @@
               <button class="btn btn-success" type="button" @click="viewPlane()">View</button>
             </div>
           </div>
+        </div>
+        <div class="card" v-if="showFaction" v-cloak>
+          <h3 class="d-flex justify-content-between">
+            <span class="m-1">{{faction.name}}</span>
+            <button type="button" class="btn btn-light" @click="showFaction=false"><span aria-hidden="true">&times;</span></button>
+          </h3>
+          <h4>People</h4>
+          <div v-for="p in faction.people">{{p}}</div>
         </div>
       </div>
       <div align="left" v-if="menuId>-1" v-cloak>
