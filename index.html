@@ -42,13 +42,16 @@
         <div v-if="name" v-cloak>
           <div>{{name}} <span style="font-size: 0.7rem;">({{planeAddress}})</span></div>
           <div class="d-inline-flex">
-            <span class="px-1">Area: {{area}} mi<sup>2</sup></span>
             <span class="px-1">Faction: <span class="moreInfo" @click="showFaction=true">{{faction.name}}</span></span>
-            <span class="px-1" v-if="cities>0" v-cloak>Cities: {{cities}}</span>
+            <span class="px-1" v-if="stats.cities.length>0" v-cloak>Cities: {{stats.cities.length}}</span>
             <div class="px-1 d-inline-flex" v-if="CCPX.length>0" v-cloak>
               <span class="pr-1">CPX: </span>
               <div v-for="c in CCPX" :style="c"></div>
             </div>
+          </div>
+          <div>
+            <span class="px-1">Needs: <img v-for="n in ne.n" :style="'background-color:'+n.color" :src="'media/trade/'+n.src" height="24" width="24"></span>
+            <span class="px-1">Exports: <img v-for="e in ne.e" :style="'background-color:'+e.color" :src="'media/trade/'+e.src" height="24" width="24"></span>
           </div>
         </div>
         <div v-if="showNav" v-cloak>
@@ -72,13 +75,19 @@
             </div>
           </div>
         </div>
-        <div class="card" v-if="showFaction" v-cloak>
+        <div class="card p-1" v-if="showFaction" v-cloak>
           <h3 class="d-flex justify-content-between">
-            <span class="m-1">{{faction.name}}</span>
+            <span>{{faction.name}}</span>
             <button type="button" class="btn btn-light" @click="showFaction=false"><span aria-hidden="true">&times;</span></button>
           </h3>
-          <h4>People</h4>
-          <div v-for="p in faction.people">{{p}}</div>
+          <div align="left" v-if="cityNames.length>0">
+            <h4 class="m-0">Cities</h4>
+            <div>{{cityNames.join(', ')}}</div>
+          </div>
+          <div align="left">
+            <h4 class="m-0">People</h4>
+            <div>{{faction.people.join(', ')}}</div>
+          </div>
         </div>
       </div>
       <div align="left" v-if="menuId>-1" v-cloak>

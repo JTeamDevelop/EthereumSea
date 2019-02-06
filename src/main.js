@@ -15,6 +15,7 @@ import {characterFactory} from "./characterFactory.js"
 //handle hex creation
 import {hexFactory, generateHexes, hexPlacement, hexDraw} from "./hexFactory.js"
 //load planes 
+import * as products from "./productLibrary.js"
 import {planeFactory} from "./planeFactory.js"
 //creatures 
 import * as creatures from "./creatureFactory.js"
@@ -57,7 +58,8 @@ let app = {
         let r = parseInt(hash.slice(2,8), 16)%(2097150)
         return 1 + this._rarity.findIndex(v => r < v)               
     },
-    colors : ["ruby","topaz","citrine","emerald","sapphire","amethyst"]
+    colors : ["ruby","topaz","citrine","emerald","sapphire","amethyst"],
+    planeProducts : products
 }
 
 //Set up the simple entity component system 

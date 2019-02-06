@@ -119,6 +119,16 @@ const FINDS = {
   },
 }
 
+//[2,3,3,4,4,4,4,5,5,5,5,6,6,7,7,8]
+/*
+  "animal/veg bi-products", "animal hides", "animal products", "arts and antiques",
+  "chemical products", "foodstuffs", "footwear and headware", "instruments",
+  "machines", "metals", "mineral products", "misc", "paper goods", "plastics and rubbers",
+  "precious metals", "stone and glass", "textiles", "transportation", "vegetable products",
+  "weapons", "wood products"
+*/
+
+
 //"character","creature","item"
 
 let planeFactory = (app)=>{
@@ -245,18 +255,66 @@ let planeFactory = (app)=>{
       let fib = [10,15,15,15,5,4]
       let fi = fia[fr-1]+parseInt(nhash.slice(3,4),16)%fib[fr-1]
       let F = app.factions.generate(fi)
+
+      //make the names 
+      let names = this.makeNames(nhash, F._nb, nR+1)
       
       let resources = [0,0,0,0,0,0]
-      let cities = 0     
+      let cities = [], arcane = 0, lairs = [], terrains = [], ruins = []; 
+      let colors = d3.interpolateSinebow
       //place 
       this._current = {
         _id: chainID + address,
-        _hash: nhash,
-        names: this.makeNames(nhash, F._nb, nR),
+        _hash: nhash, 
         _raw: P,
         _hex : HEX,
         _fi : fi, 
         get faction () { return app.factions.generate(this._fi) },
+        get needs () {
+          //compute the day - needs change every day 
+          let seconds = Date.now()/1000
+          let day = Math.floor(seconds/60/60/24)
+          //hash 
+          let hash = ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [nhash, "needs", day])
+          //two needs
+          let ptoc = app.planeProducts.PTOC
+          //2 needs 
+          return d3.range(1).map(v => {
+            v = parseInt(hash.slice(2+(v*2),4+(v*2)),16)%32
+            let n = ptoc[v]
+            //offset index 
+            let c = colors(v/32)
+            n = n < 10 ? "0"+n : n
+            return {
+              i : v,
+              src : "hs_"+n+".png",
+              color : colors((n-1)/21)
+            }  
+          })
+        },
+        get exports () {
+          //compute the day - exports change every day 
+          let seconds = Date.now()/1000
+          let day = Math.floor(seconds/60/60/24)
+          //hash 
+          let hash = ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [nhash, "exports", day])
+          let needs = this.needs.map(n => n.i)
+          let ptoc = app.planeProducts.PTOC
+          //number of exports
+          let ne = [2,3,3,4,4,4,5,5][parseInt(hash.slice(2,4),16)%8]
+          return d3.range(ne).map(v => {
+            v = parseInt(hash.slice(4+(v*2),6+(v*2)),16)%32
+            let n = ptoc[v]
+            //offset index 
+            let c = colors(v/32)
+            n = n < 10 ? "0"+n : n
+            return {
+              i : v,
+              src : "hs_"+n+".png",
+              color : colors((n-1)/21)
+            }  
+          }).filter(e => !needs.includes(e.i))
+        },
         _data : HEX._major.map((h,i) =>{
           let T = HEX._majT[i]
           let hash = ethers.utils.solidityKeccak256(['bytes32', 'uint256'], [nhash, i])
@@ -281,15 +339,23 @@ let planeFactory = (app)=>{
             //check for resource
             if(name === "resource") resources[color]++;
             //check cities
-            if(name === "city") cities++;
+            if(name === "city") cities.push({
+              hi : i,
+              name : names[i+1]
+            });
+            //push ruins
+            if(name === "ruin") ruins.push(i);
+            //push lairs
+            if(name === "lair") lairs.push(i);
+            //terrains
+            if(["obstacle","newTerrain","landmark"].includes(name)) terrains.push(i);
 
             return {name,color}
           })
 
           return { i, hash, finds }  
         }),
-        _resources : resources,
-        _cities : cities
+        _stats : {names, cities, resources, terrains, lairs, ruins},
       }
     },
     /*

@@ -273,6 +273,7 @@ let factionFactory = (app)=>{
       
       if(opts.r) F.r = opts.r 
       if(opts.isTrouble) F.isTrouble = opts.isTrouble
+      if(opts.isAncient) F.isAncient = opts.isAncient
 
       return F       
     },
@@ -302,6 +303,8 @@ let factionFactory = (app)=>{
 
   //now compute the factions 
   let factionsAtRank = [10, 15, 15, 15, 5, 4]
+  //now compute ancients - start at rank 3
+  let ancientsAtRank = [10, 15, 15, 15, 5, 4]
   //trouble 
   let troubleAtRank = [5, 7, 8, 7, 3, 2]
 
@@ -310,6 +313,9 @@ let factionFactory = (app)=>{
   })
   troubleAtRank.forEach((n,r)=>{
     for (let i = 0; i < n; i++) app.factions.factory({r:r+1, isTrouble:true})
+  })
+  ancientsAtRank.forEach((n,r)=>{
+    for (let i = 0; i < n; i++) app.factions.factory({r:r+3, isAncient:true})
   })
 
   console.log("Factions Generated")
