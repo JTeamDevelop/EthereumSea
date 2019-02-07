@@ -26,9 +26,19 @@
     plots : []
 */
 
+//"name","nb"
+
 const APPROACHES = ["Careful", "Clever", "Flashy", "Forceful", "Quick", "Sneaky"]
 const NATURES = ["Combatant", "Expert", "Spellcaster"]
 const MAJORSKILLS = ["Arcane", "Combat", "Diplomacy", "Exploration", "Science", "Thievery"]
+const SUBSKILLS = [
+  ["Magic","Natural","Psychic"],
+  ["Fight","Physique","Shoot"],
+  ["Empathy","Rapport","Provoke"],
+  ["Athletics","Notice","Pilot"],
+  ["Craft","Investigate","Lore"],
+  ["Burglary","Decieve","Stealth"]
+]
 
 let factionFactory = (app)=>{
   let chance = new Chance(Math.round(Math.random() * Date.now()))
@@ -38,6 +48,7 @@ let factionFactory = (app)=>{
       data = data || {}
       this.type = "faction"
 
+      this._id = data.id
       this.seed = data.seed || chance.hash()
       //keep data
       this._data = data
@@ -62,24 +73,23 @@ let factionFactory = (app)=>{
         _raw : [],
         p: [55, 30, 15],
       }
-      d3.range(3).map((i)=>{
-        let hash = ethers.utils.solidityKeccak256(['bytes32', 'uint256'], [this.seed, i])
-        let P = this._people
-        P._raw.push(app.people.generate(hash))
+      //determine people
+      let pi = -1
+      for(let i = 0; i < 3; i++) {
+        //64 people to choose from 
+        pi = parseInt(this.seed.slice(2+(i*2),4+(i*2)),16)%64
+        this._people._raw.push(app.people.generate(pi))
       }
-      )
     }
+    get entity () { return app.factions.all[this._id] }
     set notes(notes) {
       this._data.notes = notes
     }
     get notes() {
       return this._data.notes || ""
     }
-    set r(r) {
-      this._data.r = r
-    }
-    get r() {
-      return this._data.r || this._r
+    get rank() {
+      return this._rank
     }
     set nb(nb) {
       this._data.nb = nb
@@ -225,6 +235,70 @@ let factionFactory = (app)=>{
         },[])
     }
     get isTrouble () { return this._trouble || false }
+    get activeTrouble () { return this.entity.at }
+    makeTrouble(id) {
+      //get active trouble 
+      let AT = this.activeTrouble
+      let i = AT.get("i")
+      id = id || i 
+      //step AT
+      if(id === i) AT.set("i",i+1)
+      //make hash 
+      let hash = ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [this.seed, "trouble", id])
+      //trouble is a combination of skill, subskill, and color, add stress 
+      let stress = [3,3,4,4,4,5,5,6][parseInt(hash.slice(2,4),16)%8]
+      //pull current state
+      let state;
+      if(AT.has(id)) state = AT.get(id);
+      else {
+        state = [stress,0]
+        AT.set(id,state)
+      }
+      //[32,16,8,4,2,1]
+      let ix = parseInt(hash.slice(4*(state[1]*2),6*(state[1]*2)),16)
+      let si = ix%64
+      let skill = -1
+      if(si <= 32) skill = 0;
+      else if(si < 48) skill = 1;
+      else if(si < 56) skill = 2;
+      else if(si < 60) skill = 3;
+      else if(si < 62) skill = 4;
+      else skill = 5;
+
+      let sub = ix%3
+      let color = ix%2
+      //difficulty based upon index 
+      let dc = [0,0,-1,-1,-2,-2]
+
+      return {
+        state,
+        skill : this._skills[skill],
+        dc : this.rank+dc[skill],
+        sub, 
+        color : this._colors[color]
+      }
+    }
+    //step trouble - take damage
+    stepTrouble(id,dmg){
+      let AT = this.activeTrouble
+      dmg = dmg || 0
+      let state = AT.get(id)
+      //step to next 
+      state[1]++
+      //take damage
+      state[0] -= dmg
+      //check for end 
+      if(state[0] <= 0) {
+        AT.delete(id)
+        //completed, do not step 
+        return false
+      }
+      else {
+        AT.set(id,state)
+        //not completed, do step 
+        return true
+      }
+    }
     get save() {
       return Object.assign({
         type: "faction",
@@ -272,14 +346,19 @@ let factionFactory = (app)=>{
       }
       
       if(opts.r) F.r = opts.r 
-      if(opts.isTrouble) F.isTrouble = opts.isTrouble
+      if(opts.isTrouble) {
+        F.isTrouble = opts.isTrouble
+        F.at = new Map()
+        F.at.set("i",1)
+      }
       if(opts.isAncient) F.isAncient = opts.isAncient
 
       return F       
     },
     generate(id) {
+      let df = this.all[id]
       let hash = ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [app.seed, "faction", id])
-      let F = Object.assign({seed:hash},this.all[id]) 
+      let F = Object.assign({seed:hash, rank:df.r},df) 
 
       return new Faction(F)
     },

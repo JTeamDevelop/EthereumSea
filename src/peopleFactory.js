@@ -161,8 +161,47 @@ const PEOPLES = {
 
 let peopleFactory = (app) => {
 
+  app.ECS.newCollection("people")
+  //general people component 
+  app.ECS.newComponent({
+    name: "isESPeople",
+    description: "Ethereum Sea People Data",
+    state: {
+      bio : [],
+      phys: "",
+    }
+  })
+
   app.people = {
-    generate (seed) {
+    get all() {
+      return app.ECS.getCollection("people")
+    },
+    factory (opts) {
+      opts = opts || {}
+
+      let all = this.all
+      let P = opts.id ? all[opts.id] : null
+
+      if (!P) {
+        let id = Object.keys(all).length
+        //do not call stard entity because we want to use different ids 
+        P = {
+          id: id,
+          //components 
+          _c: []
+        }
+        app.ECS.addComponent(P, "isESPeople")
+        //set entity 
+        all[id] = P
+      }
+      if(opts.bio) P.bio = opts.bio 
+      if(opts.phys) P.phys = opts.phys
+
+      return P
+    },
+    generate (id) {
+      let P = this.all[id]
+      let seed = ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [app.seed, "people", id])
       let base = app.creatures.gen(seed)
       //level
       let lv = app.rarity(seed)
@@ -176,14 +215,18 @@ let peopleFactory = (app) => {
         if(RNG.random() < 0.6) phys = "hu"
       }
 
-      let P = Object.assign({skills,colors,lv,phys},base)
+      //check from entity 
+      if(P.bio.length > 0) base.bio = P.bio
+      if(P.phys.length > 0) phys = P.phys
+
+      let ppl = Object.assign({id,skills,colors,lv,phys},base)
       
-      return P  
+      return ppl  
     },
     name (P) {
       let name = app.creatures.names(P)
       //determine humanoid, hybrid, droid, people
-      if(P.phys === "hu") name = "humanoid - "+name+" features" 
+      if(P.phys === "hu") name = "humanoid, "+name+" features" 
       else if(P.bio[0][0] === "d") name += " droid"
       else if(P.bio.length>1) name += " hybrid"
       else name += " people"
@@ -191,6 +234,9 @@ let peopleFactory = (app) => {
       return name 
     } 
   }
+
+  //64 people 
+  for(let i = 0; i< 64; i++) app.people.factory()
 
 }
 

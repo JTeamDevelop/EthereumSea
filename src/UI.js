@@ -117,10 +117,10 @@ let UI = (app) => {
     },
     methods : {
       getAllPlanes () {
-        this.allPlanes = [] 
+        this.allPlanes = TOP.slice() 
         let all = app.planes.all
         for(let id in all){
-          if(all[id].chain === this.chain && all[id].balance > 0) this.allPlanes.push(all[id].id)
+          if(all[id].chain === this.chain && all[id].balance > 0 && !this.allPlanes.includes(all[id].id)) this.allPlanes.push(all[id].id)
         }
       },
       getLinks () {
