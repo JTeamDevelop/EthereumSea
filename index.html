@@ -26,6 +26,11 @@
         </div>
       </div>
     </div>
+    <div class="modal fade" id="ui-modal" role="dialog">
+      <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <component v-bind:is="currentComponent"></component>
+      </div>
+    </div>
     <div id="ui-main" align="center">
       <div style="max-width:800px;">
         <div style="position:absolute;right:20px;" v-if="address" v-cloak>
@@ -40,9 +45,13 @@
           </button>
         </h1>
         <div v-if="name" v-cloak>
-          <div>{{name}} <span style="font-size: 0.7rem;">({{planeAddress}})</span></div>
+          <div>
+            {{name}} <span style="font-size: 0.7rem;">({{planeAddress}})</span>
+          </div>
           <div class="d-inline-flex">
-            <span class="px-1">Faction: <span class="moreInfo" @click="showFaction=true">{{faction.name}}</span></span>
+            <span class="px-1">
+              Faction: <span class="moreInfo" @click="showFaction=true">{{faction.name}}</span>
+            </span>
             <span class="px-1" v-if="stats.cities.length>0" v-cloak>Cities: {{stats.cities.length}}</span>
             <div class="px-1 d-inline-flex" v-if="CCPX.length>0" v-cloak>
               <span class="pr-1">CPX: </span>
@@ -50,8 +59,12 @@
             </div>
           </div>
           <div>
-            <span class="px-1">Needs: <img v-for="n in ne.n" :style="'background-color:'+n.color" :src="'media/trade/'+n.src" height="24" width="24"></span>
-            <span class="px-1">Exports: <img v-for="e in ne.e" :style="'background-color:'+e.color" :src="'media/trade/'+e.src" height="24" width="24"></span>
+            <span class="px-1">
+              Needs: <img v-for="n in ne.n" :style="'background-color:'+n.color" :src="'media/trade/'+n.src" height="24" width="24">
+            </span>
+            <span class="px-1">
+              Exports: <img v-for="e in ne.e" :style="'background-color:'+e.color" :src="'media/trade/'+e.src" height="24" width="24">
+            </span>
           </div>
         </div>
         <div v-if="showNav" v-cloak>
@@ -78,7 +91,9 @@
         <div class="card p-1" v-if="showFaction" v-cloak>
           <h3 class="d-flex justify-content-between">
             <span>{{faction.name}}</span>
-            <button type="button" class="btn btn-light" @click="showFaction=false"><span aria-hidden="true">&times;</span></button>
+            <button type="button" class="btn btn-light" @click="showFaction=false">
+              <span aria-hidden="true">&times;</span>
+            </button>
           </h3>
           <div align="left" v-if="cityNames.length>0">
             <h4 class="m-0">Cities</h4>
@@ -96,6 +111,92 @@
       <canvas id="display" align="center" height="800" width="800" v-if="twoD" v-cloak></canvas>
     </div>
     <div id="container"></div>
+    <template id="swn-character">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">
+            <input type="text" class="form-control" v-model="name">
+          </h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <h5 class="m-0">
+            <div class="row">
+              <div class="col">Class
+                <button class="btn btn-success btn-sm" type="button" @click="classes.push('exp')" v-if="classes.length<3">+</button>
+              </div>
+              <div class="col input-group" align="right">
+                <input type="number" class="form-control" v-model="level">
+                <div class="input-group-append">
+                  <span class="input-group-text">Level</span>
+                </div>
+              </div>
+              <div class="col input-group" align="right">
+                <input type="number" class="form-control" style="width:100px;" v-model="xp">
+                <div class="input-group-append">
+                  <span class="input-group-text">XP</span>
+                </div>
+              </div>
+            </div>
+          </h5>
+          <div class="w-33 d-inline-flex" v-for="(c,i) in classes">
+            <div class="input-group">
+              <select class="custom-select" v-model="classes[i]">
+                <option v-for="(val,key) in swnClasses" v-if="val.canSelect" v-bind:value="key">{{val.name}}</option>
+              </select>
+              <div class="input-group-append">
+                <button class="btn btn-warning" type="button" @click="classes.splice(i,1)">-</button>
+              </div>
+            </div>
+          </div>
+          <h5>Attributes</h5>
+          <div class="w-33 d-inline-flex" v-for="(n,i) in OSRAttributeNames">
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <span class="input-group-text" style="width:64px;">{{n}}</span>
+              </div>
+              <input type="number" class="form-control" v-model="attributes[i]">
+              <div class="input-group-append">
+                <span class="input-group-text">{{attributeBonus[i]}}</span>
+              </div>
+            </div>
+          </div>
+          <h5 class="pt-1">
+            <span>Skills </span>
+            <button class="btn btn-success btn-sm mx-1" type="button" @click="showAddSkill = !showAddSkill">+</button>
+          </h5>
+          <div class="w-33 d-inline-flex" v-if="showAddSkill">
+            <div class="input-group">
+              <select class="custom-select" v-model="newSkill">
+                <option v-for="(val,key) in swnSkills" v-bind:value="key">{{key}}</option>
+              </select>
+              <div class="input-group-append">
+                <button class="btn btn-success" type="button" @click="addSkill()">Add</button>
+              </div>
+            </div>
+          </div>
+          <div class="w-33 d-inline-flex" v-for="(val,s) in skills">
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <span class="input-group-text">{{s | capitalize }}</span>
+              </div>
+              <input type="number" class="form-control" min="0" v-model="val">
+              <div class="input-group-append">
+                <button class="btn btn-warning" type="button" @click="rmSkill(s)">-</button>
+              </div>
+            </div>
+          </div>
+          <h5>Class Abilities</h5>
+          <div v-for="a in classAbilities">
+            <div>{{a.title}}</div>
+            <div v-if="a.hero.length>0">{{a.hero}}</div>
+            <div>{{a.ability}}</div>
+          </div>
+        </div>
+      </div>
+    </template>
   </body>
   <script src="lib/gpu.min.js"></script>
   <script src="lib/ethers-v4.min.js"></script>

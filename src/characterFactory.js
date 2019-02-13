@@ -1,36 +1,88 @@
+//Simplified ECS 
+import * as SWN from "./SWN.js"
+
+const OSRATTRIBUTES = ["strength","dexterity","constitution","intelligence","wisdom","charisma"]
+//const SWNSKILLS = ["administer","connect","exert","fix","heal","know","lead","notice","perform","pilot","program","punch","shoot","sneak","stab","survive","talk","trade","work"]
+//const SWNPSISKILLS = ["biospionics","metapsionics","precognition","telekinesis","telepathy","teleportation"]
+//const SWNCLASSES = ["warrior","expert","psychic","arcane expert","arcane warrior","arcanist","free nexus","godhunter","pacter","rectifier","sunblade","war mage","arbiter"]
+
 const MAJORSKILLS = ["Arcane","Combat","Diplomacy","Exploration","Science","Thievery"]
-const COREPEOPLE = []
+
+const PHYSICAL = [0,1,2]
+const MENTAL = [3,4,5]
+const COMBAT = ["punch","shoot","stab"]
+
+const SWNBACKROUNDS = {
+  "Barbarian" : {
+    free:"survive",
+    growth:["attribute","physical","physical","mental","exert","skill"],
+    learning : ["combat","connect","exert","lead","notice","punch","sneak","survive"]
+  }
+}
+
+const RandomBackground = (char,RNG,background) => {
+  B = SWNBACKROUNDS[background]
+
+  //set free 
+  char.swnSkills[B.free] = 0
+
+  let gl, what;
+  //get growth or learning 
+  for(let i = 0; i<3; i++){
+    gl = RNG.pickone(["growth","learning"])
+    what = RNG.pickone(B[gl])
+    //check for special cases 
+    if(what === "attribute") {
+      let i = RNG.d6()-1
+      char.OSRAttributes[i]++
+    }
+    else if(what === "physical"){
+      let i = RNG.pickone(PHYSICAL)
+      char.OSRAttributes[i]++
+    }
+    else if(what === "mental"){
+      let i = RNG.pickone(MENTAL)
+      char.OSRAttributes[i]++
+    }
+    else {
+      if(what === "skill") what = RNG.pickone(SWNSKILLS)
+      else if (what === "combat") what = RNG.pickone(COMBAT) 
+      //give the skill 
+      if(char.swnSkills.hasOwnProperty(what)) char.swnSkills[what]++;
+      else char.swnSkills[what] = 0;
+    }
+  }
+}
 
 let characterFactory = (app) => {
   app.ECS.newCollection("characters")
-  app.ECS.newCollection("teams")
   
-  //general character component 
   app.ECS.newComponent({
-    name : "character",
-    description: "CPX character data",
+    name : "hasHP",
+    description: "Has Hit Points",
     state: {
-        skills : [0,0,0,0,0,0],
-        stress : 0,
+        hp : 0,
+    }
+  })
+  app.ECS.newComponent({
+    name : "hasXP",
+    description: "Has Experience Points",
+    state: {
         xp : 0,
-        extras : []
     }
   })
-  //player characters
   app.ECS.newComponent({
-    name : "PC",
-    description: "Designates a Player Character",
+    name : "hasOSRAttributes",
+    description: "Has Basic Attributes",
     state: {
-        isPC : true,
+        osrAttributes : [10,10,10,10,10,10],
     }
   })
-  //team component 
   app.ECS.newComponent({
-    name : "teamCharacters",
-    description: "Collection of characters working together",
+    name : "hasSkills",
+    description: "Has Skills",
     state: {
-        //team character ids
-        tCIds : []
+        skills : {},
     }
   })
 
@@ -53,6 +105,13 @@ let characterFactory = (app) => {
       if(opts.extras) C.extras = opts.extras.slice()
 
       return C
+    },
+    get SWNClasses () { return SWN.classes },
+    get OSRAttributeNames () {
+      return OSRATTRIBUTES
+    },
+    get SWNSkills () {
+      return SWN.skills
     },
     deleteCharacter (character) { delete app.ECS.entities.characters[character.id] },
     //TEAMS

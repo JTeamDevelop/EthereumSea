@@ -16,6 +16,15 @@ let ECSFactory = (app) => {
   let entities = { generic: {} }
   let components = {}
 
+  //handle storage 
+  app.DB.getItem("entities").then(res => {
+    if(res) entities = res
+  })
+
+  setInterval(()=>{
+    app.DB.setItem("entities",entities)
+  },20000)
+
   return {
     get entities () { return entities },
     newEnity (cname) {
@@ -68,6 +77,7 @@ let ECSFactory = (app) => {
       delete components[name]
     }
   }
+
 }
 
 export {ECSFactory}

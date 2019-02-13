@@ -8,6 +8,10 @@ body {
   background-color: silver;
 }
 
+.w-33 {
+  width: 33%!important;
+}
+
 #ui-main {
   position : fixed;
   width:100%;

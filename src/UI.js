@@ -32,6 +32,79 @@ let UI = (app) => {
     }).show();
   }
 
+  //global filter for VUE
+  Vue.filter('capitalize', function (value) {
+    if (!value) return ''
+    value = value.toString()
+    return value.charAt(0).toUpperCase() + value.slice(1)
+  })
+
+  app.UI.modal = new Vue({
+    el: '#ui-modal',
+    data : {
+      currentComponent:""
+    }
+  })
+
+  Vue.component("swn-character-sheet",{
+    template: '#swn-character',
+    props: ['cid'],
+    data : function() {
+      return {
+        name : "NAME",
+        xp : 0,
+        level : 1,
+        classes : ["exp"],
+        attributes : [10,10,10,10,10,10],
+        OSRAttributeNames : ["STR","DEX","CON","INT","WIS","CHA"],
+        skills : {},
+        showAddSkill : false,
+        newSkill : "",
+      }
+    },
+    computed : {
+      swnSkills () { return app.characters.SWNSkills },
+      swnClasses () { return app.characters.SWNClasses },
+      classAbilities () {
+        let T = this.titles
+        return this.classes.map((c,i) => {
+          let C = app.characters.SWNClasses[c]
+          return {
+            title : T[i] + " " + C.name,
+            ability : T[i] === "Partial" ? C.partial : C.abilities.join(" "),
+            hero : T[i] === "Heroic" ? C.heroic.join(" ") : ""
+          }
+        })
+      },
+      titles () {
+        if(this.classes.length === 0) return [""]
+        return [["Heroic"],["Full","Partial"],["Partial","Partial","Partial"]][this.classes.length-1]
+      },
+      attributeBonus () {
+        return this.attributes.map(v => {
+          if(v === 3) return -2;
+          else if(v <= 7) return -1;
+          else if(v <= 13) return 0;
+          else if(v <= 17) return 1;
+          else return 2;
+        })
+      }
+    },
+    methods : {
+      addSkill() {
+        Vue.set(this.skills,this.newSkill,0)
+        this.newSkill = ""
+        this.showAddSkill = false
+      },
+      rmSkill (id) { 
+        let S = Object.assign({},this.skills)
+        delete S[id]
+         
+        this.skills = Object.assign({},S)
+      }
+    }
+  })
+
   app.UI.findModal = new Vue({
     el: '#ui-find',
     data : {
@@ -101,6 +174,9 @@ let UI = (app) => {
       this.getAllPlanes()
       // DOM updated
       this.viewPlane()
+      //show 
+      app.UI.modal.currentComponent = "swn-character-sheet"
+      //$('#ui-modal').modal('show')
     },
     computed : {
       faction () { return this.factionId > -1 ? app.planes._current.faction : null },
