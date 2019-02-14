@@ -123,32 +123,41 @@
         </div>
         <div class="modal-body">
           <h5 class="m-0">
-            <div class="row">
-              <div class="col">Class
-                <button class="btn btn-success btn-sm" type="button" @click="classes.push('exp')" v-if="classes.length<3">+</button>
-              </div>
-              <div class="col input-group" align="right">
-                <input type="number" class="form-control" v-model="level">
-                <div class="input-group-append">
-                  <span class="input-group-text">Level</span>
-                </div>
-              </div>
-              <div class="col input-group" align="right">
-                <input type="number" class="form-control" style="width:100px;" v-model="xp">
-                <div class="input-group-append">
-                  <span class="input-group-text">XP</span>
-                </div>
-              </div>
-            </div>
+            Class
+            <button class="btn btn-success btn-sm" type="button" @click="classes.push('exp')" v-if="classes.length<3">+</button>
           </h5>
-          <div class="w-33 d-inline-flex" v-for="(c,i) in classes">
-            <div class="input-group">
-              <select class="custom-select" v-model="classes[i]">
+          <div class="d-inline-flex flex-wrap" v-for="(c,i) in classes">
+            <div class="input-group" style="width:170px;">
+              <select class="custom-select"  v-model="classes[i]">
                 <option v-for="(val,key) in swnClasses" v-if="val.canSelect" v-bind:value="key">{{val.name}}</option>
               </select>
               <div class="input-group-append">
                 <button class="btn btn-warning" type="button" @click="classes.splice(i,1)">-</button>
               </div>
+            </div>
+          </div>
+          <div>
+            <div class="input-group m-1">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Level</span>
+              </div>
+              <input type="number" class="form-control" v-model="level">
+              <div class="input-group-prepend">
+                <span class="input-group-text">XP</span>
+              </div>
+              <input type="number" class="form-control" v-model="xp">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Atk Bonus</span>
+              </div>
+              <input type="number" class="form-control" v-model="atk">
+              <div class="input-group-prepend">
+                <span class="input-group-text">HP</span>
+              </div>
+              <input type="number" class="form-control" v-model="hp[0]">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Max HP</span>
+              </div>
+              <input type="number" class="form-control" v-model="hp[1]">
             </div>
           </div>
           <h5>Attributes</h5>
@@ -189,10 +198,17 @@
             </div>
           </div>
           <h5>Class Abilities</h5>
-          <div v-for="a in classAbilities">
-            <div>{{a.title}}</div>
-            <div v-if="a.hero.length>0">{{a.hero}}</div>
-            <div>{{a.ability}}</div>
+          <div class="swn-abilities" v-for="(a,i) in classAbilities">
+            <h6 data-toggle="collapse" :data-target="'#cA-'+i">{{a.title}}</h6>
+            <div class="border pl-1 collapse" :id="'cA-'+i">
+              <div v-html="a.ability"></div>
+              <div class="pl-1" v-if="a.gifts">
+                <div class="font-weight-bold">
+                  {{a.title}} Gifts <button class="btn btn-info btn-sm" type="button" @click="showAllGifts = !showAllGifts">{{showAllGifts ? "All" : "Selected"}}</button>
+                </div>
+                <p v-for="(g,key) in a.gifts" :class="{selected : gifts.includes(a.id+'.'+key)}" @click="editGift(a.id,key)" v-if="showAllGifts || gifts.includes(a.id+'.'+key)">{{g}}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

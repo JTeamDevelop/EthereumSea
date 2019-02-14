@@ -54,12 +54,16 @@ let UI = (app) => {
         name : "NAME",
         xp : 0,
         level : 1,
+        atk: 0,
+        hp: [1,1],
         classes : ["exp"],
         attributes : [10,10,10,10,10,10],
         OSRAttributeNames : ["STR","DEX","CON","INT","WIS","CHA"],
         skills : {},
         showAddSkill : false,
         newSkill : "",
+        gifts : [],
+        showAllGifts : false
       }
     },
     computed : {
@@ -67,12 +71,14 @@ let UI = (app) => {
       swnClasses () { return app.characters.SWNClasses },
       classAbilities () {
         let T = this.titles
+        
         return this.classes.map((c,i) => {
           let C = app.characters.SWNClasses[c]
           return {
+            id : c,
             title : T[i] + " " + C.name,
-            ability : T[i] === "Partial" ? C.partial : C.abilities.join(" "),
-            hero : T[i] === "Heroic" ? C.heroic.join(" ") : ""
+            ability : C.base + (T[i] === "Partial" ? C.partial : C.full) + (T[i] === "Heroic" ? C.heroic : ""),
+            gifts : C.hasOwnProperty("gifts") ? C.gifts : null
           }
         })
       },
@@ -91,6 +97,13 @@ let UI = (app) => {
       }
     },
     methods : {
+      //add or remove a gift 
+      editGift(c,id) {  
+        let gid = c+"."+id
+        let i = this.gifts.indexOf(gid)
+        if(i === -1) this.gifts.push(gid);
+        else this.gifts.splice(i,1);
+      },
       addSkill() {
         Vue.set(this.skills,this.newSkill,0)
         this.newSkill = ""

@@ -30,6 +30,17 @@ body {
   color: blue;
 }
 
+.selected {
+  background-color: rgba(161, 238, 155, 0.5);
+}
+
+.swn-abilities p {
+  margin: 4px;
+}
+.swn-abilities p:before {
+  content: "⬢";
+}
+
 #polys {
   z-index: -1;
 }
