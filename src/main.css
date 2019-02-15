@@ -8,8 +8,45 @@ body {
   background-color: silver;
 }
 
-.w-33 {
-  width: 33%!important;
+/*
+  Classes for SWN Character Sheet
+*/
+.swn-class {
+  width: 33%;
+  display: inline-flex;
+}
+.swn-atrib {
+  width: 16.5%;
+  display: inline-flex;
+}
+.swn-skill {
+  width: 50%;
+  display: inline-flex;
+}
+#swn-level {
+  width: 50%;
+  display: inline-flex;
+}
+#swn-hp {
+  width: 50%;
+  display: inline-flex;
+}
+@media screen and (max-width: 767.98px) { 
+  .swn-class {
+    width: 100%;
+  }
+  #swn-level {
+    width: 100%;
+    display: block;
+  }
+  #swn-hp {
+    width: 100%;
+    display: block;
+  }
+  .swn-atrib {
+    width: 33%;
+    display: inline-flex;
+  }
 }
 
 #ui-main {
@@ -17,6 +54,26 @@ body {
   width:100%;
   top: 0;
   z-index : 10;
+}
+
+#ui-info {
+  position : fixed;
+  top: 1%;
+  width : 98%;
+  left : 1%;
+  bottom : 1%;
+  z-index : 15;
+  background-color : rgba(255,255,255,0.7);
+}
+
+#info-options {
+  position:absolute;
+  width: 98%;
+  max-width:600px;
+  top: 50%;
+  left: 50%;
+  /* bring your own prefixes */
+  transform: translate(-50%, -50%);
 }
 
 #output {

@@ -322,6 +322,7 @@ let factionFactory = (app)=>{
 
   //faction functions 
   app.factions = {
+    _current : {},
     get all() {
       return app.ECS.getCollection("factions")
     },
@@ -356,11 +357,14 @@ let factionFactory = (app)=>{
       return F       
     },
     generate(id) {
+      if(this._current[id]) return this._current[id]
+
       let df = this.all[id]
       let hash = ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [app.seed, "faction", id])
       let F = Object.assign({seed:hash, rank:df.r},df) 
 
-      return new Faction(F)
+      this._current[id] = new Faction(F)
+      return this._current[id]
     },
     //get random faction 
     random (RNG, opts) {
@@ -381,14 +385,16 @@ let factionFactory = (app)=>{
   }
 
   //now compute the factions 
-  let factionsAtRank = [10, 15, 15, 15, 5, 4]
+  let factionsAtRank = [5, 7, 8, 7, 3, 2]
   //now compute ancients - start at rank 3
-  let ancientsAtRank = [10, 15, 15, 15, 5, 4]
+  let ancientsAtRank = [5, 7, 8, 7, 3, 2]
   //trouble 
-  let troubleAtRank = [5, 7, 8, 7, 3, 2]
+  let troubleAtRank = [2, 4, 4, 3, 2, 1]
 
   factionsAtRank.forEach((n,r)=>{
-    for (let i = 0; i < n; i++) app.factions.factory({r:r+1})
+    for (let i = 0; i < n; i++) {
+      app.factions.factory({r:r+1})
+    }
   })
   troubleAtRank.forEach((n,r)=>{
     for (let i = 0; i < n; i++) app.factions.factory({r:r+1, isTrouble:true})

@@ -57,7 +57,7 @@ let ECSFactory = (app) => {
       delete entities[from][id]
     },
     //COMPONENTS
-    get components () { return Object.keys(components) },
+    get components () { return components },
     //add components to an entity
     addComponent (entity, name) {
       //if it doesnot exist - return 

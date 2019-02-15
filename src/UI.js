@@ -42,8 +42,16 @@ let UI = (app) => {
   app.UI.modal = new Vue({
     el: '#ui-modal',
     data : {
-      currentComponent:""
+      currentComponent:"",
+      tick : null
+    },
+    mounted () {
+
     }
+  })
+  $('#ui-modal').on('hidden.bs.modal', function (e) {
+    app.UI.modal.currentComponent = null
+    if(app.UI.modal.tick) clearInterval(app.UI.modal.tick)
   })
 
   Vue.component("swn-character-sheet",{
@@ -51,43 +59,75 @@ let UI = (app) => {
     props: ['cid'],
     data : function() {
       return {
+        loadId : "",
+        id: "",
         name : "NAME",
+        swnBackground : "",
         xp : 0,
-        level : 1,
+        swnLevel : 0,
         atk: 0,
         hp: [1,1],
-        classes : ["exp"],
-        attributes : [10,10,10,10,10,10],
-        OSRAttributeNames : ["STR","DEX","CON","INT","WIS","CHA"],
+        swnClasses : ["exp"],
+        osrAttributes : [10,10,10,10,10,10],
+        OSRAttributeNames : ["str","dex","con","int","wis","cha"],
         skills : {},
         showAddSkill : false,
         newSkill : "",
-        gifts : [],
-        showAllGifts : false
+        gear : [],
+        swnGifts : [],
+        gearTypes : {
+          g: "gear",
+          wp: "weapon",
+          ar : "armor"
+        },
+        showAllGifts : true
       }
     },
+    mounted () {
+      let V = this
+      app.UI.modal.tick = setInterval(()=>{
+        if(V.swnLevel > 0) V.save()
+      },5000)
+    },
     computed : {
+      allCharacters () { return app.characters.all },
       swnSkills () { return app.characters.SWNSkills },
-      swnClasses () { return app.characters.SWNClasses },
+      swnClassData () { return app.characters.SWNClasses },
       classAbilities () {
         let T = this.titles
         
-        return this.classes.map((c,i) => {
+        return this.swnClasses.map((c,i) => {
           let C = app.characters.SWNClasses[c]
           return {
             id : c,
-            title : T[i] + " " + C.name,
+            title : T[i],
+            name : C.name,
             ability : C.base + (T[i] === "Partial" ? C.partial : C.full) + (T[i] === "Heroic" ? C.heroic : ""),
             gifts : C.hasOwnProperty("gifts") ? C.gifts : null
           }
         })
       },
+      classGifts () {
+        let G = this.classAbilities.reduce((all,c)=>{
+          if(c.gifts) {
+            all[c.id] = {
+              name : c.name,
+              gifts : c.gifts
+            }
+          }
+          return all
+        },{})
+
+        let l = Object.keys(G).length
+
+        return l > 0 ? G : null
+      },
       titles () {
-        if(this.classes.length === 0) return [""]
-        return [["Heroic"],["Full","Partial"],["Partial","Partial","Partial"]][this.classes.length-1]
+        if(this.swnClasses.length === 0) return [""]
+        return [["Heroic"],["Full","Partial"],["Partial","Partial","Partial"]][this.swnClasses.length-1]
       },
       attributeBonus () {
-        return this.attributes.map(v => {
+        return this.osrAttributes.map(v => {
           if(v === 3) return -2;
           else if(v <= 7) return -1;
           else if(v <= 13) return 0;
@@ -97,12 +137,46 @@ let UI = (app) => {
       }
     },
     methods : {
+      close () {
+        this.save()
+        this.id = ""
+        this.swnLevel = 0
+      },
+      newChar () {
+        let C = app.characters.factory()
+        this.loadId = C.id 
+        this.load()
+      },
+      load() {
+        //have to stringify or the load overwrites
+        let C = JSON.parse(JSON.stringify(app.characters.all[this.loadId]))
+        let base = JSON.parse(JSON.stringify(app.characters.coreData))
+        //load all the data from the character
+        for(let x in base){
+          //load data to UI
+          if(C[x]) this[x] = C[x];          
+          //load from base
+          else this[x] = base[x];
+        }
+        this.id = this.loadId
+      },
+      save() {
+        if(this.id.length===0) return
+        let C = JSON.parse(JSON.stringify(app.characters.all[this.id]))
+        let base = JSON.parse(JSON.stringify(app.characters.coreData))
+        //save all the data from the character
+        for(let x in base){
+          if(this[x]) C[x] = this[x];
+        }
+        //have to stringify or the load overwrites
+        app.characters.all[this.id] = JSON.parse(JSON.stringify(C))
+      },
       //add or remove a gift 
       editGift(c,id) {  
         let gid = c+"."+id
-        let i = this.gifts.indexOf(gid)
-        if(i === -1) this.gifts.push(gid);
-        else this.gifts.splice(i,1);
+        let i = this.swnGifts.indexOf(gid)
+        if(i === -1) this.swnGifts.push(gid);
+        else this.swnGifts.splice(i,1);
       },
       addSkill() {
         Vue.set(this.skills,this.newSkill,0)
@@ -114,6 +188,16 @@ let UI = (app) => {
         delete S[id]
          
         this.skills = Object.assign({},S)
+      },
+      addGear () {
+        this.gear.push({
+          w: "wp",  //what
+          n : "", //name
+          b: "",  //bonus
+          e : "", //effect
+          r : 0,  //range
+          s : ""  //special
+        })
       }
     }
   })
@@ -144,6 +228,24 @@ let UI = (app) => {
         let color = app.colors[find.color]
         let text = find.reward + " level "+lv+" "+color
         app.notify({text:text})
+      }
+    }
+  })
+
+  app.UI.info = new Vue({
+    el: '#ui-info',
+    data : {
+      show : false,
+      month: 0
+    },
+    computed : {
+      ETHAddress () { return app.wallets.main.address }
+    },
+    methods : {
+      showCharacter () {
+        //show 
+        app.UI.modal.currentComponent = "swn-character-sheet"
+        $('#ui-modal').modal('show')
       }
     }
   })
@@ -179,20 +281,13 @@ let UI = (app) => {
       //enable 2d canvas if no WEBGL
       if(!glTest()) this.twoD = true 
 
-      this.newPlaneAddress =app.chance.pickone(TOP)
-      //get current block 
-      app.ETH.main.getBlockNumber().then(n => {
-        this.currentBlock = n 
-      })
+      this.newPlaneAddress = app.chance.pickone(Object.keys(app.planes.all))
       this.getAllPlanes()
       // DOM updated
       this.viewPlane()
-      //show 
-      app.UI.modal.currentComponent = "swn-character-sheet"
-      //$('#ui-modal').modal('show')
     },
     computed : {
-      faction () { return this.factionId > -1 ? app.planes._current.faction : null },
+      faction () { return this.factionId > -1 ? app.planes.current.faction : null },
       CCPX () { 
         let colors = ["red","orange","gold","green","blue","purple"]
         let style = this.stats.resources.map((n,i)=> [colors[i],n])
@@ -205,12 +300,9 @@ let UI = (app) => {
       }
     },
     methods : {
+      showInfo () { app.UI.info.show = !app.UI.info.show },
       getAllPlanes () {
-        this.allPlanes = TOP.slice() 
-        let all = app.planes.all
-        for(let id in all){
-          if(all[id].chain === this.chain && all[id].balance > 0 && !this.allPlanes.includes(all[id].id)) this.allPlanes.push(all[id].id)
-        }
+        this.allPlanes = app.planes.planeSelect
       },
       getLinks () {
         let baseURL = "https://api.etherscan.io/api?module=account&action=txlist&address="
@@ -233,49 +325,32 @@ let UI = (app) => {
       viewPlane () {
         d3.select("#spinner").attr("class", "lds-dual-ring")
         
-        let V = this
         let address = this.newPlaneAddress
-        let li = this.links.indexOf(address)
         let chain = this.chain
-        //make sure its there 
-        app.ETH.main.getBalance(address).then(b => {
-          //check if 0 
-          if(b.isZero()){
-            //if nothing alert 
-            app.notify({h:"Closed",text:"The address has no balance."})
-            this.links.splice(li,1)
-            return
-          }
-          //get the balance in ETH 
-          let wei = ethers.utils.bigNumberify("1000000000000000000")
-          if(b.lt(wei)) b = 0.1
-          else b = b.div(wei).toNumber()
-          //make it 
-          app.planes.factory(address,b,chain)
-          V.getAllPlanes()
-          //generate it 
-          app.planes.generate(address, chain)
-          //stats
-          V.stats = app.planes._current._stats
-          //name it 
-          V.name = V.stats.names[0]
-          //factionId
-          V.factionId = app.planes._current._fi
-          //needs/exports 
-          V.ne = {
-            n : app.planes._current.needs,
-            e : app.planes._current.exports
-          }
-          //display it 
-          V.planeAddress = address
-          Vue.nextTick(() => {
-            app.planes.display(0,3)
-          })
-          //get concurrently
-          this.getLinks()
-          //no show 
-          V.showNav = false
+        //make it 
+        let P = app.planes.all[address] || app.planes.factory(address,1,chain)
+        //update 
+        this.getAllPlanes()
+        //generate it 
+        app.planes.generate(P)
+        app.planes.current = P 
+        //stats
+        this.stats = app.planes.current._stats
+        //name it 
+        this.name = this.stats.names[0]
+        //factionId
+        this.factionId = app.planes.current._fi
+        //needs/exports 
+        this.ne = {
+          n : app.planes.current.needs,
+          e : app.planes.current.exports
+        }
+        //display it 
+        Vue.nextTick(() => {
+          app.planes.display(0,3)
         })
+        //no show 
+        this.showNav = false
       },
     }
   })
@@ -337,3 +412,21 @@ let UI = (app) => {
 }
 
 export {UI}
+
+/*
+//make sure its there 
+        app.ETH.main.getBalance(address).then(b => {
+          //check if 0 
+          if(b.isZero()){
+            //if nothing alert 
+            app.notify({h:"Closed",text:"The address has no balance."})
+            this.links.splice(li,1)
+            return
+          }
+          //get the balance in ETH 
+          let wei = ethers.utils.bigNumberify("1000000000000000000")
+          if(b.lt(wei)) b = 0.1
+          else b = b.div(wei).toNumber()
+          
+        })
+        */

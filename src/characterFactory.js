@@ -2,9 +2,6 @@
 import * as SWN from "./SWN.js"
 
 const OSRATTRIBUTES = ["strength","dexterity","constitution","intelligence","wisdom","charisma"]
-//const SWNSKILLS = ["administer","connect","exert","fix","heal","know","lead","notice","perform","pilot","program","punch","shoot","sneak","stab","survive","talk","trade","work"]
-//const SWNPSISKILLS = ["biospionics","metapsionics","precognition","telekinesis","telepathy","teleportation"]
-//const SWNCLASSES = ["warrior","expert","psychic","arcane expert","arcane warrior","arcanist","free nexus","godhunter","pacter","rectifier","sunblade","war mage","arbiter"]
 
 const MAJORSKILLS = ["Arcane","Combat","Diplomacy","Exploration","Science","Thievery"]
 
@@ -61,7 +58,7 @@ let characterFactory = (app) => {
     name : "hasHP",
     description: "Has Hit Points",
     state: {
-        hp : 0,
+        hp : [1,1],
     }
   })
   app.ECS.newComponent({
@@ -85,26 +82,49 @@ let characterFactory = (app) => {
         skills : {},
     }
   })
+  app.ECS.newComponent({
+    name : "hasGear",
+    description: "Has Gear",
+    state: {
+        gear : [],
+    }
+  })
+  app.ECS.newComponent({
+    name : "hasSWNClasses",
+    description: "Has SWN Classes",
+    state: {
+        swnBackground : "",
+        swnLevel : 1,
+        swnClasses : [],
+        swnGifts : []
+    }
+  })
 
   //character functions 
   app.characters = { 
     //CHARACTERS
     get all () { return app.ECS.getCollection("characters") },
     factory (opts) {
-      let C = app.ECS.newEnity("characters")
-      app.ECS.addComponent(C,"character")
-      //see if it is pc 
-      if(opts.PC) app.ECS.addComponent(C,"PC")
-      //now see if options provided 
-      if(opts.skills) C.skills = opts.skills.slice()
-      else if (opts.PC){
-        //give it random skills
-        C.skills = app.chance.shuffle([2,1,1,0,0,0])
-      }
+      //check for 6
+      if(Object.keys(this.all).length >= 6) return 
 
-      if(opts.extras) C.extras = opts.extras.slice()
+      //new 
+      let C = app.ECS.newEnity("characters")
+      //build 
+      let components = ["hasXP","hasHP","hasOSRAttributes","hasSkills","hasGear","hasSWNClasses"]
+      components.forEach(cid => app.ECS.addComponent(C,cid))
 
       return C
+    },
+    get coreData() {
+      let components = ["hasXP","hasHP","hasOSRAttributes","hasSkills","hasGear","hasSWNClasses"]
+      //return data ids 
+      return components.reduce((all,c)=>{
+        //pull data 
+        let C = app.ECS.components[c]
+        Object.assign(all,C.state)
+        return all
+      },{name:""})
     },
     get SWNClasses () { return SWN.classes },
     get OSRAttributeNames () {
@@ -114,37 +134,6 @@ let characterFactory = (app) => {
       return SWN.skills
     },
     deleteCharacter (character) { delete app.ECS.entities.characters[character.id] },
-    //TEAMS
-    get teams () { return app.ECS.getCollection("teams") },
-    get teamCharacters () {
-      let T = app.ECS.entities.teams
-      let C = app.ECS.entities.characters
-      //return the characters on a team, in an array
-      return Object.keys(T).map(tid => { 
-        return T[tid].tCIds.map(cid => C[cid])
-      })
-    },
-    addToTeam (T, character) {
-      if(T.tCIds.includes(character.id)) return
-      //add 
-      T.tCIds.push(character.id)
-    },
-    removeFromTeam (T, character) {
-      let i = T.tCIds.indexOf(character.id)
-      //find and remove 
-      if(i > -1) T.tCIds.splice(i,1)
-      //returns team 
-      return T
-    },
-    createTeam (characters) {
-      let T = app.ECS.newEnity("teams")
-      app.ECS.addComponent(T,"teamCharacters")
-      //add each of the characters
-      characters.forEach(C => app.characters.addToTeam(T,C))
-      //return team 
-      return T 
-    },
-    deleteTeam (team) { delete app.ECS.entities.teams[team.id] },
   }
 }
 

@@ -3,7 +3,7 @@ let glTest = ()=>{
   return tc.getContext("webgl") || tc.getContext("experimental-webgl")
 }
 
-const CHAINS = ["ETH"]
+const CHAINS = ["local","ETH"]
 
 let getFindName = (id)=>{
   if (id <= 18)
@@ -174,11 +174,26 @@ let planeFactory = (app)=>{
   //plane functions 
   app.planes = {
     _current: {},
+    _cid : "",
+    set current (P) { this._cid = CHAINS[P.chain] + P.id },
+    get current () { return this._current[this._cid] }, 
+    get planeSelect () {
+      let all = []
+      for(let x in this._current){
+        all.push({
+          id: x,
+          name : this._current[x]._stats.names[0]
+        })
+      }
+      return all.sort((a,b) => { 
+        return ((a.name < b.name) ? -1 : ((a.name > b.name) ? 1 : 0));
+      }) 
+    },
     get currentEntity() {
-      return app.ECS.getCollection("planes")[this._current._id]
+      return app.ECS.getCollection("planes")[this._cid]
     },
     within(x, y) {
-      return this._current._hex.within(x,y)
+      return this.current._hex.within(x,y)
     },
     get all() {
       return app.ECS.getCollection("planes")
@@ -217,7 +232,7 @@ let planeFactory = (app)=>{
       return P
     },
     get creatures () {
-      let hash = this._current._hash
+      let hash = this.current._hash
       return {
         land : d3.range(5).map(v => ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [hash, "landCreature", v])),
         water : d3.range(5).map(v => ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [hash, "waterCreature", v]))
@@ -227,11 +242,9 @@ let planeFactory = (app)=>{
       let RNG = new Chance(seed)
       return d3.range(n + 1).map(_=>app.names.generateName(lang, RNG))
     },
-    generate(address, chain) {
-      chain = chain || 0
-      let chainID = CHAINS[chain]
-      let P = app.ECS.getCollection("planes")[chainID + address]
-      let nhash = ethers.utils.solidityKeccak256(['bytes32', 'uint256', 'address'], [app.seed, chain, address])
+    generate(P) {
+      let chainID = CHAINS[P.chain]
+      let nhash = ethers.utils.solidityKeccak256(['bytes32', 'uint256', 'address'], [app.seed, P.chain, P.id])
 
       let maxArea = P.balance
       let maxR = maxArea / (128 * 128)
@@ -263,8 +276,8 @@ let planeFactory = (app)=>{
       let cities = [], arcane = 0, lairs = [], terrains = [], ruins = []; 
       let colors = d3.interpolateSinebow
       //place 
-      this._current = {
-        _id: chainID + address,
+      this._current[chainID + P.id] = {
+        _id: chainID + P.id,
         _hash: nhash, 
         _raw: P,
         _hex : HEX,
@@ -368,7 +381,7 @@ let planeFactory = (app)=>{
       ri = ri || 0
       z = z || 0
       
-      let Hex = this._current._hex
+      let Hex = this.current._hex
       bbox = Hex.bbox
       let w = bbox[2] - bbox[0]
       let h = bbox[3] - bbox[1]
@@ -418,7 +431,7 @@ let planeFactory = (app)=>{
         app.planes.clickFind(this._ij[0])
       }
       //call 
-      app.hexDisplay(this._current._hex, onClick)
+      app.hexDisplay(this.current._hex, onClick)
       //remove spinner
       d3.select("#spinner").attr("class", "lds-dual-ring hidden")
     },
@@ -427,7 +440,7 @@ let planeFactory = (app)=>{
       else this.threeDisplay()
     },
     clickFind(hi) {
-      let h = this._current._data[hi]
+      let h = this.current._data[hi]
       console.log(h)
       //set finds 
       app.UI.findModal.ri = h.i
@@ -452,14 +465,14 @@ let planeFactory = (app)=>{
       if (!app.ECS.hasComponent(P, "hasFinds"))
         app.ECS.addComponent(P, "hasFinds")
       //get what the find is 
-      let what = this._current._data[ri].finds[fi]
+      let what = this.current._data[ri].finds[fi]
       let name = what.name
       let data = FINDS[name]
       //one time event - push 
       if (data.tags.includes("once")) {
         P.once.push(ri + "." + fi)
         //push ui update 
-        app.UI.findModal.finds = this._current._data[ri].finds.slice()
+        app.UI.findModal.finds = this.current._data[ri].finds.slice()
       }
       //track a lead 
       if (data.tags.includes("lead")) {
@@ -470,7 +483,7 @@ let planeFactory = (app)=>{
       let reward = app.chance.pickone(data.reward)
 
       let address = P.id
-      let hash = ethers.utils.solidityKeccak256(['bytes32', 'uint256', 'uint256', 'uint256'], [this._current._hash, ri, fi, Date.now()])
+      let hash = ethers.utils.solidityKeccak256(['bytes32', 'uint256', 'uint256', 'uint256'], [this.current._hash, ri, fi, Date.now()])
       return {name,hash,reward,color:what.color}
     },
   }
@@ -485,9 +498,13 @@ let planeFactory = (app)=>{
     app.planes.clickFind(hi)
   }
 
-  //create 0x
-  let ETH0x = app.planes.factory("0x", 0)
-
+  //create 0x - local
+  app.planes.factory("0x", 0)
+  //create 128 
+  for(let i = 0; i<128; i++) {
+    let P = app.planes.factory("0x"+i, 1)
+    app.planes.generate(P)
+  }
 }
 
 export {planeFactory}

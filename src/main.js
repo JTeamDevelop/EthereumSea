@@ -67,19 +67,18 @@ app.ECS = ECSFactory(app)
 threeScene(app)
 //connect to the blockchain
 EthereumConnect(app)
+//setup hex meshes
+hexFactory(app)
+//people & factions 
+peopleFactory(app)
+factionFactory(app)
 //player 
+outlandsFactory(app)
 planeFactory(app)
 forceFactory(app)
 playerFactory(app)
 characterFactory(app)
 
-//setup hex meshes
-hexFactory(app)
-
-//people & factions 
-peopleFactory(app)
-outlandsFactory(app)
-factionFactory(app)
 
 //initiate scene
 //init(app)
