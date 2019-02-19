@@ -3,12 +3,12 @@ const PHYLUM = {
   "a": ["c", "a", "c", "a", "a", "c", "c", "a", "c", "c", "c", "c", "m", "m", "e", "w"],
   //droids - Humanoid, Quad, Insectoid, Block, Cylinder, Sphere
   "d": ["h", "q", "i", "b", "c", "s"],
-  //Plants - flower, tree, Fern, Conifer, Algae, Moss, Palm
-  "p": ["f", "f", "f", "f", "t", "t", "t", "t", "e","c", "c", "c", "p", "p",  "a", "m"],
+  //Plants - flower, grass, vine, tree, Fern, Conifer, Algae, Moss, Palm
+  "p": ["f", "f", "f", "f", "g", "g", "v", "v", "t", "t", "t", "t", "e","c", "c", "c", "p", "p",  "a", "m"],
   //Fungi - mushroom, puff
   "f": ["m", "p"],
   //Mineral - Igneous, Sedimentary, Metamorphic
-  "m": ["i", "s", "m"],
+  "m": ["i", "s", "m","c"],
   //FLuidic - liquid, gas
   "l": ["l", "g"]
 }
@@ -64,7 +64,7 @@ const CLASSES = {
 }
 const NAMES = {
   "dh":"humanoid", "dq":"quad", "di":"insectoid", "db":"block", "dc":"cylinder", "ds":"sphere",
-  "pf":"flower", "pt":"tree", "pe":"fern", "pc":"conifer tree", "pa":"algae", "pm":"moss", "pp":"palm tree",
+  "pf":"flower", "pg":"grass", "pv":"vine", "pt":"tree", "pe":"fern", "pc":"conifer tree", "pa":"algae", "pm":"moss", "pp":"palm tree",
   "fm":"mushroom","fp":"puff mushroom",
   "mi":"igneous rock","ms":"sedimentary rock","mm":"metamorphic rock","mc":"crystalline",
   "ll":"liquid","lg":"gaseous",

@@ -69,6 +69,13 @@ let characterFactory = (app) => {
     }
   })
   app.ECS.newComponent({
+    name : "hasAspects",
+    description: "Has FATE style aspects",
+    state: {
+        aspects : [],
+    }
+  })
+  app.ECS.newComponent({
     name : "hasOSRAttributes",
     description: "Has Basic Attributes",
     state: {
@@ -87,6 +94,14 @@ let characterFactory = (app) => {
     description: "Has Gear",
     state: {
         gear : [],
+    }
+  })
+  app.ECS.newComponent({
+    name : "hasCPXPowers",
+    description: "Has CPX Powers",
+    state: {
+        cpxLevel : 1,
+        cpxPowers : []
     }
   })
   app.ECS.newComponent({
@@ -111,13 +126,13 @@ let characterFactory = (app) => {
       //new 
       let C = app.ECS.newEnity("characters")
       //build 
-      let components = ["hasXP","hasHP","hasOSRAttributes","hasSkills","hasGear","hasSWNClasses"]
+      let components = ["hasXP","hasHP","hasAspects","hasSkills","hasGear","hasCPXPowers"]
       components.forEach(cid => app.ECS.addComponent(C,cid))
 
       return C
     },
     get coreData() {
-      let components = ["hasXP","hasHP","hasOSRAttributes","hasSkills","hasGear","hasSWNClasses"]
+      let components = ["hasXP","hasHP","hasAspects","hasSkills","hasGear","hasCPXPowers"]
       //return data ids 
       return components.reduce((all,c)=>{
         //pull data 
@@ -126,12 +141,13 @@ let characterFactory = (app) => {
         return all
       },{name:""})
     },
+    get CPXPowers () { return app.CPX.powers },
     get SWNClasses () { return SWN.classes },
     get OSRAttributeNames () {
       return OSRATTRIBUTES
     },
-    get SWNSkills () {
-      return SWN.skills
+    get CPXSkills () {
+      return app.CPX.skills
     },
     deleteCharacter (character) { delete app.ECS.entities.characters[character.id] },
   }

@@ -169,6 +169,7 @@ let peopleFactory = (app) => {
     state: {
       bio : [],
       phys: "",
+      notes: ""
     }
   })
 
@@ -219,7 +220,7 @@ let peopleFactory = (app) => {
       if(P.bio.length > 0) base.bio = P.bio
       if(P.phys.length > 0) phys = P.phys
 
-      let ppl = Object.assign({id,skills,colors,lv,phys},base)
+      let ppl = Object.assign({id,skills,colors,lv,phys,_raw:this.all[id]},base)
       
       return ppl  
     },
@@ -230,13 +231,29 @@ let peopleFactory = (app) => {
       else if(P.bio[0][0] === "d") name += " droid"
       else if(P.bio.length>1) name += " hybrid"
       else name += " people"
+
+      if(P._raw.notes) name = P._raw.notes + " ("+name+")"
       
       return name 
     } 
   }
 
   //64 people 
-  for(let i = 0; i< 64; i++) app.people.factory()
+  //core people for the planes 
+  let corePeople = [
+    {phys:"hu",bio:["pt"],notes:"Fae"},
+    {phys:"hu",bio:["mm"],notes:"Urim"},
+    {phys:"hu",bio:["ll"],notes:"Puri"},
+    {bio:["ac04l","ac13c"],notes:"Drake"},
+    {bio:["dh"],notes:"Klik Roller"},
+    {bio:["dc"],notes:"Klik Tripod"},
+  ], P;
+  for(let i = 0; i< 64; i++) {
+    P = app.people.factory()
+    if(i < corePeople.length) {
+      P = Object.assign(P,corePeople[i])
+    }
+  }
 
 }
 

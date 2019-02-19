@@ -33,6 +33,8 @@
     </div>
     <div id="ui-info" v-if="show" align="center" v-cloak>
       <div id="info-options">
+        <button class="btn btn-info btn-block" type="button" @click="showPeople()">People of the Outlands</button>
+        <button class="btn btn-info btn-block" type="button" @click="showFactions()">Factions</button>
         <button class="btn btn-info btn-block" type="button" @click="showCharacter()">Characters</button>
         <h5 class="mt-2">{{ETHAddress}}</h5>
         <div class="input-group">
@@ -112,8 +114,41 @@
       <canvas id="display" align="center" height="800" width="800" v-if="twoD" v-cloak></canvas>
     </div>
     <div id="container"></div>
+    <template id="outlands-factions">
+      <div id="faction-data" class="modal-content p-1">
+        <h4>Factions</h4>
+        <div align="center">
+          <div class="btn-group" align="center" role="group">
+            <button type="button" class="btn btn-secondary" @click="type=0">Active ({{filtered(0).length}})</button>
+            <button type="button" class="btn btn-secondary" @click="type=1">Trouble ({{filtered(1).length}})</button>
+            <button type="button" class="btn btn-secondary" @click="type=2">Ancient ({{filtered(2).length}})</button>
+          </div>
+        </div>
+        <div class="faction" v-for="(f,id) in filtered(type)">
+          <div class="row">
+            <div class="col m-0 p-0"><h5>{{f.name}}</h5></div>
+            <div class="col" align="right">Rank: {{f.rank}}</div>
+          </div>
+          <div><span class="font-weight-bold">Aspects: </span> {{f.aspects.join(' / ')}}</div>
+          <div><span class="font-weight-bold">People: </span> {{f.people.join('; ')}}</div>
+          <div v-if="claims[id].length>0"><span class="font-weight-bold">Planes: </span> {{claims[id].join(', ')}}</div>
+        </div>
+      </div>
+    </template>
+    <template id="outlands-people">
+      <div id="people-data" class="modal-content p-1">
+        <h5 class="row">
+          <div class="col">People</div>
+          <div class="col">Factions</div>
+        </h5>
+        <div class="row m-0 pl-1" v-for="(p,id) in allPeople" v-if="factionNames[id].length>0">
+          <div class="col">{{p.name}}</div>
+          <div class="col">{{factionNames[id].join(', ')}}</div>
+        </div>
+      </div>
+    </template>
     <template id="swn-character">
-      <div class="modal-content">
+      <div id="char-editor" class="modal-content">
         <div class="input-group p-1">
           <select class="custom-select" v-model="loadId">
             <option v-for="(data,cid) in allCharacters" v-bind:value="cid">{{data.name.length>0 ? data.name : 'NAME'}}</option>
@@ -124,31 +159,17 @@
             <button type="button" class="btn btn-secondary" @click="close()" data-dismiss="modal">&times;</button>
           </div>
         </div>
-        <div class="modal-body" v-if="swnLevel > 0" v-cloak>
+        <div class="modal-body" v-if="cpxLevel > 0" v-cloak>
           <h4>
             <input type="text" class="form-control" v-model="name">
           </h4>
-          <h5 class="m-0">
-            Class
-            <button class="btn btn-success btn-sm" type="button" @click="swnClasses.push('exp')" v-if="swnClasses.length<3">&#10010;</button>
-          </h5>
-          <div class="swn-class" v-for="(c,i) in swnClasses">
-            <div class="input-group">
-              <select class="custom-select" v-model="swnClasses[i]">
-                <option v-for="(val,key) in swnClassData" v-if="val.canSelect" v-bind:value="key">{{val.name}}</option>
-              </select>
-              <div class="input-group-append">
-                <button class="btn btn-warning" type="button" @click="swnClasses.splice(i,1)">&#10005;</button>
-              </div>
-            </div>
-          </div>
           <div class="d-flex flex-wrap m-1">
             <div id="swn-level">
               <div class="input-group">
                 <div class="input-group-prepend">
                   <span class="input-group-text">Level</span>
                 </div>
-                <input type="number" class="form-control" v-model="swnLevel">
+                <input type="number" class="form-control" v-model="cpxLevel">
                 <div class="input-group-prepend">
                   <span class="input-group-text">XP</span>
                 </div>
@@ -168,26 +189,29 @@
               </div>
             </div>
           </div>
-          <h5 class="m-0">Attributes</h5>
-          <div class="swn-atrib" v-for="(n,i) in OSRAttributeNames">
-            <div align="center">
-              <span class="font-weight-bold text-uppercase">{{n}}</span>
+          <h5 class="section-header">
+            <span>Aspects </span>
+            <button class="btn btn-secondary btn-sm font-italic font-wight-bold" type="button" @click="aboutAspects()">i</button>
+            <button class="btn btn-success btn-sm" type="button" @click="aspects.push('')">&#10010;</button>
+          </h5>
+          <div class="mb-1">
+            <div v-for="(a,i) in aspects">
               <div class="input-group">
-                <input type="number" class="form-control" v-model="osrAttributes[i]">
+                <input type="text" class="form-control" v-model="aspects[i]">
                 <div class="input-group-append">
-                  <span class="input-group-text">{{attributeBonus[i]}}</span>
+                  <button class="btn btn-warning" type="button" @click="aspects.splice(i,1)">&#10005;</button>
                 </div>
               </div>
             </div>
           </div>
-          <h5 class="pt-1">
+          <h5 class="section-header">
             <span>Skills </span>
             <button class="btn btn-success btn-sm mx-1" type="button" @click="showAddSkill = !showAddSkill">&#10010;</button>
           </h5>
           <div class="swn-skill" v-if="showAddSkill">
             <div class="input-group">
               <select class="custom-select" v-model="newSkill">
-                <option v-for="(val,key) in swnSkills" v-bind:value="key">{{key}}</option>
+                <option v-for="(val,key) in cpxSkills" v-bind:value="key">{{key}}</option>
               </select>
               <div class="input-group-append">
                 <button class="btn btn-success" type="button" @click="addSkill()">Add</button>
@@ -205,39 +229,33 @@
               </div>
             </div>
           </div>
-          <h5 class="pt-1">
+          <h5 class="section-header">
+            <span>Powers </span>
+            <button class="btn btn-success btn-sm" type="button" @click="cpxPowers.push(['',1,''])">&#10010;</button>
+          </h5>
+          <div class="mb-1">
+            <div v-for="(p,i) in cpxPowers">
+              <div class="input-group">
+                <select class="custom-select" style="max-width:150px;" v-model="cpxPowers[i][0]">
+                  <option v-for="(p,i) in CPXPowerData" v-bind:value="p.id">{{p.name}}</option>
+                </select>
+                <input type="number" min="1" max="10" class="form-control" style="max-width:50px;" v-model="cpxPowers[i][1]">
+                <input type="text" class="form-control" placeholder="EXTRAS/LIMITS" v-model="cpxPowers[i][2]">
+                <div class="input-group-append">
+                  <button class="btn btn-warning" type="button" @click="cpxPowers.splice(i,1)">&#10005;</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <h5 class="section-header">
             <span>Gear </span>
-            <button class="btn btn-success btn-sm mx-1" type="button" @click="addGear()">&#10010;</button>
+            <button class="btn btn-success btn-sm mx-1" type="button" @click="gear.push('')">&#10010;</button>
           </h5>
-          <div v-for="g in gear">
+          <div v-for="(g,i) in gear">
             <div class="input-group">
-              <select class="custom-select" v-model="g.w">
-                <option v-for="(val,key) in gearTypes" v-bind:value="key">{{val}}</option>
-              </select>
-              <input type="text" class="form-control" placeholder="NAME" v-model="g.n">
-              <input type="text" class="form-control" placeholder="effect/dmg" v-model="g.e">
-              <input type="text" class="form-control" v-model="g.r" v-if="g.w == 'wp'">
-            </div>
-            <div class="input-group">
-              <input type="text" class="form-control" placeholder="SPECIAL" v-model="g.s">
-            </div>
-          </div>
-          <h5>Class Abilities</h5>
-          <div class="swn-abilities" v-for="(a,i) in classAbilities">
-            <h6 data-toggle="collapse" :data-target="'#cA-'+i" style="text-decoration: underline;">{{a.title}} {{a.name}}</h6>
-            <div class="border pl-1 collapse" :id="'cA-'+i">
-              <div v-html="a.ability"></div>
-            </div>
-          </div>
-          <h5 v-if="classGifts">
-            Class Gifts
-            <button class="btn btn-info btn-sm" type="button" @click="showAllGifts = !showAllGifts">{{showAllGifts ? "All" : "Selected"}}</button>
-          </h5>
-          <div class="swn-abilities" v-for="(cg,cid) in classGifts">
-            <h6>{{cg.name}}</h6>
-            <div class="border pl-1">
-              <div class="pl-1">
-                <p v-for="(g,key) in cg.gifts" :class="{selected : swnGifts.includes(cid+'.'+key)}" @click="editGift(cid,key)" v-if="showAllGifts || swnGifts.includes(cid+'.'+key)">{{g}}</p>
+              <input type="text" class="form-control" placeholder="Info" v-model="gear[i]">
+              <div class="input-group-append">
+                <button class="btn btn-warning" type="button" @click="gear.splice(i,1)">&#10005;</button>
               </div>
             </div>
           </div>

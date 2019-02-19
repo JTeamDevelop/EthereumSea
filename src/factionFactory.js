@@ -29,16 +29,6 @@
 //"name","nb"
 
 const APPROACHES = ["Careful", "Clever", "Flashy", "Forceful", "Quick", "Sneaky"]
-const NATURES = ["Combatant", "Expert", "Spellcaster"]
-const MAJORSKILLS = ["Arcane", "Combat", "Diplomacy", "Exploration", "Science", "Thievery"]
-const SUBSKILLS = [
-  ["Magic","Natural","Psychic"],
-  ["Fight","Physique","Shoot"],
-  ["Empathy","Rapport","Provoke"],
-  ["Athletics","Notice","Pilot"],
-  ["Craft","Investigate","Lore"],
-  ["Burglary","Decieve","Stealth"]
-]
 
 let factionFactory = (app)=>{
   let chance = new Chance(Math.round(Math.random() * Date.now()))
@@ -62,12 +52,15 @@ let factionFactory = (app)=>{
       this._name = this.placeName(RNG)
       //identifying color
       this._idColor = d3.interpolateRainbow(RNG.random())
-      //skillset
-      this._skills = d3.shuffle([0, 1, 2, 3, 4, 5])
-      //colors 
-      this._colors = d3.shuffle([0, 1, 2, 3, 4, 5]).slice(0, 2)
+      //aspects
+      this._approach = RNG.d6()-1
+      this._cpxColor = RNG.d6()-1
+      //skills 
+      let SG = this._skillGroups = d3.shuffle([0, 1, 2, 3, 4, 5])
+      let sid = app.CPX.skillGroupIds
+      this._skills = SG.slice(0,2).map(i => RNG.pickone(app.CPX.skillGroups[sid[i]]))
       //claims
-      this._claims = []
+      this.assets = []
       //people
       this._people = {
         _raw : [],
@@ -82,12 +75,6 @@ let factionFactory = (app)=>{
       }
     }
     get entity () { return app.factions.all[this._id] }
-    set notes(notes) {
-      this._data.notes = notes
-    }
-    get notes() {
-      return this._data.notes || ""
-    }
     get rank() {
       return this._rank
     }
@@ -103,30 +90,17 @@ let factionFactory = (app)=>{
     get name() {
       return this._data.name || this._name
     }
+    get aspects () { 
+      return [APPROACHES[this._approach],app.colors[this._cpxColor]].concat(this._skills)
+    }
     set idColor(color) {
       this._data.color = color
     }
     get idColor() {
       return this._data.color || this._color
     }
-    set tech(tech) {
-      this._data.tech = tech
-    }
-    get tech() {
-      return this._data.tech || this._tech
-    }
     get people() {
       return this._people._raw.map(P => app.people.name(P))
-    }
-    get isPlayer () { return app.player._fi === this._i }
-    addTag(tag) {
-      if (this._data.tags)
-        this._data.tags.push(tag)
-      else
-        this._data.tags = [tag]
-    }
-    get tags() {
-      return this._data.tags || this._prof
     }
     addPlot() {
       let p = {
@@ -207,34 +181,20 @@ let factionFactory = (app)=>{
       let npc = this.npc(RNG, opts)
       return npc.themeData.spells
     }
-    addClaim(fid) {
-      let id = fid.split(".").map(n => parseInt(n,16))
-      let lv = id[0], j = id[1], n = id[2];
-      //claims by level, area, step 
-      if(!app.claims[lv]) app.claims[lv] = {}
-      if(!app.claims[lv][j]) app.claims[lv][j] = []
-      if(!app.claims[lv][j][n]) app.claims[lv][j][n] = []
+    addBase(id) {
+      if(!this.assets) this.assets = []
 
-      let claims = app.claims[lv][j][n]
-      if(claims.length === 0) {
-        //name it
-        app.findNames.set(fid, this.placeName()) 
-      }
-      //add claim 
-      if(!claims.includes(this._i)) claims.push(this._i)
-      //add claim to self
-      this._claims.push(fid) 
+      this.assets.push({what:"base",where:id})
     } 
     get claims () {
-      return this._claims.map(id => app.Outlands.identifyFind(id))
+      let pids = this.assets.reduce((all,asset) => {
+        if(!all.includes(asset.where)) all.push(asset.where);
+        return all
+      },[])
+      return pids.map(id => app.planes._current[id])
     }
-    get dimensions () {
-      return this.claims.reduce((all,claim) => {
-          if(!all.includes(claim.i)) all.push(claim.i)
-          return all
-        },[])
-    }
-    get isTrouble () { return this._trouble || false }
+    get isAncient () { return this.entity.isAncient || false }
+    get isTrouble () { return this.entity.isTrouble || false }
     get activeTrouble () { return this.entity.at }
     makeTrouble(id) {
       //get active trouble 
@@ -310,13 +270,21 @@ let factionFactory = (app)=>{
   }
 
   app.ECS.newCollection("factions")
-  //general plane component 
+  //general faction 
   app.ECS.newComponent({
     name: "isESFaction",
     description: "Ethereum Sea Faction Data",
     state: {
       r : -1,
       isTrouble: false,
+    }
+  })
+  //general asset 
+  app.ECS.newComponent({
+    name: "hasAssets",
+    description: "Holds Assets",
+    state: {
+      assets: [],
     }
   })
 
@@ -342,6 +310,7 @@ let factionFactory = (app)=>{
         }
         app.ECS.addComponent(F, "inHierarchy")
         app.ECS.addComponent(F, "isESFaction")
+        app.ECS.addComponent(F, "hasAssets")
         //set entity 
         all[id] = F
       }
@@ -391,16 +360,24 @@ let factionFactory = (app)=>{
   //trouble 
   let troubleAtRank = [2, 4, 4, 3, 2, 1]
 
+  let F;
   factionsAtRank.forEach((n,r)=>{
     for (let i = 0; i < n; i++) {
-      app.factions.factory({r:r+1})
+      F = app.factions.factory({r:r+1})
+      app.factions.generate(F.id)
     }
   })
   troubleAtRank.forEach((n,r)=>{
-    for (let i = 0; i < n; i++) app.factions.factory({r:r+1, isTrouble:true})
+    for (let i = 0; i < n; i++) {
+      F = app.factions.factory({r:r+1, isTrouble:true})
+      app.factions.generate(F.id)
+    }
   })
   ancientsAtRank.forEach((n,r)=>{
-    for (let i = 0; i < n; i++) app.factions.factory({r:r+3, isAncient:true})
+    for (let i = 0; i < n; i++) {
+      F = app.factions.factory({r:r+3, isAncient:true})
+      app.factions.generate(F.id)
+    }
   })
 
   console.log("Factions Generated")

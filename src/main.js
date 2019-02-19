@@ -11,6 +11,7 @@ import {EthereumConnect} from "./EthereumConnect.js"
 //player  
 import {playerFactory} from "./playerFactory.js"
 //characters  
+import {CPXData} from "./CPXRPG.js"
 import {characterFactory} from "./characterFactory.js"
 //handle hex creation
 import {hexFactory, generateHexes, hexPlacement, hexDraw} from "./hexFactory.js"
@@ -58,7 +59,6 @@ let app = {
         let r = parseInt(hash.slice(2,8), 16)%(2097150)
         return 1 + this._rarity.findIndex(v => r < v)               
     },
-    colors : ["ruby","topaz","citrine","emerald","sapphire","amethyst"],
     planeProducts : products
 }
 
@@ -70,6 +70,7 @@ EthereumConnect(app)
 //setup hex meshes
 hexFactory(app)
 //people & factions 
+CPXData(app)
 peopleFactory(app)
 factionFactory(app)
 //player 

@@ -268,6 +268,8 @@ let planeFactory = (app)=>{
       let fib = [10,15,15,15,5,4]
       let fi = fia[fr-1]+parseInt(nhash.slice(3,4),16)%fib[fr-1]
       let F = app.factions.generate(fi)
+      //add base 
+      F.addBase(chainID + P.id)
 
       //make the names 
       let names = this.makeNames(nhash, F._nb, nR+1)
@@ -282,6 +284,7 @@ let planeFactory = (app)=>{
         _raw: P,
         _hex : HEX,
         _fi : fi, 
+        get name() { return this._stats.names[0]},
         get faction () { return app.factions.generate(this._fi) },
         get needs () {
           //compute the day - needs change every day 
@@ -446,13 +449,7 @@ let planeFactory = (app)=>{
       app.UI.findModal.ri = h.i
       app.UI.findModal.finds = h.finds
       //open modal
-      if (app.UI.findModal.findText.length > 0)
-        $('#ui-find').modal('show')
-        //else 
-      else
-        app.notify({
-          h: "No Finds"
-        })
+      
     },
     /* Make a Find
       @param ri - the region index   

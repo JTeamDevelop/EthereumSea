@@ -9,8 +9,35 @@ body {
 }
 
 /*
+  Classes for People data
+*/
+#people-data .row:nth-child(even) {
+  background-color: rgba(178, 234, 242, 0.5);
+}
+
+/*
+  Classes for Faction data
+*/
+#faction-data .faction {
+  padding-left: 5px;
+}
+#faction-data .faction:nth-child(even) {
+  background-color: rgba(178, 234, 242, 0.5);
+}
+
+/*
   Classes for SWN Character Sheet
 */
+#char-editor .section-header {
+  text-align: center;
+  background-color: lightgrey;
+  margin-bottom: 3px;
+}
+#char-editor .section-header button {
+  margin: 2px;
+  width: 30px;
+}
+
 .swn-class {
   width: 33%;
   display: inline-flex;
@@ -22,6 +49,7 @@ body {
 .swn-skill {
   width: 50%;
   display: inline-flex;
+  margin-bottom: 3px;
 }
 #swn-level {
   width: 50%;
