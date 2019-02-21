@@ -26,6 +26,13 @@ body {
 }
 
 /*
+  Classes for Plane data
+*/
+#plane-data .ruinName {
+  padding-right: 5px;
+}
+
+/*
   Classes for SWN Character Sheet
 */
 #char-editor .section-header {
@@ -75,6 +82,24 @@ body {
     width: 33%;
     display: inline-flex;
   }
+}
+
+/*
+  Classes for Ruin display
+*/
+#ruin-display circle {
+  opacity: 0;
+}
+#ruin-display .visible {
+  opacity: 1;
+}
+#ruin-display .visible.region {
+  opacity: 0.2;
+  stroke: black;
+  stroke-width: 0.5;
+}
+#ruin-display .visible.zone {
+  opacity: 0.5;
 }
 
 #ui-main {

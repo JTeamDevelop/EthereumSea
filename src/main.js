@@ -18,6 +18,7 @@ import {hexFactory, generateHexes, hexPlacement, hexDraw} from "./hexFactory.js"
 //load planes 
 import * as products from "./productLibrary.js"
 import {planeFactory} from "./planeFactory.js"
+import {ruinFactory} from "./ruinFactory.js"
 //creatures 
 import * as creatures from "./creatureFactory.js"
 //people 
@@ -76,6 +77,7 @@ factionFactory(app)
 //player 
 outlandsFactory(app)
 planeFactory(app)
+ruinFactory(app)
 forceFactory(app)
 playerFactory(app)
 characterFactory(app)

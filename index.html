@@ -28,15 +28,15 @@
     </div>
     <div class="modal fade" id="ui-modal" role="dialog">
       <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-        <component v-bind:is="currentComponent"></component>
+        <component v-bind:is="currentComponent" :uid="id"></component>
       </div>
     </div>
     <div id="ui-info" v-if="show" align="center" v-cloak>
-      <div id="info-options">
+      <component v-bind:is="currentComponent"></component>
+      <div id="info-options" v-if="currentComponent.length==0">
         <button class="btn btn-info btn-block" type="button" @click="showPeople()">People of the Outlands</button>
         <button class="btn btn-info btn-block" type="button" @click="showFactions()">Factions</button>
         <button class="btn btn-info btn-block" type="button" @click="showCharacter()">Characters</button>
-        <h5 class="mt-2">{{ETHAddress}}</h5>
         <div class="input-group">
           <div class="input-group-prepend">
             <span class="input-group-text">Month</span>
@@ -58,15 +58,15 @@
           <button class="btn btn-outline-success m-0" type="button" @click="showNav = !showNav,getAllPlanes()">
             <img src="media/iconic/globe.svg" height="24" width="24">
           </button>
-          <button class="btn btn-outline-success m-0" type="button" @click="showInfo()">&ii;</button>
+          <button class="btn btn-outline-success m-0 font-weight-bold font-italic" type="button" @click="showInfo()">i</button>
         </h1>
         <div v-if="name" v-cloak>
-          <h5>{{name}}</h5>
+          <h5 class="moreInfo" @click="planeData()">{{name}}</h5>
           <div class="d-inline-flex">
             <span class="px-1">
               Faction: <span class="moreInfo" @click="showFaction=true">{{faction.name}}</span>
             </span>
-            <span class="px-1" v-if="stats.cities.length>0" v-cloak>Cities: {{stats.cities.length}}</span>
+            <span class="px-1" v-if="stats.cities>0" v-cloak>Cities: {{stats.cities}}</span>
             <div class="px-1 d-inline-flex" v-if="CCPX.length>0" v-cloak>
               <span class="pr-1">CPX: </span>
               <div v-for="c in CCPX" :style="c"></div>
@@ -114,9 +114,36 @@
       <canvas id="display" align="center" height="800" width="800" v-if="twoD" v-cloak></canvas>
     </div>
     <div id="container"></div>
+    <template id="ruin-modal-ui">
+      <div id="ruin-modal" class="modal-content">
+        <h5 align="center">{{ruin.name}}
+          <button type="button" class="close mr-1" data-dismiss="modal">&times;</button>
+        </h5>
+        <svg id="ruin-display" align="center" height="800" width="800" v-if="twoD" v-cloak></svg>
+      </div>
+    </template>
+    <template id="outlands-plane-modal">
+      <div id="plane-data" class="modal-content p-1">
+        <h5 class="row m-0 p-0">
+          <div class="col p-0">{{plane.name}}</div>
+          <div class="col">
+            <button type="button" class="close mr-1" data-dismiss="modal">&times;</button>
+          </div>
+        </h5>
+        <div><span class="font-weight-bold">Cities: </span> {{cityNames.join(", ")}}</div>
+        <div class="d-flex">
+          <span class="font-weight-bold pr-1">Ruins: </span> 
+          <span class="ruinName moreInfo" v-for="(name,i) in ruinNames" @click="enterRuin(i)">{{name}}</span> 
+        </div>
+      </div>
+    </template>
     <template id="outlands-factions">
       <div id="faction-data" class="modal-content p-1">
-        <h4>Factions</h4>
+        <h4>Factions
+          <button type="button" class="close mr-1" data-dismiss="modal">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </h4>
         <div align="center">
           <div class="btn-group" align="center" role="group">
             <button type="button" class="btn btn-secondary" @click="type=0">Active ({{filtered(0).length}})</button>
@@ -125,7 +152,7 @@
           </div>
         </div>
         <div class="faction" v-for="(f,id) in filtered(type)">
-          <div class="row">
+          <div class="row m-0 p-0">
             <div class="col m-0 p-0"><h5>{{f.name}}</h5></div>
             <div class="col" align="right">Rank: {{f.rank}}</div>
           </div>
@@ -140,6 +167,9 @@
         <h5 class="row">
           <div class="col">People</div>
           <div class="col">Factions</div>
+          <button type="button" class="close mr-1" data-dismiss="modal">
+            <span aria-hidden="true">&times;</span>
+          </button>
         </h5>
         <div class="row m-0 pl-1" v-for="(p,id) in allPeople" v-if="factionNames[id].length>0">
           <div class="col">{{p.name}}</div>

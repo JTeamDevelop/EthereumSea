@@ -182,7 +182,7 @@ let planeFactory = (app)=>{
       for(let x in this._current){
         all.push({
           id: x,
-          name : this._current[x]._stats.names[0]
+          name : this._current[x].name
         })
       }
       return all.sort((a,b) => { 
@@ -231,20 +231,13 @@ let planeFactory = (app)=>{
 
       return P
     },
-    get creatures () {
-      let hash = this.current._hash
-      return {
-        land : d3.range(5).map(v => ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [hash, "landCreature", v])),
-        water : d3.range(5).map(v => ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [hash, "waterCreature", v]))
-      }
+    hash (id) {
+      let P = this.all[id]
+      return ethers.utils.solidityKeccak256(['bytes32', 'uint256', 'address'], [app.seed, P.chain, P.id])
     },
-    makeNames(seed, lang, n) {
-      let RNG = new Chance(seed)
-      return d3.range(n + 1).map(_=>app.names.generateName(lang, RNG))
-    },
-    generate(P) {
-      let chainID = CHAINS[P.chain]
-      let nhash = ethers.utils.solidityKeccak256(['bytes32', 'uint256', 'address'], [app.seed, P.chain, P.id])
+    regions (id) {
+      let P = this.all[id]
+      let hash = this.hash(id)
 
       let maxArea = P.balance
       let maxR = maxArea / (128 * 128)
@@ -253,125 +246,142 @@ let planeFactory = (app)=>{
       //determine the max number of regions 
       let bR = [1, 2, 4, 6, 8, 12, 16, 20, 24, 30, 36, 42, 48, 56, 64, 72]
       let mR = [1, 1.1, 1.2, 1.3, 1.5, 1.75, 2, 3]
-      let nR = bR[parseInt(nhash.slice(4, 6), 16) % 16] * mR[parseInt(nhash.slice(6, 8), 16) % 8]
+      let nR = bR[parseInt(hash.slice(4, 6), 16) % 16] * mR[parseInt(hash.slice(6, 8), 16) % 8]
       nR = nR > maxR ? Math.floor(nR) : maxR
-      //create the hex 
-      let HEX = new app.Hex({
-          seed: nhash,
-          size : nR
+      
+      return nR
+    },
+    finds (id) {
+      let nR = this.regions(id)
+      let hash = this.hash(id)
+
+      let resources = [0,0,0,0,0,0], cities = [], 
+        arcane = 0, lairs = [], terrains = [], ruins = [];
+
+      let finds = d3.range(nR).map(i => {
+        let findHash = ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [hash, "finds", i])  
+        let ni = parseInt(findHash.slice(2, 4), 16) % 16
+        let nf = ni >= 8 ? 2 : ni >= 1 ? 1 : 3
+
+        //run finds 
+        let iFind = d3.range(nf).map(v=>{
+          let fid = 1 + parseInt(findHash.slice(4 + (v * 2), 6 + (v * 2)), 16)
+          let name = getFindName(fid)
+          let color = parseInt(findHash.slice(10 + (v * 2), 12 + (v * 2)), 16)%6
+          //cities wont be on water or above a certain altitude 
+          /*
+          if (name === "city" && ["deepWater", "shallowWater","mountains"].includes(T)) {
+            name = ["enigma", "dwelling", "ruin"][fid % 3]
+          }
+          */
+          //check for resource
+          if(name === "resource") resources[color]++;
+          //check cities
+          if(name === "city") cities.push(i);
+          //push ruins
+          if(name === "ruin") ruins.push(i);
+          //push lairs
+          if(name === "lair") lairs.push(i);
+          //terrains
+          if(["obstacle","newTerrain","landmark"].includes(name)) terrains.push(i);
+
+          return {name,color}
+        })
+
+        return { i, hash: findHash, finds: iFind }  
       })
 
+      return { finds, cities, resources, terrains, lairs, ruins }
+    },
+    factionIds (id) {
+      //let factionsAtRank = [5, 7, 8, 7, 3, 2]
+      //let troubleAtRank = [2, 4, 4, 3, 2, 1]
+      //let ancientsAtRank = [5, 7, 8, 7, 3, 2]
+      
+      let hash = this.hash(id)
       //faction/culture
       //certain factions are more likely based upon rank
-      let fr = [1,2,2,3,3,4,4,4,5,5,5,5,6,6,6,6][parseInt(nhash.slice(2,3),16)]
-      let fia = [0,10,25,40,55,60]
-      let fib = [10,15,15,15,5,4]
-      let fi = fia[fr-1]+parseInt(nhash.slice(3,4),16)%fib[fr-1]
-      let F = app.factions.generate(fi)
-      //add base 
-      F.addBase(chainID + P.id)
+      let fr = [1,2,2,3,3,4,4,4,5,5,5,5,6,6,6,6][parseInt(hash.slice(2,3),16)]
+      let fia = [0,4,11,19,26,29]
+      let fib = [5, 7, 8, 7, 3, 2]
+      let fi = fia[fr-1]+parseInt(hash.slice(3,4),16)%fib[fr-1]
+      //ancient - completely random - between 0-32, starts at 32+16
+      let ai = 32+16+ parseInt(hash.slice(4,6),16)%32
 
-      //make the names 
-      let names = this.makeNames(nhash, F._nb, nR+1)
-      
-      let resources = [0,0,0,0,0,0]
-      let cities = [], arcane = 0, lairs = [], terrains = [], ruins = []; 
+      return {fi,ai}
+    },
+    tradeData (id) {
+      //compute the day - needs change every day 
+      let seconds = Date.now()/1000
+      let day = Math.floor(seconds/60/60/24)
+      //hash 
+      let needHash = ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [this.hash(id), "needs", day])
+      let exportHash = ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [this.hash(id), "exports", day])
+      //categories
+      let ptoc = app.planeProducts.PTOC
       let colors = d3.interpolateSinebow
-      //place 
-      this._current[chainID + P.id] = {
-        _id: chainID + P.id,
-        _hash: nhash, 
-        _raw: P,
+      //function to determine need/export from hash 
+      const NEFromHash = (i,hash) => {
+        let v = parseInt(hash.slice(2+(i*2),4+(i*2)),16)%32
+        let n = ptoc[v]
+        //offset index 
+        n = n < 10 ? "0"+n : n
+        return {
+          i : v,
+          src : "hs_"+n+".png",
+          color : colors(v/31)
+        }
+      }
+
+      //run need 
+      let need = NEFromHash(0,needHash)
+      //number of exports
+      let ne = [2,3,3,4,4,4,5,5][parseInt(exportHash.slice(2,4),16)%8]
+      //exports 
+      let exports = d3.range(ne).map(i => NEFromHash(1+i,exportHash))
+        .filter(e => e.i !== need.i)
+            
+      return { need, exports }
+    },
+    makeHexLayout (id) {
+      return new app.Hex({
+          seed: this.hash(id),
+          size : this.regions(id)
+      })
+    },
+    makeNames(seed, lang, n) {
+      let RNG = new Chance(seed)
+      return d3.range(n + 1).map(_=>app.names.generateName(lang, RNG))
+    },
+    generate(id) {
+      let hash = this.hash(id),
+        nR = this.regions(id),
+        HEX = this.makeHexLayout(id),
+        finds = this.finds(id),
+        fids = this.factionIds(id), 
+        faction = app.factions.generate(fids.fi),
+        ancient = app.factions.generate(fids.ai);
+
+      this._current[id] = {
+        _id : id,
+        _entity : this.all[id],
+        hash : hash,
+        //make the names 
+        names : this.makeNames(hash,faction._nb,nR+1),
+        ancientNames : this.makeNames(hash,ancient._nb,nR+1),
+        get name () { return this.names[0] },
+        //faction 
+        faction,
+        //trade data 
+        get tradeData () { return app.planes.tradeData(id) },
+        //hex data 
         _hex : HEX,
-        _fi : fi, 
-        get name() { return this._stats.names[0]},
-        get faction () { return app.factions.generate(this._fi) },
-        get needs () {
-          //compute the day - needs change every day 
-          let seconds = Date.now()/1000
-          let day = Math.floor(seconds/60/60/24)
-          //hash 
-          let hash = ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [nhash, "needs", day])
-          //two needs
-          let ptoc = app.planeProducts.PTOC
-          //2 needs 
-          return d3.range(1).map(v => {
-            v = parseInt(hash.slice(2+(v*2),4+(v*2)),16)%32
-            let n = ptoc[v]
-            //offset index 
-            let c = colors(v/32)
-            n = n < 10 ? "0"+n : n
-            return {
-              i : v,
-              src : "hs_"+n+".png",
-              color : colors((n-1)/21)
-            }  
-          })
-        },
-        get exports () {
-          //compute the day - exports change every day 
-          let seconds = Date.now()/1000
-          let day = Math.floor(seconds/60/60/24)
-          //hash 
-          let hash = ethers.utils.solidityKeccak256(['bytes32', 'string', 'uint256'], [nhash, "exports", day])
-          let needs = this.needs.map(n => n.i)
-          let ptoc = app.planeProducts.PTOC
-          //number of exports
-          let ne = [2,3,3,4,4,4,5,5][parseInt(hash.slice(2,4),16)%8]
-          return d3.range(ne).map(v => {
-            v = parseInt(hash.slice(4+(v*2),6+(v*2)),16)%32
-            let n = ptoc[v]
-            //offset index 
-            let c = colors(v/32)
-            n = n < 10 ? "0"+n : n
-            return {
-              i : v,
-              src : "hs_"+n+".png",
-              color : colors((n-1)/21)
-            }  
-          }).filter(e => !needs.includes(e.i))
-        },
-        _data : HEX._major.map((h,i) =>{
-          let T = HEX._majT[i]
-          let hash = ethers.utils.solidityKeccak256(['bytes32', 'uint256'], [nhash, i])
-          let ni = parseInt(hash.slice(2, 4), 16) % 16
-          let nf
-          if (ni >= 8)
-            nf = 2;
-          else if (ni >= 1)
-            nf = 1;
-          else
-            nf = 3;
-
-            //run finds 
-          let finds = d3.range(nf).map(v=>{
-            let fid = 1 + parseInt(hash.slice(4 + (v * 2), 6 + (v * 2)), 16)
-            let name = getFindName(fid)
-            let color = parseInt(hash.slice(10 + (v * 2), 12 + (v * 2)), 16)%6
-            //cities wont be on water or above a certain altitude 
-            if (name === "city" && ["deepWater", "shallowWater","mountains"].includes(T)) {
-              name = ["enigma", "dwelling", "ruin"][fid % 3]
-            }
-            //check for resource
-            if(name === "resource") resources[color]++;
-            //check cities
-            if(name === "city") cities.push({
-              hi : i,
-              name : names[i+1]
-            });
-            //push ruins
-            if(name === "ruin") ruins.push(i);
-            //push lairs
-            if(name === "lair") lairs.push(i);
-            //terrains
-            if(["obstacle","newTerrain","landmark"].includes(name)) terrains.push(i);
-
-            return {name,color}
-          })
-
-          return { i, hash, finds }  
-        }),
-        _stats : {names, cities, resources, terrains, lairs, ruins},
+        //finds 
+        finds : finds, 
+        get cities () { return this.finds.cities },
+        get resources () { return this.finds.resources },
+        get lairs () { return this.finds.lairs },
+        get ruins () { return this.finds.ruins },
       }
     },
     /*
@@ -500,7 +510,7 @@ let planeFactory = (app)=>{
   //create 128 
   for(let i = 0; i<128; i++) {
     let P = app.planes.factory("0x"+i, 1)
-    app.planes.generate(P)
+    app.planes.generate("local"+P.id)
   }
 }
 

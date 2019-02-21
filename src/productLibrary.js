@@ -66,7 +66,7 @@
 20	wood products
 */
 
-const PTOC = [1, 2, 3, 3, 4, 5, 5, 6, 6, 7, 8, 9, 9, 10, 10, 11, 11, 12, 13, 14, 14, 15, 15, 16, 17, 17, 18, 18, 19, 19, 19, 20, ]
+const PTOC = [1, 2, 3, 3, 4, 5, 5, 6, 6, 7, 8, 9, 9, 10, 10, 11, 11, 12, 13, 14, 14, 15, 15, 16, 17, 17, 18, 18, 19, 19, 19, 20]
 const categories = ["animal/veg bi-products", "animal hides", "animal products", "animal products", "arts and antiques", "chemical products", "chemical products", "foodstuffs", "foodstuffs", "footwear and headware", "instruments", "machines", "machines", "metals", "metals", "mineral products", "mineral products", "misc", "paper goods", "plastics and rubbers", "plastics and rubbers", "precious metals", "precious metals", "stone and glass", "textiles", "textiles", "transportation", "transportation", "vegetable products", "vegetable products", "vegetable products", "wood products"]
 const products = ["veg oils, olive oil", "animal hides", "animals", "milk, butter, cheese, honey", "sculpture, painting", "dyes, essential oils, rosin", "soap, medicine", "pasta, molasses, bran, cereal", "alcohol", "footwear and headware", "musical, scientific", "turbines, machines", "circuits, telephones, computers, ", "iron,  lead", "copper, aluminium,", "salt, cement", "petrol", "crayons, mattresses, lights, brooms, pens", "paper goods", "tires", "polymers", "gold, silver", "jewellery, gemstones", "stone and glass", "wool, cotton, silk", "clothes", "small vehicles", "large vehicles", "fruits, vegetables", "grains, nuts/seeds", "spices, tea/coffee", "wood products"]
 

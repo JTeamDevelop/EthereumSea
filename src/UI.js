@@ -1,6 +1,10 @@
 import {subUI as characterUI} from "./UICharacterSheet.js"
 import {subUI as peopleUI} from "./UIPeople.js"
 import {subUI as factionUI} from "./UIFactions.js"
+import {subUI as planeModalUI} from "./UIPlaneModal.js"
+import {subUI as ruinUI} from "./UIRuins.js"
+
+const CHAINS = ["local","ETH"]
 
 let glTest = ()=>{
   let tc = document.createElement('canvas')
@@ -46,6 +50,7 @@ let UI = (app) => {
   app.UI.modal = new Vue({
     el: '#ui-modal',
     data : {
+      id: "",
       currentComponent:"",
       tick : null
     },
@@ -62,6 +67,8 @@ let UI = (app) => {
   characterUI(app)
   peopleUI(app)
   factionUI(app)
+  planeModalUI(app)
+  ruinUI(app)
 
   app.UI.findModal = new Vue({
     el: '#ui-find',
@@ -97,10 +104,10 @@ let UI = (app) => {
     el: '#ui-info',
     data : {
       show : false,
-      month: 0
+      month: 0,
+      currentComponent:"",
     },
     computed : {
-      ETHAddress () { return app.wallets.main.address }
     },
     methods : {
       showCharacter () {
@@ -167,7 +174,8 @@ let UI = (app) => {
         return style
       },
       cityNames () {
-        return this.stats.cities.map(c => c.name)
+        let P = app.planes.current
+        return d3.range(this.stats.cities).map(i => P.names[i+1])
       }
     },
     methods : {
@@ -193,28 +201,39 @@ let UI = (app) => {
         this.RETH = RETH
         this.CPX = CPX
       },
+      planeData () {
+        //show 
+        app.UI.modal.currentComponent = "outlands-plane-modal"
+        app.UI.modal.id = this.planeAddress
+        $('#ui-modal').modal('show')
+      },
       viewPlane () {
         d3.select("#spinner").attr("class", "lds-dual-ring")
         
         let address = this.newPlaneAddress
-        let chain = this.chain
+        this.planeAddress = address
+        //let chain = this.chain
         //make it 
-        let P = app.planes.all[address] || app.planes.factory(address,1,chain)
+        let P = app.planes.all[address]
         //update 
         this.getAllPlanes()
         //generate it 
-        app.planes.generate(P)
+        app.planes.generate(address)
         app.planes.current = P 
         //stats
-        this.stats = app.planes.current._stats
+        this.stats = {
+          cities : app.planes.current.cities.length,
+          resources : app.planes.current.resources
+        }
         //name it 
-        this.name = this.stats.names[0]
+        this.name = app.planes.current.name
         //factionId
-        this.factionId = app.planes.current._fi
+        this.factionId = app.planes.current.faction._id
         //needs/exports 
+        let td = app.planes.current.tradeData
         this.ne = {
-          n : app.planes.current.needs,
-          e : app.planes.current.exports
+          n : [td.need],
+          e : td.exports
         }
         //display it 
         Vue.nextTick(() => {
@@ -222,6 +241,7 @@ let UI = (app) => {
         })
         //no show 
         this.showNav = false
+        this.newPlaneAddress = ""
       },
     }
   })

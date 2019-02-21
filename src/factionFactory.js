@@ -277,6 +277,7 @@ let factionFactory = (app)=>{
     state: {
       r : -1,
       isTrouble: false,
+      isAncient : false,
     }
   })
   //general asset 
@@ -335,6 +336,10 @@ let factionFactory = (app)=>{
       this._current[id] = new Faction(F)
       return this._current[id]
     },
+    get coreIds () {
+      let R = []
+      
+    }, 
     //get random faction 
     random (RNG, opts) {
       RNG = RNG || app.chance
