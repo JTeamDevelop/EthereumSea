@@ -1,3 +1,4 @@
+import {subUI as infoUI} from "./UIInfo.js"
 import {subUI as characterUI} from "./UICharacterSheet.js"
 import {subUI as peopleUI} from "./UIPeople.js"
 import {subUI as factionUI} from "./UIFactions.js"
@@ -50,7 +51,7 @@ let UI = (app) => {
   app.UI.modal = new Vue({
     el: '#ui-modal',
     data : {
-      id: "",
+      id: "0",
       currentComponent:"",
       tick : null
     },
@@ -64,69 +65,12 @@ let UI = (app) => {
   })
 
   //declare sub ui
+  infoUI(app)
   characterUI(app)
   peopleUI(app)
   factionUI(app)
   planeModalUI(app)
   ruinUI(app)
-
-  app.UI.findModal = new Vue({
-    el: '#ui-find',
-    data : {
-      ri : -1,
-      finds : []
-    },
-    computed : {
-      findText () {
-        //get the entity 
-        let P = app.planes.currentEntity
-        //do not supply once finds 
-        return this.finds.reduce((all,f,i) => {
-          if(P.once.includes(this.ri+"."+i)) return all
-
-          all.push({i,text:f.name})
-          return all 
-        },[])
-      }
-    },
-    methods : {
-      makeFind(fi) {
-        let find = app.planes.makeFind(this.ri, fi)
-        let lv = app.rarity(find.hash)
-        let color = app.colors[find.color]
-        let text = find.reward + " level "+lv+" "+color
-        app.notify({text:text})
-      }
-    }
-  })
-
-  app.UI.info = new Vue({
-    el: '#ui-info',
-    data : {
-      show : false,
-      month: 0,
-      currentComponent:"",
-    },
-    computed : {
-    },
-    methods : {
-      showCharacter () {
-        //show 
-        app.UI.modal.currentComponent = "swn-character-sheet"
-        $('#ui-modal').modal('show')
-      },
-      showPeople () {
-        //show 
-        app.UI.modal.currentComponent = "outlands-people"
-        $('#ui-modal').modal('show')
-      },
-      showFactions () {
-        //show 
-        app.UI.modal.currentComponent = "outlands-factions"
-        $('#ui-modal').modal('show')
-      }
-    }
-  })
 
   //creates the VUE js instance
   app.UI.main = new Vue({
@@ -179,7 +123,10 @@ let UI = (app) => {
       }
     },
     methods : {
-      showInfo () { app.UI.info.show = !app.UI.info.show },
+      showInfo () { 
+        app.UI.modal.currentComponent = "info-ui"
+        $('#ui-modal').modal('show')
+      },
       getAllPlanes () {
         this.allPlanes = app.planes.planeSelect
       },

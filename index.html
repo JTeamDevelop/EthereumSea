@@ -10,40 +10,9 @@
   </head>
   <body>
     <div id="spinner" class="lds-dual-ring"></div>
-    <div class="modal fade" id="ui-find" role="dialog">
-      <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLongTitle">Finds</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <button type="button" class="btn btn-success btn-block" data-dismiss="modal" v-for="f in findText" @click="makeFind(f.i)">{{f.text}}</button>
-          </div>
-          <div class="modal-footer"></div>
-        </div>
-      </div>
-    </div>
     <div class="modal fade" id="ui-modal" role="dialog">
       <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-        <component v-bind:is="currentComponent" :uid="id"></component>
-      </div>
-    </div>
-    <div id="ui-info" v-if="show" align="center" v-cloak>
-      <component v-bind:is="currentComponent"></component>
-      <div id="info-options" v-if="currentComponent.length==0">
-        <button class="btn btn-info btn-block" type="button" @click="showPeople()">People of the Outlands</button>
-        <button class="btn btn-info btn-block" type="button" @click="showFactions()">Factions</button>
-        <button class="btn btn-info btn-block" type="button" @click="showCharacter()">Characters</button>
-        <div class="input-group">
-          <div class="input-group-prepend">
-            <span class="input-group-text">Month</span>
-          </div>
-          <input type="number" class="form-control" min="0" v-model="month">
-        </div>
-        <button class="btn btn-info btn-block mt-2" type="button" @click="show = false">Close</button>
+        <component v-bind:is="currentComponent" v-bind:uid="id"></component>
       </div>
     </div>
     <div id="ui-main" align="center">
@@ -114,12 +83,55 @@
       <canvas id="display" align="center" height="800" width="800" v-if="twoD" v-cloak></canvas>
     </div>
     <div id="container"></div>
+    <template id="info-ui">
+      <div class="modal-content p-1" align="center">
+        <div style="max-width:600px;">
+            <button class="btn btn-info btn-block" type="button" @click="showPeople()">People of the Outlands</button>
+            <button class="btn btn-info btn-block" type="button" @click="showFactions()">Factions</button>
+            <button class="btn btn-info btn-block" type="button" @click="makeRuin()">Random Ruin</button>
+            <button class="btn btn-info btn-block" type="button" @click="showCharacter()">Characters</button>
+            <button class="btn btn-info btn-block" type="button" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </template>
     <template id="ruin-modal-ui">
       <div id="ruin-modal" class="modal-content">
         <h5 align="center">{{ruin.name}}
           <button type="button" class="close mr-1" data-dismiss="modal">&times;</button>
         </h5>
         <svg id="ruin-display" align="center" height="800" width="800" v-if="twoD" v-cloak></svg>
+        <div class="input-group p-1">
+          <select class="custom-select" v-model="loadCId">
+            <option v-for="(data,cid) in allCharacters" v-bind:value="cid">{{data.name.length>0 ? data.name : 'NAME'}}</option>
+          </select>
+          <div class="input-group-append">
+            <button class="btn btn-success" type="button" @click="addC()">Add</button>
+          </div>
+        </div>
+        <div class="px-1" :class="{'selected': activePC == i}" v-for="(c,i) in activeCharacters" @click="activePC = i">
+          <span class="font-weight-bold">{{c.name}}</span>
+          <span class="btn-skill" v-for="(val,s) in c.skills" @click="skillRoll(s,c,-1)">{{s}} {{val}}</span>
+        </div>
+        <div class="p-1">
+          <h5>Encounters</h5>
+          <div class="ruin-encounter" v-for="(e,i) in encounters">
+            <div class="d-flex">
+              <span>{{e.rz}} {{e.what}} </span>
+              <span class="px-2">({{e.aspects.join(" - ")}})</span>
+              <span class="px-2" v-if="e.dmg>0">Damage: {{e.dmg}}</span>
+              <span class="ml-auto"></span>
+              <span class="btn-skill" v-for="s in e.skills" @click="skillRoll(s,null,i)">{{s}}</span>
+            </div>
+            <div v-for="f in e.foes">
+              <span class="font-weight-bold">{{f.type}}</span>
+              <span>{{f.stats.AC}} {{f.stats.dmg}}</span>
+              <span>{{f.hd.length}}</span>
+            </div>
+            <div>
+              <span>{{e.state.join(" - ")}}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </template>
     <template id="outlands-plane-modal">
@@ -130,10 +142,10 @@
             <button type="button" class="close mr-1" data-dismiss="modal">&times;</button>
           </div>
         </h5>
-        <div><span class="font-weight-bold">Cities: </span> {{cityNames.join(", ")}}</div>
-        <div class="d-flex">
+        <div v-if="cityNames.length>0"><span class="font-weight-bold">Cities: </span> {{cityNames.join(", ")}}</div>
+        <div class="d-flex flex-wrap" v-if="ruinNames.length>0">
           <span class="font-weight-bold pr-1">Ruins: </span> 
-          <span class="ruinName moreInfo" v-for="(name,i) in ruinNames" @click="enterRuin(i)">{{name}}</span> 
+          <span class="ruinName moreInfo" :class="{'font-weight-bold': i<nmr}" v-for="(name,i) in ruinNames" @click="enterRuin(i)">{{name}}</span> 
         </div>
       </div>
     </template>

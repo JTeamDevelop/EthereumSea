@@ -251,9 +251,19 @@ let planeFactory = (app)=>{
       
       return nR
     },
+    countMajorRuins (id) {
+      let max = Math.floor(this.regions(id) / 5)
+      let hash = ethers.utils.solidityKeccak256(['bytes32', 'string'], [this.hash(id), "majorRuins"]) 
+      let mR = 0
+      for(let i = 0; i < max; i++) {
+        if(parseInt(hash.slice(2+i,3+i),16)%2 === 1) mR++
+      }
+      return mR
+    },
     finds (id) {
       let nR = this.regions(id)
       let hash = this.hash(id)
+      let mR = this.countMajorRuins(id)
 
       let resources = [0,0,0,0,0,0], cities = [], 
         arcane = 0, lairs = [], terrains = [], ruins = [];
@@ -291,7 +301,7 @@ let planeFactory = (app)=>{
         return { i, hash: findHash, finds: iFind }  
       })
 
-      return { finds, cities, resources, terrains, lairs, ruins }
+      return { finds, cities, resources, terrains, lairs, ruins, mR }
     },
     factionIds (id) {
       //let factionsAtRank = [5, 7, 8, 7, 3, 2]
@@ -372,6 +382,7 @@ let planeFactory = (app)=>{
         get name () { return this.names[0] },
         //faction 
         faction,
+        ancient,
         //trade data 
         get tradeData () { return app.planes.tradeData(id) },
         //hex data 
@@ -382,6 +393,7 @@ let planeFactory = (app)=>{
         get resources () { return this.finds.resources },
         get lairs () { return this.finds.lairs },
         get ruins () { return this.finds.ruins },
+        get nmr () {return this.finds.mR}
       }
     },
     /*
@@ -453,13 +465,14 @@ let planeFactory = (app)=>{
       else this.threeDisplay()
     },
     clickFind(hi) {
+      /*
       let h = this.current._data[hi]
       console.log(h)
       //set finds 
       app.UI.findModal.ri = h.i
       app.UI.findModal.finds = h.finds
       //open modal
-      
+      */      
     },
     /* Make a Find
       @param ri - the region index   

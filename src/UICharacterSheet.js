@@ -2,7 +2,6 @@ let subUI = (app) => {
 
   Vue.component("swn-character-sheet",{
     template: '#swn-character',
-    props: ['cid'],
     data : function() {
       return {
         loadId : "",

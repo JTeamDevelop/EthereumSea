@@ -101,32 +101,37 @@ body {
 #ruin-display .visible.zone {
   opacity: 0.5;
 }
+#ruin-display .zone.been {
+  stroke: black;
+  stroke-width: 0.5;
+  stroke-dasharray:2;
+}
+#ruin-display .zone.within {
+  opacity: 1;
+  stroke-dasharray:2000;
+}
+.btn-skill {
+  border: 1px solid #007bff;
+  border-radius: 3px;
+  padding: 0 4px;
+  margin-right: 2px;
+  cursor: pointer;
+}
+.btn-skill:hover {
+  background-color: #007bff;
+  color: white;
+}
+.ruin-encounter {
+  padding-top: 2px;
+  border-bottom: 1px solid black;
+}
+
 
 #ui-main {
   position : fixed;
   width:100%;
   top: 0;
   z-index : 10;
-}
-
-#ui-info {
-  position : fixed;
-  top: 1%;
-  width : 98%;
-  left : 1%;
-  bottom : 1%;
-  z-index : 15;
-  background-color : rgba(255,255,255,0.7);
-}
-
-#info-options {
-  position:absolute;
-  width: 98%;
-  max-width:600px;
-  top: 50%;
-  left: 50%;
-  /* bring your own prefixes */
-  transform: translate(-50%, -50%);
 }
 
 #output {

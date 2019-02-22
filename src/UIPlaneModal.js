@@ -19,10 +19,13 @@ let subUI = (app) => {
       ruinNames () {
         let P = this.plane
         return d3.range(P.ruins.length).map(i => P.ancientNames[i+1])
-      }
+      },
+      //# of major ruins
+      nmr () { return this.plane.nmr } 
     },
     methods : {
       enterRuin (i) {
+        if(i >= this.nmr) return
         app.ruins.active = app.ruins.factory(this.plane,i)
         //then change modal
         app.UI.modal.currentComponent = "ruin-modal"
