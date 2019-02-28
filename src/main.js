@@ -60,7 +60,10 @@ let app = {
         let r = parseInt(hash.slice(2,8), 16)%(2097150)
         return 1 + this._rarity.findIndex(v => r < v)               
     },
-    planeProducts : products
+    planeProducts : products,
+    init () {
+        app.factions.init()
+    }
 }
 
 //Set up the simple entity component system 

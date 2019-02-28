@@ -90,6 +90,7 @@
             <button class="btn btn-info btn-block" type="button" @click="showFactions()">Factions</button>
             <button class="btn btn-info btn-block" type="button" @click="makeRuin()">Random Ruin</button>
             <button class="btn btn-info btn-block" type="button" @click="showCharacter()">Characters</button>
+            <button class="btn btn-info btn-block" type="button" @click="showColorInfo()">CPX Colors</button>
             <button class="btn btn-info btn-block" type="button" data-dismiss="modal">Close</button>
         </div>
       </div>
@@ -132,6 +133,17 @@
             </div>
           </div>
         </div>
+      </div>
+    </template>
+    <template id="cpx-color-modal">
+      <div id="cpx-colors" class="modal-content p-1">
+        <div class="row">
+          <div class="col" v-for="(cH,key) in columns">{{cH}}</div>
+        </div>
+        <div class="row" v-for="C in colors">
+          <div class="col" v-for="(cH,key) in columns">{{key == 'c' ? C[key] : C[key] ? C[key].join(', ') : ''}}</div>
+        </div>
+        <button class="btn btn-info btn-block" type="button" data-dismiss="modal">Close</button>
       </div>
     </template>
     <template id="outlands-plane-modal">
@@ -201,7 +213,7 @@
             <button type="button" class="btn btn-secondary" @click="close()" data-dismiss="modal">&times;</button>
           </div>
         </div>
-        <div class="modal-body" v-if="cpxLevel > 0" v-cloak>
+        <div class="modal-body" v-if="id != ''" v-cloak>
           <h4>
             <input type="text" class="form-control" v-model="name">
           </h4>
@@ -209,13 +221,12 @@
             <div id="swn-level">
               <div class="input-group">
                 <div class="input-group-prepend">
-                  <span class="input-group-text">Level</span>
+                  <span class="input-group-text">Level {{level}}</span>
                 </div>
-                <input type="number" class="form-control" v-model="cpxLevel">
+                <input type="number" class="form-control" v-model="xp">
                 <div class="input-group-prepend">
                   <span class="input-group-text">XP</span>
                 </div>
-                <input type="number" class="form-control" v-model="xp">
               </div>
             </div>
             <div id="swn-hp">
@@ -225,24 +236,42 @@
                 </div>
                 <input type="number" class="form-control" v-model="hp[0]">
                 <div class="input-group-prepend">
-                  <span class="input-group-text">Max HP</span>
+                  <span class="input-group-text">{{maxHP}} HP MAX</span>
                 </div>
-                <input type="number" class="form-control" v-model="hp[1]">
               </div>
             </div>
           </div>
           <h5 class="section-header">
             <span>Aspects </span>
             <button class="btn btn-secondary btn-sm font-italic font-wight-bold" type="button" @click="aboutAspects()">i</button>
-            <button class="btn btn-success btn-sm" type="button" @click="aspects.push('')">&#10010;</button>
+            <button class="btn btn-success btn-sm" type="button" @click="aspects.push(['','cc','','','',''])">&#10010;</button>
           </h5>
           <div class="mb-1">
             <div v-for="(a,i) in aspects">
               <div class="input-group">
-                <input type="text" class="form-control" v-model="aspects[i]">
+                <input type="text" class="form-control" v-model="aspects[i][0]">
+                <select class="custom-select" v-model="aspects[i][1]">
+                  <option v-for="t in aspectTypes" v-bind:value="t">{{aspectCat[t[0]]+"/"+aspectCat[t[1]]}}</option>
+                </select>
                 <div class="input-group-append">
                   <button class="btn btn-warning" type="button" @click="aspects.splice(i,1)">&#10005;</button>
                 </div>
+              </div>
+              <div class="swn-aspect input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">&#10010;</span>
+                </div>
+                <select class="custom-select" v-for="n in aspectCounts[aspects[i][1][0]]" v-model="aspects[i][1+n]">
+                  <option v-for="(al,j) in aspectList" v-if="al[0][0] == aspects[i][1][0]" v-bind:value="al[1]">{{al[1]}}</option>
+                </select>
+              </div>
+              <div class="swn-aspect input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">&#8722;</span>
+                </div>
+                <select class="custom-select" v-for="n in aspectCounts[aspects[i][1][1]]" v-model="aspects[i][3+n]">
+                  <option v-for="(al,j) in aspectList" v-if="al[0][0] == aspects[i][1][1]" v-bind:value="al[1]">{{al[1]}}</option>
+                </select>
               </div>
             </div>
           </div>
@@ -261,13 +290,15 @@
             </div>
           </div>
           <div class="swn-skill" v-for="(val,s) in skills">
-            <div class="input-group">
+            <div class="input-group input-group-sm">
               <div class="input-group-prepend">
                 <span class="input-group-text">{{s | capitalize }}</span>
               </div>
-              <input type="number" class="form-control" min="0" v-model="skills[s]">
+              <input type="number" class="form-control" min="-1" v-model="skills[s]">
               <div class="input-group-append">
-                <button class="btn btn-warning" type="button" @click="rmSkill(s)">&#10005;</button>
+                <button class="btn btn-secondary btn-sm" type="button" v-if="skills[s] < level+1" @click="skills[s]++">&#10010;</button>
+                <button class="btn btn-secondary btn-sm" type="button" v-if="skills[s] > -1" @click="skills[s]--">&#8722;</button>
+                <button class="btn btn-warning btn-sm" type="button" @click="rmSkill(s)">&#10005;</button>
               </div>
             </div>
           </div>

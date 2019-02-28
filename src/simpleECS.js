@@ -18,7 +18,11 @@ let ECSFactory = (app) => {
 
   //handle storage 
   app.DB.getItem("entities").then(res => {
-    if(res) entities = res
+    if(res) {
+      entities = res
+      //now initialize after load
+      app.init()
+    }
   })
 
   setInterval(()=>{

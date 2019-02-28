@@ -29,6 +29,7 @@
 //"name","nb"
 
 const APPROACHES = ["Careful", "Clever", "Flashy", "Forceful", "Quick", "Sneaky"]
+const maxTroubleCount = 9
 
 let factionFactory = (app)=>{
   let chance = new Chance(Math.round(Math.random() * Date.now()))
@@ -280,6 +281,14 @@ let factionFactory = (app)=>{
       isAncient : false,
     }
   })
+  //general faction 
+  app.ECS.newComponent({
+    name: "isTrouble",
+    description: "Is trouble faction",
+    state: {
+      tid: -1,
+    }
+  })
   //general asset 
   app.ECS.newComponent({
     name: "hasAssets",
@@ -336,8 +345,10 @@ let factionFactory = (app)=>{
       this._current[id] = new Faction(F)
       return this._current[id]
     },
-    get coreIds () {
-      let R = []
+    init () {
+      //let hash = ethers.utils.solidityKeccak256(['bytes32', 'address'], [app.seed, app.wallets.main.address])
+      //let RNG = new Chance(hash)
+      //let ids = d3.range(maxTroubleCount) 
       
     }, 
     //get random faction 

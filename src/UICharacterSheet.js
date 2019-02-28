@@ -9,10 +9,11 @@ let subUI = (app) => {
         name : "NAME",
         swnBackground : "",
         xp : 0,
-        cpxLevel : 0,
         atk: 0,
         hp: [1,1],
         aspects : [],
+        aspectCat : {"a":"Approach","s":"Skill","c":"Color"},
+        aspectCounts : {"a":1,"s":2,"c":1},
         swnClasses : ["exp"],
         osrAttributes : [10,10,10,10,10,10],
         OSRAttributeNames : ["str","dex","con","int","wis","cha"],
@@ -35,48 +36,26 @@ let subUI = (app) => {
       allCharacters () { return app.characters.all },
       CPXPowerData () { return app.characters.CPXPowers }, 
       cpxSkills () { return app.characters.CPXSkills },
-      swnClassData () { return app.characters.SWNClasses },
-      classAbilities () {
-        let T = this.titles
-        
-        return this.swnClasses.map((c,i) => {
-          let C = app.characters.SWNClasses[c]
-          return {
-            id : c,
-            title : T[i],
-            name : C.name,
-            ability : C.base + (T[i] === "Partial" ? C.partial : C.full) + (T[i] === "Heroic" ? C.heroic : ""),
-            gifts : C.hasOwnProperty("gifts") ? C.gifts : null
-          }
-        })
+      skillPoints () { 
+        let p = 0
+        for(let x in this.skills) p += Number(this.skills[x])
+        return p 
       },
-      classGifts () {
-        let G = this.classAbilities.reduce((all,c)=>{
-          if(c.gifts) {
-            all[c.id] = {
-              name : c.name,
-              gifts : c.gifts
-            }
-          }
-          return all
-        },{})
-
-        let l = Object.keys(G).length
-
-        return l > 0 ? G : null
+      level () { return this.skillPoints < 5 ? 1 : Math.floor(this.skillPoints/5)},
+      maxHP () {
+          return Math.round(this.level*3.5)
       },
-      titles () {
-        if(this.swnClasses.length === 0) return [""]
-        return [["Heroic"],["Full","Partial"],["Partial","Partial","Partial"]][this.swnClasses.length-1]
+      aspectList () {
+          return app.approaches.map(a => ["a",a])
+            .concat(app.CPX.skillArray.map(s => ["s",s]))
+            .concat(app.tagArray)
       },
-      attributeBonus () {
-        return this.osrAttributes.map(v => {
-          if(v === 3) return -2;
-          else if(v <= 7) return -1;
-          else if(v <= 13) return 0;
-          else if(v <= 17) return 1;
-          else return 2;
-        })
+      aspectTypes () { 
+        let t = ["a","s","c"]
+        return t.reduce((all,id) => {
+            all = all.concat(t.map(id2 => id+id2))
+            return all
+        },[]) 
       }
     },
     methods : {

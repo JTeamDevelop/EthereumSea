@@ -1,4 +1,5 @@
 import {subUI as infoUI} from "./UIInfo.js"
+import {subUI as colorUI} from "./UIColors.js"
 import {subUI as characterUI} from "./UICharacterSheet.js"
 import {subUI as peopleUI} from "./UIPeople.js"
 import {subUI as factionUI} from "./UIFactions.js"
@@ -66,6 +67,7 @@ let UI = (app) => {
 
   //declare sub ui
   infoUI(app)
+  colorUI(app)
   characterUI(app)
   peopleUI(app)
   factionUI(app)

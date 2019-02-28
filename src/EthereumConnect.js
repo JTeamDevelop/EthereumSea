@@ -1345,11 +1345,6 @@ const addresses = {
 
 async function EthereumConnect(app) {
   app.ETH.addresses = addresses
-  //function do determine plane has for ids 
-  app.planeHash = (id)=>{
-    //let result = utils.solidityKeccak256([ 'int8', 'bytes1', 'string' ], [ -1, '0x42', 'hello' ]);
-    return ethers.utils.solidityKeccak256(['address','uint256'], [app.ETH.addresses.ESPlanes,id])
-  }
   //connection to main chain
   let MP = app.ETH.main
   //see if there is a user id

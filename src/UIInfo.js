@@ -31,6 +31,10 @@ let subUI = (app) => {
         //show 
         app.UI.modal.currentComponent = "outlands-factions"
         $('#ui-modal').modal('show')
+      },
+      showColorInfo () {
+        app.UI.modal.currentComponent = "cpx-colors-info"
+        $('#ui-modal').modal('show')
       }
     }
   })

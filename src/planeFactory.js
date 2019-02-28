@@ -317,8 +317,13 @@ let planeFactory = (app)=>{
       let fi = fia[fr-1]+parseInt(hash.slice(3,4),16)%fib[fr-1]
       //ancient - completely random - between 0-32, starts at 32+16
       let ai = 32+16+ parseInt(hash.slice(4,6),16)%32
+      //trouble 
+      let tr = [1,2,2,3,3,4,4,4,5,5,5,5,6,6,6,6][parseInt(hash.slice(6,7),16)]
+      let tia = [32,34,38,42,45,47]
+      let tib = [2, 4, 4, 3, 2, 1]
+      let ti = tia[tr-1]+parseInt(hash.slice(7,8),16)%tib[tr-1]
 
-      return {fi,ai}
+      return {fi,ai,ti}
     },
     tradeData (id) {
       //compute the day - needs change every day 
@@ -370,6 +375,7 @@ let planeFactory = (app)=>{
         finds = this.finds(id),
         fids = this.factionIds(id), 
         faction = app.factions.generate(fids.fi),
+        trouble = app.factions.generate(fids.ti),
         ancient = app.factions.generate(fids.ai);
 
       this._current[id] = {
