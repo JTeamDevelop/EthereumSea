@@ -1,14 +1,107 @@
-let playerFactory = (app) => {
-    let RNG = new Chance(Date.now())
-    //utils . bigNumberify ( value ) 
+let playerFactory = (app)=>{
 
-    /*TIMER
+  app.ECS.newCollection("player")
+
+  //hierarchy
+  app.ECS.newComponent({
+    name: "isPlayer",
+    description: "Player data",
+    state: {
+      address: "",
+      mnemonic : ""
+    }
+  })
+
+  //PLAYER
+  app.player = {
+    _current : {},
+    get current () { return this._current },
+    get all() {
+      return app.ECS.getCollection("player")
+    },
+    connectWallet () {
+      //now connect to provider
+      app.wallets = {
+        main: this._current.connect(app.ETH.main),
+        ropsten: this._current.connect(app.ETH.ropsten)
+      }
+    },
+    factory() {
+      let P = {
+        name: "",
+        //components 
+        _c: []
+      }
+      app.ECS.addComponent(P, "isPlayer")
+  
+      this._current = ethers.Wallet.createRandom()
+      //add to users 
+      let address = this.current.address
+      P.address = address
+      app.state.lastUser = address
+      app.state.users.push(address)
+      //convert to JSON string and turn to hex 
+      P.mnemonic = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(this.current.mnemonic))
+      //connect wallet
+      this.connectWallet()
+      //save 
+      let allP = app.ECS.getCollection("player")
+      allP[address] = P
+      //save
+      app.ECS.save()
+      //return 
+      return allP[address] 
+    },
+    init() {
+      //check for state 
+      app.state.lastUser = app.state.lastUser || ""
+      app.state.users = app.state.users || []
+      //see if there is a current user 
+      if(app.state.lastUser.length>0) {
+        let user = this.all[app.state.lastUser]
+        let mnemonic = ethers.utils.toUtf8String(user.mnemonic)
+        //set up wallet
+        this._current = ethers.Wallet.fromMnemonic(mnemonic)
+      }
+      else {
+        //create new 
+        this.factory()
+      }
+
+      //setup hash 
+      let hash = ethers.utils.solidityKeccak256(['bytes32', 'address'], [app.seed, this.current.address])
+      let RNG = new Chance(hash)
+      //determine the trouble to use 
+      const baseTroubleIds = [1,2,3,4,5,6,7,8,9,10,1,2,6,7,10]
+      //shuffle
+      let tids = RNG.shuffle(baseTroubleIds)
+      //add 0 to beginning
+      tids.unshift(0)
+      //for the intial trouble assign ids 
+      let allF = app.factions.all, F;
+      //trouble starts at 32
+      for (let i = 32; i < 32+16; i++) {
+        F = allF[i]
+        //ensure no overwrite
+        if(F.tid === -1){
+          app.ECS.addComponent(F, "isTrouble")
+          F.at = new Map()
+          F.at.set("i",1)
+          F.tid = tids[i-32]  
+        }
+      }
+    }
+  }
+
+  /*TIMER
         Every Tick is an hour in game, ticks are standard ~2 second
         One day = 24 ticks
         One week = 168 ticks ~5.6 min
         One quarter = 2160 ticks ~1.2 hours 
         One year = 8640 ticks ~4.8 hours
     */
+
+  /*
     app.timer = {
         _tick : 0,
         _last : 0,
@@ -99,33 +192,6 @@ let playerFactory = (app) => {
         }
     })
 
-    //PLAYER
-    app.player = {
-        _id : "",
-        _xp : [0,0,0,0,0,0],
-        _boosts : [],
-        _init : false,
-        _fi : -1,
-        get id () { return this._id }, 
-        get save () {
-            return {
-                xp : this._xp,
-                bootst : this._boosts
-            }
-        },
-        load(data) {
-            data = data || {}
-            this._xp = data.xp || [0,0,0,0,0,0]
-            this._boosts = data.boosts
-        },
-        get faction () { return app.factions[this._fi] },
-        init () {
-          //only initialize once
-          if(this._init) return
-          this._id = ethers.utils.solidityKeccak256(['address', 'address'], [app.ETH.addresses.ESPlanes, app.wallets.main.address])
-        }
-    }
-
     let stats = [[1,2,3,4,5],[0,2,3,4,5],[0,1,3,4,5],[0,1,2,4,5],[0,1,2,3,5],[0,1,2,3,4]]
     app.DB.getItem("player").then(Player => {
         console.log("Player loaded")
@@ -143,6 +209,9 @@ let playerFactory = (app) => {
             }
         }
     })
+
+  
+  */
 }
 
 export {playerFactory}

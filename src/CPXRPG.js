@@ -361,7 +361,7 @@ const skillGroups = {
   thievery: ["Athletics","Burglary","Deceive","Stealth"]
 }
 
-let colors = COLORS.map(c => c.name)
+let colors = COLORS.map(c => c.c)
 //handle color tags 
 let colorTags = COLORS.map(c => {
   let t = []

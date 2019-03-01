@@ -13,23 +13,29 @@
 
 let ECSFactory = (app) => {
   
-  let entities = { generic: {} }
+  let entities = { generic: {}, state : {} }
   let components = {}
 
   //handle storage 
   app.DB.getItem("entities").then(res => {
     if(res) {
       entities = res
-      //now initialize after load
-      app.init()
+      if (!entities.state) entities.state = {}
     }
+    app.state = entities.state
+    //now initialize after load
+    app.init()
   })
 
   setInterval(()=>{
     app.DB.setItem("entities",entities)
   },20000)
 
+  //follow state 
+  app.state = entities.state
+
   return {
+    save () { app.DB.setItem("entities",entities) }, 
     get entities () { return entities },
     newEnity (cname) {
       //id not in a collection - give it a collection 

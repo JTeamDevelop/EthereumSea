@@ -204,10 +204,6 @@ let UI = (app) => {
       app.UI.main.currentBlock = n 
       console.log("Main Block: " + n)
     })
-    //init the outlands display 
-    if(!app.player._init) app.player.init()
-    //now update with current islands
-    //app.UI.main.playerClaims = app.player.faction.claims 
     
     return
     app.wallets.ropsten.getBalance().then(rb => {

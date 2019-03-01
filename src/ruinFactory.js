@@ -25,6 +25,7 @@ let ruinFactory = (app)=>{
   //["Vermin","Rabble","Thugs","Soldiers","Veteran","Brute","Beast","Sorcerer","Tank","Swarm","Elite"]
   const npcBuilder = (type, n, T) => {
     T = T || 1
+    let mHD = T < 3 ? 3 : T
     let hd = [], stats = {};
     //HD
     if(["Vermin","Rabble","Thugs","Soldiers"].includes(type)) {
@@ -39,27 +40,27 @@ let ruinFactory = (app)=>{
       stats = {AC:4,atk:2,dmg:"1d8",ml:9,skill:2}
     }
     if(type === "Brute") {
-      hd = d3.range(n).map(_ => T+2);
+      hd = d3.range(n).map(_ => mHD+2);
       stats = {AC:3,atk:T+2,dmg:"1d10",ml:10,skill:2}
     }
     if(type === "Sorcerer") {
-      hd = d3.range(n).map(_ => T);
+      hd = d3.range(n).map(_ => mHD);
       stats = {AC:1,atk:T,dmg:"1d4",ml:9,skill:3}
     }
     if(type === "Tank") {
-      hd = d3.range(n).map(_ => T+1);
+      hd = d3.range(n).map(_ => mHD+1);
       stats = {AC:6,atk:T+1,dmg:"1d8",ml:10,skill:2}
     }
     if(type === "Beast") {
-      hd = d3.range(n).map(_ => T);
+      hd = d3.range(n).map(_ => mHD);
       stats = {AC:3,atk:T,dmg:"1d6,1d6",ml:8,skill:2}
     }
     if(type === "Swarm") {
-      hd = d3.range(n).map(_ => 2*T);
+      hd = d3.range(n).map(_ => 2*mHD);
       stats = {AC:0,atk:T,dmg:"1d6",ml:9,skill:0}
     }
     if(type === "Elite") {
-      hd = d3.range(n).map(_ => T+3);
+      hd = d3.range(n).map(_ => mHD+3);
       stats = {AC:5,atk:T+4,dmg:"1d8+2",ml:11,skill:4}
     }
     return {type,hd,stats}
@@ -81,6 +82,9 @@ let ruinFactory = (app)=>{
       let fid = 32+16+RNG.rpg("1d32")[0]-1
       let F = app.factions._current[fid]
       let name = F.placeName(RNG)
+      //trouble
+      let tid = 32+RNG.rpg("1d16")[0]-1
+      let T = app.factions._current[tid]
 
       let ruin = Object.assign({
         hash, 
@@ -176,13 +180,14 @@ let ruinFactory = (app)=>{
       //types of encounters 
       let etypes = ["Combat","Trap","Hazard","Obstacle","Puzzle"]
       let et = RNG.pickone(etypes)
-      
+
       let skillGroups = {
-        Combat : ["Punch","Shoot","Stab"],
-        Trap : ["Fix","Program","Burglary"],
-        Hazard : ["Exert","Survive","Sneak"],
-        Obstacle : ["Exert","Survive","Fix",],
-        Puzzle : ["Perform","Fix","Know","Program"]
+        Combat : ["Fight","Shoot","Physique"],
+        Trap : ["Crafts","Tech","Burglary"],
+        Hazard : ["Athletics","Physique","Sneak"],
+        Obstacle : ["Athletics","Physique","Tech","Crafts"],
+        Puzzle : ["Culture","Science","Tech","Craft"],
+        //thievery: ["Athletics","Burglary","Deceive","Stealth"]
       }
       let skills = [RNG.pickone(skillGroups[et])]
       //danger level 
@@ -218,7 +223,7 @@ let ruinFactory = (app)=>{
       //aspects - approach and color 
       let aspects = [APPROACHES[RNG.d6()-1],app.colors[RNG.d6()-1]]
 
-      app.UI.activeRuin.encounters.push({rz, what: et, aspects, skills, dmg, foes, state:[]}) 
+      app.UI.activeRuin.encounters.push({rz, what: et, aspects, skills, dmg, foes, hits:[], state:[]}) 
     },
     enter (ruin, rz) {
       let _rz = rz.split("."), r = Number(_rz[0]), z = Number(_rz[1]);

@@ -6,8 +6,6 @@ import "../lib/chance.min.js"
 import {ECSFactory} from "./simpleECS.js"
 //names 
 import {generateNames} from "./AzgaarNames.js"
-//load ethereum 
-import {EthereumConnect} from "./EthereumConnect.js"
 //player  
 import {playerFactory} from "./playerFactory.js"
 //characters  
@@ -62,15 +60,16 @@ let app = {
     },
     planeProducts : products,
     init () {
+        app.player.init()
         app.factions.init()
     }
 }
 
 //Set up the simple entity component system 
 app.ECS = ECSFactory(app)
+//init player 
+playerFactory(app)
 threeScene(app)
-//connect to the blockchain
-EthereumConnect(app)
 //setup hex meshes
 hexFactory(app)
 //people & factions 
@@ -82,7 +81,6 @@ outlandsFactory(app)
 planeFactory(app)
 ruinFactory(app)
 forceFactory(app)
-playerFactory(app)
 characterFactory(app)
 
 

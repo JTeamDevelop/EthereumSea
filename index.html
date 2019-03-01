@@ -117,18 +117,23 @@
           <h5>Encounters</h5>
           <div class="ruin-encounter" v-for="(e,i) in encounters">
             <div class="d-flex">
-              <span>{{e.rz}} {{e.what}} </span>
-              <span class="px-2">({{e.aspects.join(" - ")}})</span>
-              <span class="px-2" v-if="e.dmg>0">Damage: {{e.dmg}}</span>
+              <span class="font-weight-bold">{{e.rz}} {{e.what}}</span>
               <span class="ml-auto"></span>
-              <span class="btn-skill" v-for="s in e.skills" @click="skillRoll(s,null,i)">{{s}}</span>
+              <span class="btn-skill" v-for="s in e.skills" @click="skillRoll(s,i)">{{s}}</span>
             </div>
-            <div v-for="f in e.foes">
-              <span class="font-weight-bold">{{f.type}}</span>
-              <span>{{f.stats.AC}} {{f.stats.dmg}}</span>
-              <span>{{f.hd.length}}</span>
+            <div class="px-1">{{e.aspects.join(" - ")}}</div>
+            <div class="px-1" v-if="e.dmg>0">Damage: {{e.dmg}}</div>
+            <div class="px-1" v-for="f in e.foes">
+              <span class="font-weight-bold pr-1">{{f.type}} - </span>
+              <span>Atk: {{f.stats.atk}}, AC: {{f.stats.AC}}, Dmg: {{f.stats.dmg}}</span>
+              <div class="px-1 d-flex" style="line-height: 1;">
+                <span class="pr-1">HD:</span>
+                <div class="hd-group" v-for="hd in f.hd">
+                  <div class="hd-box" v-for="n in hd"></div>
+                </div>
+              </div>
             </div>
-            <div>
+            <div class="px-1">
               <span>{{e.state.join(" - ")}}</span>
             </div>
           </div>

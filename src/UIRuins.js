@@ -1,7 +1,7 @@
 let subUI = (app)=>{
 
   let CPXSkillRoll = () => {
-    return app.chance.rpg("3d6", {sum:true})
+    return app.chance.rpg("2d6", {sum:true})
   }
 
   Vue.component("ruin-modal", {
@@ -31,9 +31,14 @@ let subUI = (app)=>{
       addC() {
         if(!this.cids.includes(this.loadCId)) this.cids.push(this.loadCId)
       },
-      skillRoll (s,c,ei) {
-        if(!c && this.activePC > -1) c = this.activeCharacters[this.activePC]
-        let skill = c ? c.skills[s] ? Number(c.skills[s]) : 0 : 0
+      hit () {
+
+      },
+      skillRoll (s,ei) {
+        if(this.activePC === -1) return
+
+        let c = this.activeCharacters[this.activePC]
+        let skill = c.skills[s] ? Number(c.skills[s]) : 0 
 
         let R = CPXSkillRoll()
 

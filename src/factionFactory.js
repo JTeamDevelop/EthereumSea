@@ -29,7 +29,20 @@
 //"name","nb"
 
 const APPROACHES = ["Careful", "Clever", "Flashy", "Forceful", "Quick", "Sneaky"]
-const maxTroubleCount = 9
+const TROUBLEFACTIONS = [
+  {id:0,name:"Chaos"},
+  {id:1,name:"Ryk"},
+  {id:2,name:"Shadowsteel Syndicate"},
+  {id:3,name:"Zytam"},
+  {id:4,name:"Rylenthrax"},
+  {id:5,name:"Levithan"},
+  {id:6,name:"Cthonians"},
+  {id:7,name:"Sect"},
+  {id:8,name:"Iron Oak"},
+  {id:9,name:"Dzintari"},
+  {id:10,name:"Goblins"},
+]
+
 
 let factionFactory = (app)=>{
   let chance = new Chance(Math.round(Math.random() * Date.now()))
@@ -85,11 +98,8 @@ let factionFactory = (app)=>{
     get nb() {
       return this._data.nb || this._nb
     }
-    set name(name) {
-      this._data.name = name
-    }
     get name() {
-      return this._data.name || this._name
+      return this.entity.tid ? TROUBLEFACTIONS[this.entity.tid].name : this._name
     }
     get aspects () { 
       return [APPROACHES[this._approach],app.colors[this._cpxColor]].concat(this._skills)
@@ -287,6 +297,7 @@ let factionFactory = (app)=>{
     description: "Is trouble faction",
     state: {
       tid: -1,
+      at : []
     }
   })
   //general asset 
@@ -327,7 +338,8 @@ let factionFactory = (app)=>{
       
       if(opts.r) F.r = opts.r 
       if(opts.isTrouble) {
-        F.isTrouble = opts.isTrouble
+        app.ECS.addComponent(F, "isTrouble")
+        F.isTrouble = true
         F.at = new Map()
         F.at.set("i",1)
       }

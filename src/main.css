@@ -135,7 +135,18 @@ body {
   padding-top: 2px;
   border-bottom: 1px solid black;
 }
+.hd-box {
+  display:inline-block;
+  width:15px;
+  height:15px;
+  border: 1px solid black;
+  margin-right: 2px;
+}
 
+
+/*
+  Main UI
+*/
 
 #ui-main {
   position : fixed;
