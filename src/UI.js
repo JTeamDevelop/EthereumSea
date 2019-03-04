@@ -97,13 +97,13 @@ let UI = (app) => {
       menuId : -1,
       playerClaims : [],
       playerForces : [],
-      twoD: false,
+      twoD: true,
       showNav: false,
       showFaction : false,
     },
     mounted () {
       //enable 2d canvas if no WEBGL
-      if(!glTest()) this.twoD = true 
+      //if(!glTest()) this.twoD = true 
 
       this.newPlaneAddress = app.chance.pickone(Object.keys(app.planes.all))
       this.getAllPlanes()

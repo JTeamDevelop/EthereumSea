@@ -100,6 +100,7 @@
         <h5 align="center">{{ruin.name}}
           <button type="button" class="close mr-1" data-dismiss="modal">&times;</button>
         </h5>
+        <div align="center">Builder: {{ruin.builder.name}} (&#8476; {{ruin.T}})</div>
         <svg id="ruin-display" align="center" height="800" width="800" v-if="twoD" v-cloak></svg>
         <div class="input-group p-1">
           <select class="custom-select" v-model="loadCId">
@@ -110,8 +111,27 @@
           </div>
         </div>
         <div class="px-1" :class="{'selected': activePC == i}" v-for="(c,i) in activeCharacters" @click="activePC = i">
-          <span class="font-weight-bold">{{c.name}}</span>
-          <span class="btn-skill" v-for="(val,s) in c.skills" @click="skillRoll(s,c,-1)">{{s}} {{val}}</span>
+          <div class="input-group input-group-sm">
+            <div class="input-group-prepend">
+              <span class="input-group-text">{{c.name}}</span>
+            </div>
+            <select class="form-control form-control-sm" v-model="cData">
+              <option v-for="d in cDataIds" :value="d">{{d}}</option>
+            </select>
+            <div class="input-group-append">
+              <span class="input-group-text">{{HP[i]}}/{{maxHP[i]}} HP</span>
+            </div>
+          </div>
+          <div class="px-1" >
+            <span class="pr-1" v-for="(val,s) in c.skills" v-if="cData=='Skills'">{{s.slice(0,3)}} {{val}}</span>
+            <div class="w-100 d-flex align-items-center" style="line-height:1;" v-if="cData=='Aspects'">
+              <span>{{activeAspect}}</span>
+              <div class="btn-group btn-group-sm ml-auto" role="group" align="right">
+                <button class="btn btn-secondary" type="button" @click="aspectId++" v-if="aspectId+1 < allActiveAspects.length" v-cloak>&#10010;</button> 
+                <button class="btn btn-secondary" type="button" @click="aspectId--" v-if="aspectId > 0">&#8722;</button> 
+              </div>
+            </div>
+          </div>
         </div>
         <div class="p-1">
           <h5>Encounters</h5>
@@ -119,17 +139,32 @@
             <div class="d-flex">
               <span class="font-weight-bold">{{e.rz}} {{e.what}}</span>
               <span class="ml-auto"></span>
-              <span class="btn-skill" v-for="s in e.skills" @click="skillRoll(s,i)">{{s}}</span>
+              <span class="btn-skill" v-if="e.foes.length==0" v-for="s in e.skills" @click="skillRoll(s,i)">{{s}}</span>
             </div>
-            <div class="px-1">{{e.aspects.join(" - ")}}</div>
-            <div class="px-1" v-if="e.dmg>0">Damage: {{e.dmg}}</div>
-            <div class="px-1" v-for="f in e.foes">
-              <span class="font-weight-bold pr-1">{{f.type}} - </span>
-              <span>Atk: {{f.stats.atk}}, AC: {{f.stats.AC}}, Dmg: {{f.stats.dmg}}</span>
+            <div class="px-1">
+              <span v-for="(a,j) in e.aspects">
+                <span v-if="j==1"> -</span>
+                <span v-if="aspectBonus.a.includes(a)"> ⇑</span>
+                <span v-if="aspectBonus.d.includes(a)"> ⇓</span>
+                <span>{{a}} </span>
+              </span>
+            </div>
+            <div class="px-1" v-if="e.obstacle.hd">
               <div class="px-1 d-flex" style="line-height: 1;">
                 <span class="pr-1">HD:</span>
-                <div class="hd-group" v-for="hd in f.hd">
-                  <div class="hd-box" v-for="n in hd"></div>
+                <div class="hd-box" :class="{hit : e.obstacle.hits >= n}" v-for="n in e.obstacle.hd"></div>
+              </div>
+            </div>
+            <div class="px-1" v-for="(f,j) in e.foes">
+              <div class="d-flex">
+                <span class="font-weight-bold pr-1">{{f.type}}</span>
+                <span class="ml-auto"></span>
+                <span class="btn-skill" v-for="s in e.skills" @click="skillRoll(s,i,j)">{{s}}</span>
+              </div>
+              <div class="px-1 d-flex" style="line-height: 1;">
+                <span class="pr-1">HD:</span>
+                <div class="hd-group" v-for="(hd,k) in f.hd">
+                  <div class="hd-box" :class="{hit : f.hits[k] >= n}" v-for="n in hd"></div>
                 </div>
               </div>
             </div>

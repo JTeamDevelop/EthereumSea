@@ -131,6 +131,16 @@ body {
   background-color: #007bff;
   color: white;
 }
+.btn-dmg {
+  border: 1px solid #ffc107;
+  border-radius: 3px;
+  padding: 0 4px;
+  cursor: pointer;
+}
+.btn-dmg:hover {
+  background-color: #ffc107;
+  color: white;
+}
 .ruin-encounter {
   padding-top: 2px;
   border-bottom: 1px solid black;
@@ -141,6 +151,9 @@ body {
   height:15px;
   border: 1px solid black;
   margin-right: 2px;
+}
+.hd-box.hit {
+  background-color: red;
 }
 
 

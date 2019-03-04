@@ -10,7 +10,7 @@ let ruinFactory = (app)=>{
     return sum ? r.reduce((s,v) => v+s,-8) : r 
   }
 
-  let heroicDamage = (dice) => {
+  app.heroicDamage = (dice) => {
     let r = app.chance.rpg(dice)
     //run damage calc 
     return r.reduce((sum,n) => {
@@ -63,7 +63,10 @@ let ruinFactory = (app)=>{
       hd = d3.range(n).map(_ => mHD+3);
       stats = {AC:5,atk:T+4,dmg:"1d8+2",ml:11,skill:4}
     }
-    return {type,hd,stats}
+    
+    let hits = hd.map(_ => 0)
+
+    return {type,hd,hits,stats}
   } 
 
   app.ruins = {
@@ -78,7 +81,7 @@ let ruinFactory = (app)=>{
       //threat
       let rt = dF(true)
       rt = [-1,0,1].includes(rt) ? 0 : rt < 0 ? -1 : 1
-      //determine faction 
+      //determine ancient faction 
       let fid = 32+16+RNG.rpg("1d32")[0]-1
       let F = app.factions._current[fid]
       let name = F.placeName(RNG)
@@ -90,7 +93,8 @@ let ruinFactory = (app)=>{
         hash, 
         i: -1, 
         T : F.rank + rt,
-        faction : F,
+        trouble : T,
+        builder : F,
         name : name,
       },size)
       //position 
@@ -135,6 +139,8 @@ let ruinFactory = (app)=>{
         i: rid, 
         T : F.rank,
         _plane:plane,
+        builder : F,
+        trouble : plane.trouble,
         name : plane.ancientNames[rid+1],
       },size)
       //position 
@@ -178,7 +184,7 @@ let ruinFactory = (app)=>{
       let T = ruin.T
       let RNG = app.chance
       //types of encounters 
-      let etypes = ["Combat","Trap","Hazard","Obstacle","Puzzle"]
+      let etypes = ["Combat","Combat","Combat","Trap","Hazard","Obstacle","Puzzle"]
       let et = RNG.pickone(etypes)
 
       let skillGroups = {
@@ -190,17 +196,20 @@ let ruinFactory = (app)=>{
         //thievery: ["Athletics","Burglary","Deceive","Stealth"]
       }
       let skills = [RNG.pickone(skillGroups[et])]
-      //danger level 
-      let dmg = 0
+      
+      //check for what it is 
+      let trap= {}, foes = [], obstacle = {};
       if(["Trap","Hazard"].includes(et)) {
-        dmg = T + (RNG.bool() ? "d4" : "d6")
-        dmg = heroicDamage(dmg)
+        trap = {
+          dmg : T + (RNG.bool() ? "d4" : "d6"),
+          skills : skills
+        }
         //notice
-        skills.unshift("Notice")
+        skills = ["Notice"]
+        //magical 
+        if(RNG.d10()>7) trap.skills.push(RNG.pickone(["Magic","Psionics"]))
       }
-      //check for combat
-      let foes = []
-      if(et === "Combat"){
+      else if(et === "Combat"){
         let d = RNG.d8()
         if(d === 1) foes.push(npcBuilder("Vermin",RNG.d6(),T));
         else if(d < 4) foes.push(npcBuilder("Rabble",RNG.d4(),T));
@@ -211,19 +220,25 @@ let ruinFactory = (app)=>{
         else if(d === 8) foes.push(npcBuilder("Thugs",RNG.d4(),T),npcBuilder("Brute",1,T));
         else if(d === 9) foes.push(npcBuilder("Thugs",RNG.d4(),T),npcBuilder("Tank",1,T));
         else if(d === 8) foes.push(npcBuilder("Swarm",1,T));
+
+        skills = ["Fight","Shoot"]
       }
-      else {
-        //30 magic
-        if(RNG.d10()>7) {
-          et = "Magical "+et 
-          skills.push(RNG.pickone(["Magic","Psionics"]))
+      else if (["Obstacle","Puzzle"].includes(et)) {
+        obstacle = {
+          hd : RNG.rpg("2d4",{sum:true}), 
+          hits : 0,
+          dmg : RNG.pickone(["1d4","1d4","1d6","1d6","1d6","1d8","1d8","1d10"])
         }
+        //magical 
+        if(RNG.d10()>7) skills.push(RNG.pickone(["Magic","Psionics"]))
       }
 
       //aspects - approach and color 
-      let aspects = [APPROACHES[RNG.d6()-1],app.colors[RNG.d6()-1]]
+      let aa = ruin.builder.aspects
+      let ta = ruin.trouble.aspects
+      let aspects = [RNG.pickone([aa[0],ta[0]]),RNG.pickone([aa[1],ta[1]])]
 
-      app.UI.activeRuin.encounters.push({rz, what: et, aspects, skills, dmg, foes, hits:[], state:[]}) 
+      app.UI.activeRuin.encounters.push({rz, what: et, aspects, skills, trap, foes, obstacle, hits:[], state:[]}) 
     },
     enter (ruin, rz) {
       let _rz = rz.split("."), r = Number(_rz[0]), z = Number(_rz[1]);
@@ -255,6 +270,7 @@ let ruinFactory = (app)=>{
       ruin.visited = been.slice()
       //set zone 
       ruin.z = rz 
+      app.UI.activeRuin.activeZ = rz
     },
     display (ruin) {
       ruin = ruin || this.active

@@ -389,6 +389,7 @@ let planeFactory = (app)=>{
         //faction 
         faction,
         ancient,
+        trouble,
         //trade data 
         get tradeData () { return app.planes.tradeData(id) },
         //hex data 

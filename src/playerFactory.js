@@ -8,16 +8,49 @@ let playerFactory = (app)=>{
     description: "Player data",
     state: {
       address: "",
-      mnemonic : ""
+      mnemonic : "",
+      tokens : {}
     }
   })
 
   //PLAYER
   app.player = {
     _current : {},
-    get current () { return this._current },
+    get current () { return this._current.data },
+    get address () { return this._current.wallet.address },
+    get tokens () { return this.current.tokens },
     get all() {
       return app.ECS.getCollection("player")
+    },
+    earned (what) {
+      if(!this.tokens) return 0;
+      let T = this.tokens[what]
+      if(!T) return 0;
+      else return T.in;
+    },
+    amount (what) {
+      if(!this.tokens) return 0;
+      let T = this.tokens[what]
+      if(!T) return 0;
+      else return T.in - T.out;
+    },                
+    spend (what, val) {
+      if(this.amount(what) < val) return false
+      else {
+        this.tokens[what].out -= val
+        return true
+      }
+    },
+    earn (what, val) {
+      //if they dont have the token object add it 
+      if(!this.tokens) this.current.tokens = {}
+
+      if(this.tokens[what]) {
+        this.tokens[what].in += val
+      }
+      else this.tokens[what] = {in:val,out:0}
+
+      return this.amount(what)
     },
     connectWallet () {
       //now connect to provider
@@ -34,9 +67,9 @@ let playerFactory = (app)=>{
       }
       app.ECS.addComponent(P, "isPlayer")
   
-      this._current = ethers.Wallet.createRandom()
+      this._current.wallet = ethers.Wallet.createRandom()
       //add to users 
-      let address = this.current.address
+      let address = this.address
       P.address = address
       app.state.lastUser = address
       app.state.users.push(address)
@@ -46,11 +79,13 @@ let playerFactory = (app)=>{
       this.connectWallet()
       //save 
       let allP = app.ECS.getCollection("player")
-      allP[address] = P
+      this._current.data = allP[address] = P
+      //give 30 CPXD 
+      this.earn("CPXD",30)
       //save
       app.ECS.save()
       //return 
-      return allP[address] 
+      return this.current 
     },
     init() {
       //check for state 
@@ -61,7 +96,10 @@ let playerFactory = (app)=>{
         let user = this.all[app.state.lastUser]
         let mnemonic = ethers.utils.toUtf8String(user.mnemonic)
         //set up wallet
-        this._current = ethers.Wallet.fromMnemonic(mnemonic)
+        this._current.wallet = ethers.Wallet.fromMnemonic(mnemonic)
+        this._current.data = this.all[app.state.lastUser]
+        //check if they have inital CPXD
+        if(this.earned("CPXD") === 0) this.earn("CPXD",30)
       }
       else {
         //create new 
@@ -69,7 +107,7 @@ let playerFactory = (app)=>{
       }
 
       //setup hash 
-      let hash = ethers.utils.solidityKeccak256(['bytes32', 'address'], [app.seed, this.current.address])
+      let hash = ethers.utils.solidityKeccak256(['bytes32', 'address'], [app.seed, this.address])
       let RNG = new Chance(hash)
       //determine the trouble to use 
       const baseTroubleIds = [1,2,3,4,5,6,7,8,9,10,1,2,6,7,10]

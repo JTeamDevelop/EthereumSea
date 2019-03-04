@@ -382,6 +382,16 @@ let CPXData = (app)=>{
   app.tagArray = allColorTags
   app.approaches = APPROACHES
 
+  //find the color of a 
+  app.aspectColor = (a) => {
+    //a is an approach
+    if(APPROACHES.includes(a)) return a;
+    //a is a skill 
+    if(Object.keys(skills).includes(a)) return a;
+    //now find the color 
+    return colorTags.find(ca => ca.includes(a))[0]
+  }
+
   app.CPX = {
     colors : COLORS,
     powers: POWERS,
