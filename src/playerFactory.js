@@ -1,7 +1,4 @@
 let playerFactory = (app)=>{
-
-  app.ECS.newCollection("player")
-
   //hierarchy
   app.ECS.newComponent({
     name: "isPlayer",
@@ -20,7 +17,7 @@ let playerFactory = (app)=>{
     get address () { return this._current.wallet.address },
     get tokens () { return this.current.tokens },
     get all() {
-      return app.ECS.getCollection("player")
+      return app.state.users
     },
     earned (what) {
       if(!this.tokens) return 0;
@@ -55,8 +52,8 @@ let playerFactory = (app)=>{
     connectWallet () {
       //now connect to provider
       app.wallets = {
-        main: this._current.connect(app.ETH.main),
-        ropsten: this._current.connect(app.ETH.ropsten)
+        main: this._current.wallet.connect(app.ETH.main),
+        ropsten: this._current.wallet.connect(app.ETH.ropsten)
       }
     },
     factory() {
@@ -67,19 +64,17 @@ let playerFactory = (app)=>{
       }
       app.ECS.addComponent(P, "isPlayer")
   
-      this._current.wallet = ethers.Wallet.createRandom()
+      let wallet = this._current.wallet = ethers.Wallet.createRandom()
       //add to users 
       let address = this.address
       P.address = address
       app.state.lastUser = address
-      app.state.users.push(address)
+      //save 
+      this._current.data = app.state.users[address] = P
       //convert to JSON string and turn to hex 
-      P.mnemonic = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(this.current.mnemonic))
+      this.current.mnemonic = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(wallet.mnemonic))
       //connect wallet
       this.connectWallet()
-      //save 
-      let allP = app.ECS.getCollection("player")
-      this._current.data = allP[address] = P
       //give 30 CPXD 
       this.earn("CPXD",30)
       //save
@@ -90,14 +85,13 @@ let playerFactory = (app)=>{
     init() {
       //check for state 
       app.state.lastUser = app.state.lastUser || ""
-      app.state.users = app.state.users || []
       //see if there is a current user 
       if(app.state.lastUser.length>0) {
         let user = this.all[app.state.lastUser]
         let mnemonic = ethers.utils.toUtf8String(user.mnemonic)
         //set up wallet
         this._current.wallet = ethers.Wallet.fromMnemonic(mnemonic)
-        this._current.data = this.all[app.state.lastUser]
+        this._current.data = user
         //check if they have inital CPXD
         if(this.earned("CPXD") === 0) this.earn("CPXD",30)
       }

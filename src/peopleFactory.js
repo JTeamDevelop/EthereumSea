@@ -238,15 +238,19 @@ let peopleFactory = (app) => {
     } 
   }
 
+  //["Careful","Clever","Flashy","Forceful","Quick","Sneaky"]
+
   //64 people 
   //core people for the planes 
   let corePeople = [
-    {phys:"hu",bio:["pt"],notes:"Fae"},
-    {phys:"hu",bio:["mm"],notes:"Urim"},
-    {phys:"hu",bio:["ll"],notes:"Puri"},
-    {bio:["ac04l","ac13c"],notes:"Drake"},
-    {bio:["dh"],notes:"Klik Roller"},
-    {bio:["dc"],notes:"Klik Tripod"},
+    {phys:"hu",bio:["pt"],notes:"Fae",approaches:[1,3]},
+    {phys:"hu",bio:["ac11r"],notes:"Night Fae",approaches:[4,0]},
+    {phys:"hu",bio:["mm"],notes:"Urim",approaches:[3,4]},
+    {phys:"hu",bio:["ll"],notes:"Puri",approaches:[5,2]},
+    {phys:"hu",bio:["lg"],notes:"Aasimar",approaches:[0,5]},
+    {bio:["ac04l","ac13c"],notes:"Drake",approaches:[2,0]},
+    {bio:["dh"],notes:"Klik Roller",approaches:[1,5]},
+    {bio:["dc"],notes:"Klik Tripod",approaches:[3,5]},
   ], P;
   for(let i = 0; i< 64; i++) {
     P = app.people.factory()

@@ -46,290 +46,83 @@ const COLORS =[
     d: ["Death", "Fate", "Secrecy", "Moon", "Luck", "Trickery"]
   }]
 
-const POWERS = [{
-  id: "Abb",
-  name: "Ability Boost",
-  cat: "alteration"
-}, {
-  id: "Abi",
-  name: "Ability Increase",
-  cat: "alteration"
-}, {
-  id: "Abso",
-  name: "Absorption",
-  cat: "defensive"
-}, {
-  id: "Adap",
-  name: "Adaptation",
-  cat: "defensive"
-}, {
-  id: "Affl",
-  name: "Affliction",
-  cat: "offensive"
-}, {
-  id: "Alte",
-  name: "Alter Ego",
-  cat: "alteration"
-}, {
-  id: "Altr",
-  name: "Alteration Ray",
-  cat: "control"
-}, {
-  id: "Altf",
-  name: "Alternate Form",
-  cat: "alteration"
-}, {
-  id: "Aqua",
-  name: "Aquatic",
-  cat: "alteration"
-}, {
-  id: "Astr",
-  name: "Astral Projection",
-  cat: "mental"
-}, {
-  id: "Aura",
-  name: "Aura",
-  cat: "offensive"
-}, {
-  id: "Bind",
-  name: "Binding",
-  cat: "offensive"
-}, {
-  id: "Blas",
-  name: "Blast",
-  cat: "offensive"
-}, {
-  id: "Burr",
-  name: "Burrowing",
-  cat: "movement"
-}, {
-  id: "Cont",
-  name: "Continuum Control",
-  cat: "control"
-}, {
-  id: "Corr",
-  name: "Corrosion",
-  cat: "offensive"
-}, {
-  id: "Dang",
-  name: "Danger Sense",
-  cat: "sensory"
-}, {
-  id: "Dazz",
-  name: "Dazzle",
-  cat: "offensive"
-}, {
-  id: "Dens",
-  name: "Density",
-  cat: "alteration"
-}, {
-  id: "Dete",
-  name: "Detection",
-  cat: "sensory"
-}, {
-  id: "Dimc",
-  name: "Dimension Control",
-  cat: "alteration"
-}, {
-  id: "Dimt",
-  name: "Dimensional Travel",
-  cat: "movement"
-}, {
-  id: "Drea",
-  name: "Dream Control",
-  cat: "mental"
-}, {
-  id: "Dupl",
-  name: "Duplication",
-  cat: "alteration"
-}, {
-  id: "Elem",
-  name: "Element Control",
-  cat: "control"
-}, {
-  id: "Emot",
-  name: "Emotion Control",
-  cat: "mental"
-}, {
-  id: "Enec",
-  name: "Energy Control",
-  cat: "control"
-}, {
-  id: "Ened",
-  name: "Energy Drain",
-  cat: "offensive"
-}, {
-  id: "Envi",
-  name: "Environmental Awareness",
-  cat: "sensory"
-}, {
-  id: "ESP",
-  name: "ESP",
-  cat: "sensory"
-}, {
-  id: "Evol",
-  name: "Evolution",
-  cat: "alteration"
-}, {
-  id: "Extr",
-  name: "Extra Body Parts",
-  cat: "alteration"
-}, {
-  id: "Fast",
-  name: "Fast Attack",
-  cat: "offensive"
-}, {
-  id: "Flig",
-  name: "Flight",
-  cat: "movement"
-}, {
-  id: "Forc",
-  name: "Force Field",
-  cat: "defensive"
-}, {
-  id: "Gest",
-  name: "Gestalt",
-  cat: "alteration"
-}, {
-  id: "Grow",
-  name: "Growth",
-  cat: "alteration"
-}, {
-  id: "Heal",
-  name: "Healing",
-  cat: "control"
-}, {
-  id: "Illu",
-  name: "Illusion/Images",
-  cat: "mental"
-}, {
-  id: "Immo",
-  name: "Immortality",
-  cat: "defensive"
-}, {
-  id: "Inte",
-  name: "Interface",
-  cat: "sensory"
-}, {
-  id: "Invi",
-  name: "Invisibility",
-  cat: "alteration"
-}, {
-  id: "Leap",
-  name: "Leaping",
-  cat: "movement"
-}, {
-  id: "Life",
-  name: "Life Support",
-  cat: "defensive"
-}, {
-  id: "Mach",
-  name: "Machine Control",
-  cat: "control"
-}, {
-  id: "Matt",
-  name: "Matter Control",
-  cat: "control"
-}, {
-  id: "Ment",
-  name: "Mental Blast",
-  cat: "mental"
-}, {
-  id: "Mimi",
-  name: "Mimicry",
-  cat: "alteration"
-}, {
-  id: "Mindc",
-  name: "Mind Control",
-  cat: "mental"
-}, {
-  id: "Minds",
-  name: "Mind Shield",
-  cat: "mental"
-}, {
-  id: "Phas",
-  name: "Phasing",
-  cat: "alteration"
-}, {
-  id: "Post",
-  name: "Postcognition",
-  cat: "sensory"
-}, {
-  id: "Powe",
-  name: "Power Control",
-  cat: "control"
-}, {
-  id: "Prec",
-  name: "Precognition",
-  cat: "sensory"
-}, {
-  id: "Refl",
-  name: "Reflection",
-  cat: "defensive"
-}, {
-  id: "Rege",
-  name: "Regeneration",
-  cat: "defensive"
-}, {
-  id: "Resi",
-  name: "Resistance",
-  cat: "defensive"
-}, {
-  id: "Serv",
-  name: "Servant",
-  cat: "control"
-}, {
-  id: "Shri",
-  name: "Shrinking",
-  cat: "alteration"
-}, {
-  id: "Spin",
-  name: "Spinning",
-  cat: "movement"
-}, {
-  id: "Spir",
-  name: "Spirit Control",
-  cat: "control"
-}, {
-  id: "Stri",
-  name: "Strike",
-  cat: "offensive"
-}, {
-  id: "Stun",
-  name: "Stunning",
-  cat: "offensive"
-}, {
-  id: "Sups",
-  name: "Super-Senses",
-  cat: "sensory"
-}, {
-  id: "Susp",
-  name: "Super-Speed",
-  cat: "movement"
-}, {
-  id: "Swin",
-  name: "Swinging",
-  cat: "movement"
-}, {
-  id: "Tele",
-  name: "Telepathy",
-  cat: "mental"
-}, {
-  id: "Tp",
-  name: "Teleportation",
-  cat: "movement"
-}, {
-  id: "Wall",
-  name: "Wall-Crawling",
-  cat: "movement"
-}, {
-  id: "Wiza",
-  name: "Wizardry",
-  cat: "control"
-}, ]
+// id, name, cat, skills to use 
+const POWERS = [
+  ["Abb","Ability Boost","alteration",["Arcane","Will"]],
+  ["Abi","Ability Increase","alteration",["Arcane","Will"]],
+  ["Abso","Absorption","defensive",["Fight","Shoot"]],
+  ["Adap","Adaptation","defensive",["Will","Physique"]],
+  ["Affl","Affliction","offensive",["Shoot"]],
+  //["Alte","Alter Ego","alteration"],
+  //["Altr","Alteration Ray","control"],
+  //["Altf","Alternate Form","alteration"],
+  ["Aqua","Aquatic","alteration",["Will","Physique"]],
+  ["Astr","Astral Projection","mental",["Arcane","Will"]],
+  ["Aura","Aura","offensive",["Fight","Physique"]],
+  ["Bind","Binding","offensive",["Shoot"]],
+  ["Blas","Blast","offensive",["Shoot"]],
+  ["Burr","Burrowing","movement",["Athletics"]],
+  //["Cont","Continuum Control","control"],
+  ["Corr","Corrosion","offensive",["Shoot"]],
+  ["Dang","Danger Sense","sensory",["Notice"]],
+  ["Dazz","Dazzle","offensive",["Shoot"]],
+  ["Dens","Density","alteration",["Will","Physique"]],
+  ["Dete","Detection","sensory",["Notice"]],
+  ["Dimc","Dimension Control","alteration",["Arcane","Will"]],
+  ["Dimt","Dimensional Travel","movement",["Arcane","Will"]],
+  //["Drea","Dream Control","mental"],
+  //["Dupl","Duplication","alteration"],
+  ["Elem","Element Control","control",["Arcane","Will"]],
+  ["Emot","Emotion Control","mental",["Arcane","Will"]],
+  ["Enec","Energy Control","control",["Arcane","Will"]],
+  ["Ened","Energy Drain","offensive",["Shoot","Will"]],
+  ["Envi","Environmental Awareness","sensory",["Notice"]],
+  ["ESP","ESP","sensory",["Arcane","Will"]],
+  //["Evol", "Evolution", "alteration"],
+  //["Extr", "Extra Body Parts", "alteration"],
+  ["Fast", "Fast Attack", "offensive",["Fight","Shoot"]],
+  ["Flig", "Flight", "movement",["Athletics"]],
+  ["Forc", "Force Field", "defensive",["Fight","Shoot"]],
+  //["Gest", "Gestalt", "alteration"],
+  ["Grow", "Growth", "alteration",["Arcane","Will"]],
+  ["Heal", "Healing", "control",["Arcane","Will"]],
+  ["Illu", "Illusion/Images", "mental",["Arcane","Will"]],
+  ["Immo", "Immortality", "defensive",["Will"]],
+  ["Inte", "Interface", "sensory",["Arcane","Tech","Will"]],
+  ["Invi", "Invisibility", "alteration",["Will","Stealth"]],
+  ["Leap", "Leaping", "movement",["Athletics"]],
+  ["Life", "Life Support", "defensive",["Will"]],
+  ["Mach", "Machine Control", "control",["Arcane","Tech","Will"]],
+  ["Matt", "Matter Control", "control",["Arcane","Will"]],
+  ["Ment", "Mental Blast", "mental",["Arcane","Will"]],
+  //["Mimi", "Mimicry", "alteration"],
+  ["Mindc", "Mind Control", "mental",["Arcane","Will"]],
+  ["Minds", "Mind Shield", "mental",["Arcane","Will"]],
+  ["Phas", "Phasing", "alteration",["Arcane","Will"]],
+  ["Post", "Postcognition", "sensory",["Arcane","Notice","Will"]],
+  //["Powe", "Power Control", "control"],
+  ["Prec", "Precognition", "sensory",["Arcane","Notice","Will"]],
+  ["Refl", "Reflection", "defensive",["Athletics","Fight"]],
+  ["Rege", "Regeneration", "defensive",["Physique","Will"]],
+  ["Resi", "Resistance", "defensive",["Fight","Shoot"]],
+  ["Serv", "Servant", "control",["Arcane","Will"]],
+  ["Shri", "Shrinking", "alteration",["Arcane","Will"]],
+  ["Spin", "Spinning", "movement",["Athletics"]],
+  //["Spir", "Spirit Control", "control"],
+  ["Stri", "Strike", "offensive",["Fight"]],
+  ["Stun", "Stunning", "offensive",["Shoot"]],
+  ["Sups", "Super-Senses", "sensory",["Notice"]],
+  ["Susp", "Super-Speed", "movement",["Athletics"]],
+  ["Swin", "Swinging", "movement",["Athletics"]],
+  ["Tele", "Telepathy", "mental",["Arcane","Will"]],
+  ["Tp", "Teleportation", "movement",["Athletics","Will"]],
+  ["Wall", "Wall-Crawling", "movement",["Athletics"]],
+  ["Wiza", "Wizardry", "control",["Arcane","Will"]]
+]
 
 const skills = {
   "Administer" : ``,
+  "Arcane" : ``,
   "Athletics" : ``,
   "Burglary" : ``,
   "Culture" : `A student of society, art, language and philosophy`,
@@ -338,15 +131,14 @@ const skills = {
   "Empathy" : ``,
   "Fight" : ``,
   "Influence" : `Combines Rapport and Provoke.`,
-  "Magic" : ``,
   "Nature" : ``,
   "Notice" : ``,
   "Physique" : ``,
   "Pilot" : ``,
-  "Psionics" : ``,
   "Science" : ``,
   "Shoot" : ``,
   "Stealth" : ``,
+  "Survival" : ``,
   "Tech" : ``,
   "Will" : ``,
 }
@@ -376,7 +168,50 @@ let allColorTags = colorTags.reduce((all,ct,i) => {
 
 const APPROACHES = ["Careful", "Clever", "Flashy", "Forceful", "Quick", "Sneaky"]
 
+const BACKGROUNDS = [
+  ["Backwater",["Survival","Athletics","Tech","Science"]],
+  ["Wartorn"],
+  ["High-tech"],
+  ["Spaceborn",["Tech","Pilot","Craft","Survival"]],
+  ["Impoverished"],
+  ["Priviliged"],
+  ["Crowded"],
+  ["Strict"],
+]
+const CAREERS = [
+  ["Empowered"],
+  ["Paladin",["Protection","Trickery"]],
+  ["Barbarian",["Physique","Fight","Empathy","Tech"]],
+  ["Psychic"],
+  ["Evoker"],
+  ["Kinetic"],
+  ["Academic"],
+  ["Merchant"],
+  ["Spy",["Stealth","Burglary","Administer","Nature"]],
+  ["Explorer"],
+  ["Industrial"],
+  ["Military"],
+  ["Personality"],
+  ["Rogue"],
+  ["Pilot"],
+  ["Hacker"],
+]
+
+/* Core Characters 
+  {
+    name : "Paladin",
+    people : "Aasimar",
+    bck : "Spaceborn",
+    career : "Paladin"
+    skills : {}
+  }
+
+*/
+
+import {CPXGear} from "./CPXRPGGear.js"
 let CPXData = (app)=>{
+  CPXGear(app)
+
   app.colors = colors
   app.tagsByColor = colorTags
   app.tagArray = allColorTags
@@ -394,7 +229,10 @@ let CPXData = (app)=>{
 
   app.CPX = {
     colors : COLORS,
-    powers: POWERS,
+    //map power array to objects
+    powers: POWERS.map(p => {
+      return {id:p[0], name:p[1], cat:p[2], skills:p[3]}
+    }),
     skills,
     skillArray : Object.keys(skills),
     skillGroupIds,

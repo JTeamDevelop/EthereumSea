@@ -468,8 +468,11 @@ let planeFactory = (app)=>{
       d3.select("#spinner").attr("class", "lds-dual-ring hidden")
     },
     display(ri, z) {
+      /*
       if (!glTest()) this.canvasDisplay(ri,z)
       else this.threeDisplay()
+      */
+      this.canvasDisplay(ri,z)
     },
     clickFind(hi) {
       /*

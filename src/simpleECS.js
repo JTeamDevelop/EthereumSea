@@ -13,30 +13,42 @@
 
 let ECSFactory = (app) => {
   
-  let entities = { generic: {}, state : {} }
+  let entities = { generic: {} }
+  let mods = {}
+  let state = {
+    lastUser : "",
+    users : {}
+  }
   let components = {}
 
   //handle storage 
-  app.DB.getItem("entities").then(res => {
-    if(res) {
-      entities = res
-      if (!entities.state) entities.state = {}
-    }
-    app.state = entities.state
+  app.DB.getItem("state").then(res => {
+    if(res) state = res;
+    app.state = state
+    //load mods
+    app.DB.getItem("mods").then(mres => {
+      if(mres) mods = mres;
+      console.log("Mods Loaded")
+    })
     //now initialize after load
     app.init()
   })
 
   setInterval(()=>{
-    app.DB.setItem("entities",entities)
+    app.DB.setItem("mods",mods)
+    app.DB.setItem("state",state)
   },20000)
 
   //follow state 
-  app.state = entities.state
+  app.state = state
 
   return {
-    save () { app.DB.setItem("entities",entities) }, 
+    save () { 
+      app.DB.setItem("mods",mods)
+      app.DB.setItem("state",state)
+    }, 
     get entities () { return entities },
+    get mods () { return mods },
     newEnity (cname) {
       //id not in a collection - give it a collection 
       cname = cname || "generic"
