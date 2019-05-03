@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Ethereum Sea</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="lib/noty.3.1.4.min.css">
+    <link rel="stylesheet" type="text/css" href="lib/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="src/vast.css">
+  </head>
+  <body>
+    <div id="spinner" class="lds-dual-ring"></div>
+    <div id="ui-main" align="center">
+      <button class="btn btn-info" type="button" @click="enter(pid)" v-if="pid">{{parent}}</button>
+      <button class="btn btn-info" type="button" @click="enter(cid)" v-if="cid">{{current}}</button>
+      <button class="btn btn-info" type="button" @click="enter(sid)" v-if="sid">{{selected}}</button>
+    </div>
+    <div id="map" style="overflow-x:auto;">
+      <svg height="0" width="0"></svg>
+    </div>
+  </body>
+  <script src="lib/d3.v5.min.js"></script>
+  <script src="lib/d3-delaunay.min.js"></script>
+  <script src="lib/simplex-noise.js"></script>
+  <script src="lib/vue.2.5.16.min.js"></script>
+  <script src="lib/noty.3.1.4.min.js"></script>
+  <script src="lib/popper.1.12.3.min.js"></script>
+  <script src="lib/jquery-3.3.1.min.js"></script>
+  <script src="lib/bootstrap.min.js"></script>
+  <script type="module" src="src/vast.js"></script>
+</html>
