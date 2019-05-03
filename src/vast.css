@@ -1,0 +1,13 @@
+[v-cloak] {
+  display: none;
+}
+
+body {
+  margin: 0;
+  background-color: silver;
+}
+
+circle.selected {
+  fill: rgba(0,0,255,0.5);
+}
+
