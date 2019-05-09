@@ -7,7 +7,70 @@ body {
   background-color: silver;
 }
 
+.overlay {
+  position: fixed;
+  top: 5px;
+  left: 50%;
+  width: 400px;
+  transform: translateX(-50%);
+  background-color: whitesmoke;
+}
+
+.link {
+  text-decoration: underline;
+  color: blue;
+}
+
+.factionColor {
+  display:inline-block;
+  height: 16px;
+  width: 16px;
+  border: black solid 1px;
+  border-radius: 50%;
+}
+
+path.slice {
+  stroke:black;
+}
+rect.plate {
+  fill:lightblue;
+  stroke: black;
+}
+
+circle.water {
+  fill: lightblue;
+}
+
+circle.land {
+  fill: green;
+}
+polygon.land {
+  fill: darkgreen;
+}
+
+circle.sector {
+  stroke-width : 4;
+  stroke-dasharray : 5,5;
+  stroke: blue;
+  fill: none;
+}
+
+circle.orbital   {
+  stroke-width : 2;
+  stroke: black;
+  fill: none;
+}
+
+circle.system   {
+  fill: green;
+}
+
 circle.selected {
   fill: rgba(0,0,255,0.5);
+}
+
+.system.selected   {
+  stroke-width : 3;
+  stroke: yellow;
 }
 

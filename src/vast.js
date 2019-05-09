@@ -3,145 +3,10 @@ let worker = new Worker('src/vastWorker.js')
 
 //chance
 import "../lib/chance.min.js"
+//data 
+import {UNITS,FACTIONS,LOCATIONS} from "../src/OutlandsData.js"
 
 let chance = new Chance()
-
-const LOCATIONS = [{
-  seed: "BladesOfTheOutlands",
-  name: "Known Universe",
-  opts: {
-    n: 16,
-    what: "U"
-  },
-  children: ["Vast", "Aztlan", "Celestia", "Kunlun", "Shambhala", "Lemuria", "Arcadia", "Svarga", "Elysium", "Asgard", "Mechanus", "Acheron", "Gehenna", "Maelstrom", "Abyss", "Tartarus"]
-}, {
-  seed: "Vast",
-  opts: {
-    what: "O"
-  },
-  children: [],
-  parent: "BladesOfTheOutlands",
-}, {
-  seed: "Aztlan",
-  opts: {
-    what: "S"
-  },
-  children: ["Atlantis"],
-  factions: ["Starlords, Fae, Titans"],
-  parent: "BladesOfTheOutlands",
-}, {
-  seed: "Celestia",
-  opts: {
-    what: "S"
-  },
-  children: ["Tien"],
-  factions: ["Jade Empire, Archons, Platinum Star"],
-  parent: "BladesOfTheOutlands",
-}, {
-  seed: "Kunlun",
-  opts: {
-    what: "S"
-  },
-  children: ["Penglai"],
-  factions: ["Jade Empire, Platinum Star, Blood of Tiamat"],
-  parent: "BladesOfTheOutlands",
-}, {
-  seed: "Shambhala",
-  opts: {
-    what: "S"
-  },
-  children: [],
-  factions: ["Jade Empire, Asgardians, Sons of Ymir"],
-  parent: "BladesOfTheOutlands",
-}, {
-  seed: "Lemuria",
-  opts: {
-    what: "S"
-  },
-  children: ["Hawaiki"],
-  factions: ["Deva, Wardens, Aboleth"],
-  parent: "BladesOfTheOutlands",
-}, {
-  seed: "Arcadia",
-  opts: {
-    what: "S"
-  },
-  children: ["Avalon"],
-  factions: ["Archons, Guardians, Myr"],
-  parent: "BladesOfTheOutlands",
-}, {
-  seed: "Svarga",
-  opts: {
-    what: "S"
-  },
-  children: [],
-  factions: ["Devas, Fae, "],
-  parent: "BladesOfTheOutlands",
-}, {
-  seed: "Elysium",
-  opts: {
-    what: "S"
-  },
-  children: ["Olympus"],
-  factions: ["Olympians, Fae"],
-  parent: "BladesOfTheOutlands",
-}, {
-  seed: "Asgard",
-  opts: {
-    what: "S"
-  },
-  children: ["Kitezh"],
-  factions: ["Asgardians, Fae"],
-  parent: "BladesOfTheOutlands",
-}, {
-  seed: "Mechanus",
-  opts: {
-    what: "S"
-  },
-  children: [],
-  factions: ["Mechans, StarHive"],
-  parent: "BladesOfTheOutlands",
-}, {
-  seed: "Acheron",
-  opts: {
-    what: "S"
-  },
-  children: ["Niflheim"],
-  factions: ["Sons of Ymir, Sect, Shadowsteel Syndicate"],
-  parent: "BladesOfTheOutlands",
-}, {
-  seed: "Gehenna",
-  opts: {
-    what: "S"
-  },
-  children: ["Muspelheim"],
-  factions: ["Yuloth, Blackflame, Myr"],
-  parent: "BladesOfTheOutlands",
-}, {
-  seed: "Maelstrom",
-  opts: {
-    what: "S"
-  },
-  children: [],
-  factions: ["Goblyns, Xaoti"],
-  parent: "BladesOfTheOutlands",
-}, {
-  seed: "Abyss",
-  opts: {
-    what: "S"
-  },
-  children: [],
-  factions: [],
-  parent: "BladesOfTheOutlands",
-}, {
-  seed: "Tartarus",
-  opts: {
-    what: "S"
-  },
-  children: ["Irkalla"],
-  factions: ["Gaol, Olympians, Titans"],
-  parent: "BladesOfTheOutlands",
-}]
 
 /*
 const baseNoise = new SimplexNoise('0r.8bc9a082a427986d')
@@ -207,131 +72,309 @@ const updateMapPiece = (c,max) => {
 }
 */
 
+//blades roll 
+const BitDRoll = (n) => {
+  let descending = function(a, b){return b - a} 
+  let r = [], pass = false, six = 0;
+  
+  if(n == 0){
+    r = chance.rpg("2d6").sort(descending)
+    pass = r[0] > 3 ? true : false
+    six = r[0] == 6 ? 1 : 0
+  }
+  else {
+    r = chance.rpg(n+"d6").sort(descending)
+    six = r.reduce((n,cr)=>{
+      if(cr > 3) pass = true;
+      return cr === 6 ? n+1 : n;
+    },0)
+  }
+
+  return {
+    r : r,
+    pass : pass,
+    six : six,
+  }
+}
+
+//setup data for current map 
+let display = null
+
 //creates the VUE js instance
 const UIMain = new Vue({
   el: '#ui-main',
   data: {
     cid : "",
-    sid: "",
-    pid : ""
+    sid: -1,
+    pid : "",
+    fid: -1,
+    clocks : [],
+    cli : -1,
+    factions : {},
+    nfid:1,
+    nu: ["g",0,0,1,1],
+    units : {}
   },
   mounted() {
+    this.updateFactions()
     let KU = LOCATIONS[0]
     //updateMapPiece(0,this.maxMap)
     worker.postMessage({
       f: "generate",
-      seed: "BladesOfTheOutlands",
-      opts: KU.opts
+      data : KU,
     });
   },
   computed: {
+    allColors () { return COLORS },
+    allUnits () { return UNITS },
+    allFactions () { return FACTIONS },
     current () { 
-      if(!this.cid) return ""
-      let S = LOCATIONS.find(d=>d.seed == this.cid)
-      return S.name ? S.name : S.seed
+      if(!this.cid) return {}
+      return LOCATIONS.find(d=>d.seed == this.cid)
     },
     selected () { 
-      if(!this.sid) return ""
-      let S = LOCATIONS.find(d=>d.seed == this.sid)
-      return S ? S.name ? S.name : S.seed : this.sid
+      //pull from data 
+      if(this.sid>-1) return display.map[this.sid]._data;
+      else return {};
     },
     parent () { 
-      if(!this.pid) return ""
-      let S = LOCATIONS.find(d=>d.seed == this.pid)
-      return S.name ? S.name : S.seed
-    }
+      if(!this.pid) return {}
+      return LOCATIONS.find(d=>d.seed == this.pid)
+    },
+    faction () {
+      if(this.fid<0) return {}
+      let F = Object.assign({},FACTIONS.find(f=>f.id == this.fid))
+      this.clocks = F.clocks || []
+       
+      return F
+    },
   },
   methods: {
-    enter(id) {
-      let i = LOCATIONS.findIndex(d=>d.seed == id)
-      //does not exist
+    info() {},
+    roll(n) {
+      console.log(BitDRoll(n))
+    },
+    updateFactions () {
+      this.factions = {
+        parent : this.parent.factions ? this.parent.factions.map(id => FACTIONS.find(f=> f.id == id)) : [],
+        current : this.current.factions ? this.current.factions.map(id => FACTIONS.find(f=> f.id == id)) : [],
+        selected : this.selected.factions ? this.selected.factions.map(id => FACTIONS.find(f=> f.id == id)) : []
+      }
+
+      let su = this.selected.units ? this.selected.units.map(u=> {
+        return {
+          color : FACTIONS.find(f=>f.id == u[1]).color,
+          name: UNITS.find(f=>f.id == u[2]).name,
+          q: u[4],
+          sz: u[3]
+        }
+      }) : []
+
+      this.units = {
+        parent: [],
+        selected: su,
+        current: []
+      }
+    },
+    updateClocks() {
+      //update display
+      Vue.nextTick(()=>drawClocks())
+    },
+    addClock() {
+      let i = this.clocks.length
+      //don't create new if one exists
+      if(i>0 && this.clocks[i-1][0].length == 0) return;
+      //create a new one
+      this.clocks.push(['',8,0])
+      //set edit index
+      this.cli=i
+      this.updateClocks()
+    },
+    addUnit() {
+      let i = LOCATIONS.findIndex(d=>d.seed == this.selected.seed)
+      //does not exist - create it
       if(i < 0) {
-        LOCATIONS.push({
-          seed : id,
-          parent : this.cid,
-          children : []
-        })
+        LOCATIONS.push(Object.assign({},this.selected))
+        i = LOCATIONS.length - 1
+      }
+      let S = LOCATIONS[i]
+
+      //push unit to location 
+      S.units.push(this.nu)
+      this.updateFactions()
+    },
+    addFaction() {
+      let i = LOCATIONS.findIndex(d=>d.seed == this.selected.seed)
+      //does not exist - create it
+      if(i < 0) {
+        LOCATIONS.push(Object.assign({},this.selected))
+        i = LOCATIONS.length - 1
+      }
+      let S = LOCATIONS[i]
+
+      S.factions.push(this.nfid)
+      this.updateFactions()
+    },
+    enter(obj) {
+      let i = LOCATIONS.findIndex(d=>d.seed == obj.seed)
+      //does not exist - create it
+      if(i < 0) {
+        LOCATIONS.push(Object.assign({},obj))
         i = LOCATIONS.length - 1
       }
       let S = LOCATIONS[i]
 
       worker.postMessage({
         f: "generate",
-        seed: S.seed,
-        opts: S.opts
+        data : S
       });
-    },
-    mapWest() {
-      let c = this.mapCenter
-      let max = this.maxMap
-      this.mapCenter = c - 400 < 0 ? max + (c - 400) : c - 400
-      updateMapPiece(this.mapCenter, max)
-    },
-    mapEast() {
-      let c = this.mapCenter
-      let max = this.maxMap
-      this.mapCenter = c + 400 > max ? c + 400 - max : c + 400
-      updateMapPiece(this.mapCenter, max)
     },
   }
 })
 
-const drawCircleMap = (seed,map,data)=>{
+const drawClocks = () => {
+  UIMain.clocks.forEach((c,i) => {
+    var arc = d3.arc().innerRadius(0).outerRadius(16)
+    var data = d3.range(c[1]).map(()=>1)
+    let pie = d3.pie()(data)
+
+    //select and clear 
+    let svg = d3.select("#clock-"+i)
+    svg.html("")
+        
+    //append the g to shift center
+    let vis = svg.append("g").attr("transform", "translate(" + 17 + "," + 17 + ")")
+    //append the arcs
+    vis.selectAll("path").data(pie).enter().append("path").attr("d",arc)
+      .classed("slice",true)
+      .attr("fill",(d,j)=> j<c[2] ? "red" : "white")
+      //add interaction 
+      .on("click tap",(d,j) => {
+        //update clocks
+        c[2] = j==0 && c[2] == 1 ? 0 : j+1
+        drawClocks()
+      })
+  })
+}
+
+const drawCircleMap = ()=>{
   let R = 400
   //set size
-  let svg = d3.select("svg").attr("height", 2 * R).attr("width", 2 * R)
+  let svg = d3.select("#map svg").attr("height", 2 * R).attr("width", 2 * R)
   //clear
   svg.html("")
 
-  const getWhat = (d,i) => {
-    let what = ""
-    if(data.children[i]) {
-      let child = LOCATIONS.find(l=>l.seed == data.children[i])  
-      what = child.opts.what
-    } 
-    else {
-      what = d.what
-    } 
-    return what
-  }
+  //add data
+  let data = display.data  
+  let map = display.map.map((d,i)=>{
+    let lid = LOCATIONS.findIndex(l=>l.seed == d._data.seed)
+    d._data = lid > -1 ? LOCATIONS[lid] : d._data
 
-  //add data 
-  map = map.map((d,i)=>{
+    //else if ()
     return Object.assign({
-      parent: data,
-      name: data.children[i] ? data.children[i] : d.name
-    }, d)
+      i,
+      get name () { return this._data.name || this._data.seed },
+      get what () { return this._data.opts.what }
+    },d)
   })
 
   //look for sectors/subsectors
-  let c = map.filter((d,i) => getWhat(d,i) === "S")
+  let c = map.filter((d,i) => ["B","S"].includes(d.what))
   //orbitals 
-  let o = map.filter((d,i) => getWhat(d,i) === "O")
+  let o = map.filter((d,i) => d.what === "O")
   //systems 
-  let y = map.filter((d,i) => getWhat(d,i) === "Y")
+  let y = map.filter((d,i) => d.what === "Y")
 
-  let mapSelect = (d,i)=>{
+  let mapSelect = (d)=>{
     d3.selectAll("circle").classed("selected", false)
     d3.select("#s_" + d.name).classed("selected", true)
-    UIMain.sid = d.name
+    //set to index 
+    UIMain.sid = d.i
+    UIMain.updateFactions()
   }
 
   //for ease initially 
   //TODO different icons 
   let all = c.concat(o,y)
-  svg.selectAll("circle").data(all).enter().append("circle").attr("id", d=>"s_" + d.name).attr("cx", d=>d.x).attr("cy", d=>d.y).attr("r", d=>d.r * d.data.rm).attr("fill", "none").attr("stroke-width", 4).attr("stroke-dasharray", "5,5").attr("stroke", "blue").on("click tap", mapSelect)
-  svg.selectAll("text").data(all).enter().append("text").attr("x", d=>d.x - d.name.length * 4).attr("y", d=>d.y).text(d=>d.name).on("click tap", mapSelect)
+  svg.selectAll("circle").data(all).enter().append("circle")
+    .attr("id", d=>"s_" + d.name)
+    //have to adjust for map being 2R in width/height
+    .attr("cx", d=>d.x*2*R).attr("cy", d=>d.y*2*R)
+    .attr("r", d=>{
+      if(["B","S"].includes(d.what)) return d.r *2*R * d.data.rm;
+      else if (d.what === "O") return 7;
+      else if (d.what === "Y") return 4;
+    })
+    .attr("class",d => {
+      if(["B","S"].includes(d.what)) return "sector";
+      else if(d.what === "O") return "orbital";
+      else if(d.what === "Y") return "system";
+    })
+    .on("click tap", mapSelect)
+  svg.selectAll("text").data(all).enter().append("text").attr("x", d=>d.x*2*R - d.name.length * 4).attr("y", d=>d.y*2*R).text(d=>d.name).on("click tap", mapSelect)
 
   //set selected
-  UIMain.sid = ""
+  display.map = map
   UIMain.cid = data.seed
+  UIMain.sid = -1
   UIMain.pid = data.parent || "" 
+  UIMain.updateFactions()
+}
+
+const drawOrbital = () => {
+  let w = 800
+  //set size
+  let svg = d3.select("svg").attr("height",w).attr("width",w)
+  //clear
+  svg.html("")
+  //get plates 
+  let data = display.data
+  let plates = display.map
+  let sqnp = Math.sqrt(plates.length)
+  let pw = w / sqnp
+
+  //do all the transform to location at the g level 
+  let pg = svg.selectAll("g").data(plates).enter().append("g")
+    .attr("transform",(d,i) => "translate("+pw*(i%Math.floor(sqnp))+","+pw*Math.floor(i/sqnp)+")")
+  
+  pg.append("rect").classed("plate",true)
+    .attr("x",0)
+    .attr("y",0)
+    .attr("width",pw)
+    .attr("height",pw)
+  
+  plates.forEach((p,i) => {
+    //pull the plate 
+    let g = d3.select(pg.nodes()[i])
+    g.selectAll("polygon").data(p.polys).enter().append("polygon")
+      .attr("class","land")
+      .attr("points",d=>{
+        return d.map(pp => [pp[0]*pw,pp[1]*pw]).join(" ")
+      })
+    /*
+    g.selectAll("circle").data(p.land).enter().append("circle")
+      .attr("class","land")
+      .attr("cx",d=>d.x*pw)
+      .attr("cy",d=>d.y*pw)
+      .attr("r",d=>d.r*pw)
+      */
+  })
+
+  //set selected
+  UIMain.cid = data.seed
+  UIMain.sid = -1
+  UIMain.pid = data.parent || ""
 }
 
 worker.onmessage = function(e) {
   let d = e.data
   if (e.data.f = "generate") {
-    drawCircleMap(d.seed, d.map, LOCATIONS.find(s=>s.seed == d.seed))
+    display = Object.assign({
+      get what () { return this.data.opts.what }
+    },d)
+    //check for which display
+    if(["U","B","S"].includes(display.what)) drawCircleMap();
+    else if (display.what === "O") drawOrbital();
     //remove spinner
     d3.select("#spinner").attr("class", "lds-dual-ring hidden")
   }
