@@ -11,9 +11,121 @@
   <body>
     <div id="spinner" class="lds-dual-ring"></div>
     <div id="ui-main" align="center">
-      <button class="btn btn-info" type="button" @click="enter(pid)" v-if="pid">{{parent}}</button>
-      <button class="btn btn-info" type="button" @click="enter(cid)" v-if="cid">{{current}}</button>
-      <button class="btn btn-info" type="button" @click="enter(sid)" v-if="sid">{{selected}}</button>
+      <div class="card position-absolute" style="right:10px;width: 300px;z-index:10;">
+        <div class="mb-1" align="center">
+          <button class="btn btn-info btn-block" type="button" @click="enter(parent)" v-if="pid">{{parent.name || parent.seed}}</button>
+          <button class="btn btn-sm m-1" v-for="(f,i) in factions.parent" @click="fid=f.id">
+            <div class="factionColor" :style="'background-color:'+f.color"></div>
+            {{f.name}}
+          </button>
+        </div>
+        <div class="mb-1" align="center">
+          <button class="btn btn-info btn-block" type="button" @click="info()" v-if="cid">{{current.name || current.seed}}</button>
+          <button class="btn btn-sm m-1" v-for="(f,i) in factions.current" @click="fid=f.id">
+            <div class="factionColor" :style="'background-color:'+f.color"></div>
+            {{f.name}}
+          </button>
+        </div>
+        <div class="mb-1" align="center">
+          <button class="btn btn-info btn-block" type="button" @click="enter(selected)" v-if="sid>-1">{{selected.name || selected.seed}}</button>
+          <div class="btn-group btn-group-sm m-1" role="group" v-for="(f,i) in factions.selected">
+            <button class="btn" @click="fid=f.id">
+              <div class="factionColor" :style="'background-color:'+f.color"></div>
+              {{f.name}}
+            </button>
+            <button class="btn" @click="selected.factions.splice(i,1),updateFactions()">&cross;</button>
+          </div>
+          <div class="input-group" v-if="sid>-1">
+            <select class="custom-select" v-model="nfid">
+              <option v-for="f in allFactions" :value="f.id">{{f.name}}</option>
+            </select>
+            <div class="input-group-append">
+              <button class="btn btn-outline-success" type="button" @click="addFaction()">Add</button>
+            </div>
+          </div>
+        </div>
+        <h6 class="m-1 bg-light" v-if="sid>-1">Units</h6>
+        <div class="input-group" v-if="sid>-1">
+          <select class="custom-select" v-model="nu[1]">
+            <option v-for="f in factions.selected" :value="f.id">{{f.name}}</option>
+          </select>
+          <select class="custom-select" v-model="nu[2]">
+            <option v-for="u in allUnits" :value="u.id">{{u.name}}</option>
+          </select>
+          <div class="input-group-append">
+            <button class="btn btn-outline-success" type="button" @click="addUnit()" v-if="nu[1]>0&&nu[2]>0">Add</button>
+          </div>
+        </div>
+        <div class="input-group" v-if="sid>-1">
+          <div class="input-group-prepend">
+            <span class="input-group-text">Scale</span>
+          </div>
+          <select class="custom-select" v-model="nu[3]">
+            <option v-for="n in 5" :value="n">{{n}}</option>
+          </select>
+          <div class="input-group-prepend">
+            <span class="input-group-text">Quality</span>
+          </div>
+          <select class="custom-select" v-model="nu[4]">
+            <option v-for="n in 5" :value="n">{{n}}</option>
+          </select>
+        </div>
+        <div v-for="(u,j) in units.selected">
+          <div class="btn-group btn-group-sm m-1" role="group">
+            <button class="btn btn-block">
+              <div class="factionColor" :style="'background-color:'+u.color"></div>
+              <span>{{u.name}}, sz:{{u.sz}}</span>
+            </button>
+            <button class="btn btn-info" @click="roll(u.q)">Q: {{u.q}}</button>
+            <button class="btn" @click="selected.units.splice(j,1),updateFactions()">&cross;</button>
+          </div>
+        </div>
+      </div>
+      <div class="overlay" v-if="fid>-1">
+        <div class="card">
+          <div class="card-header p-0">
+            <button type="button" class="close mr-2" @click="fid=-1">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <h5>{{faction.name}}</h5>
+          </div>
+          <div>{{faction.text}}</div>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Cunning</span>
+            </div>
+            <input type="number" min="0" max="5" class="form-control" v-model="faction.cfw[0]">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Force</span>
+            </div>
+            <input type="number" min="0" max="5" class="form-control" v-model="faction.cfw[1]">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Wealth</span>
+            </div>
+            <input type="number" min="0" max="5" class="form-control" v-model="faction.cfw[2]">
+          </div>
+          <h6 class="m-1 bg-light">
+            Clocks <button class="btn btn-sm" type="button" @click="addClock()">&#10010;</button>
+          </h6>
+          <div v-for="(c,j) in clocks">
+            <div class="input-group" v-if="cli==j">
+              <div class="input-group-prepend">
+                <button class="btn btn-success" type="button" @click="cli=-1,updateClocks()" v-if="c[0].length>0">&check;</button>
+                <button class="btn btn-warning" type="button" @click="clocks.splice(j,1),updateClocks()">&cross;</button>
+              </div>
+              <input type="text" class="form-control" placeholder="Clock Text" v-model="c[0]">
+              <div class="input-group-prepend">
+                <span class="input-group-text">Ticks</span>
+              </div>
+              <input type="number" min="4" max="10" class="form-control" v-model="c[1]" style="max-width:50px;">
+            </div>
+            <div class="px-2" style="height:36px;" align="left" v-else>
+              <span class="link" align="left" @click="cli=j">{{c[0]}}</span>
+              <svg :id="'clock-'+j" class="position-absolute" width="34" height="34" style="right:1%"></svg>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div id="map" style="overflow-x:auto;">
       <svg height="0" width="0"></svg>
