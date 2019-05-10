@@ -8,8 +8,10 @@ importScripts('../lib/chance.min.js');
 //names 
 importScripts('nameGen.js'); 
 
-const TN = NameGen.nameBases.length
+//Save db for Indexed DB - localforage
+const DB = localforage.createInstance({ name: "BotO", storeName: "Outlands" })
 
+const TN = NameGen.nameBases.length
 const PI = Math.PI
 
 const GEN = {
@@ -217,6 +219,29 @@ const circlePack = (seed, opts) => {
   //now shuffle
   return RNG.shuffle(map)
 }
+
+//Handle loading save state
+DB.getItem("state").then(function(state) {
+  //check if it exists
+  if(!state) {
+    let hash = chance.hash()
+    state = {
+      time : Date.now(),
+      lastSave : hash,
+      saves : [hash]
+    }
+  }
+  else {
+    //update time
+    state.time = Date.now()
+  }
+  //save state
+  DB.setItem("state",state)
+  //pull saved data 
+  DB.getItem(state.lastSave+".crews").then()
+  DB.getItem(state.lastSave+".factions").then()
+  DB.getItem(state.lastSave+".locations").then()
+})
 
 onmessage = function(e) {
   let d = e.data

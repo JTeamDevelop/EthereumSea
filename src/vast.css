@@ -21,6 +21,34 @@ body {
   color: blue;
 }
 
+#info-bar {
+  position: absolute;
+  right:5px;
+  width: 300px;
+  z-index:10;
+}
+#info-bar.wide {
+  width: 600px;
+}
+
+.circle-select {
+  display:inline-block;
+  height: 14px;
+  width: 14px;
+  border: grey solid 1px;
+  border-radius: 50%;
+}
+.fillable {
+  display:inline-block;
+  height: 20px;
+  width: 8px;
+  margin-right:3px;
+  border: black solid 1px;
+}
+.fillable.filled, .circle-select.filled {
+  background-color: red;
+}
+
 .factionColor {
   display:inline-block;
   height: 16px;

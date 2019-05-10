@@ -4,7 +4,7 @@ let worker = new Worker('src/vastWorker.js')
 //chance
 import "../lib/chance.min.js"
 //data 
-import {UNITS,FACTIONS,LOCATIONS} from "../src/OutlandsData.js"
+import {CREWS,UNITS,FACTIONS,LOCATIONS,TEMPLATES,CREWABILITIES,CREWUPGRADES} from "../src/OutlandsData.js"
 
 let chance = new Chance()
 
@@ -104,6 +104,9 @@ let display = null
 const UIMain = new Vue({
   el: '#ui-main',
   data: {
+    isWide: false,
+    menu : 0,
+    nwid : 1, //new crew id 
     cid : "",
     sid: -1,
     pid : "",
@@ -113,7 +116,8 @@ const UIMain = new Vue({
     factions : {},
     nfid:1,
     nu: ["g",0,0,1,1],
-    units : {}
+    units : {},
+    crew : {}
   },
   mounted() {
     this.updateFactions()
@@ -126,8 +130,16 @@ const UIMain = new Vue({
   },
   computed: {
     allColors () { return COLORS },
+    allCrews () { return [] },
     allUnits () { return UNITS },
     allFactions () { return FACTIONS },
+    allCrewTypes () { return CREWS },
+    crewBook () { 
+      if(!this.crew.type) return {}
+      let C = CREWS.find(c=>c.id == this.crew.type)
+      C._abilities = C.abilities.map(id => CREWABILITIES.find(a=> a[0]==id)) 
+      return C       
+    },
     current () { 
       if(!this.cid) return {}
       return LOCATIONS.find(d=>d.seed == this.cid)
@@ -214,6 +226,22 @@ const UIMain = new Vue({
 
       S.factions.push(this.nfid)
       this.updateFactions()
+    },
+    addCrew() {
+      this.menu = 1
+      //assign to the crew 
+      this.crew = JSON.parse(JSON.stringify(TEMPLATES.crew))
+      this.crew.type = this.nwid
+    },
+    addAbility(i) {
+      let ai = this.crew.abilities.indexOf(i)
+      //add or remove abilities
+      if(ai>-1) this.crew.abilities.splice(ai,1);
+      else this.crew.abilities.push(i);
+    },
+    fillable(what,val) {
+      val = val == 1 && this.crew[what] == val ? 0 : val
+      Vue.set(this.crew,what,val)
     },
     enter(obj) {
       let i = LOCATIONS.findIndex(d=>d.seed == obj.seed)
