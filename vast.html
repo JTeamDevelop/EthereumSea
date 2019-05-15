@@ -20,52 +20,185 @@
         </div>
         <div class="collapse" id="menu">
           <div class="card card-body p-1">
+            <button class="btn btn-info btn-block my-1" type="button" data-toggle="collapse" href="#characterMenu">Characters</button>
+            <div class="collapse m-1" id="characterMenu">
+              <div class="input-group">
+                <select class="custom-select" v-model="newType">
+                  <option v-for="c in allCharacterTypes" :value="c.id">{{c.name}}</option>
+                </select>
+                <div class="input-group-append">
+                  <button class="btn btn-success" type="button" data-toggle="collapse" href="#menu" @click="addCharacter()">New</button>
+                </div>
+              </div>
+              <div v-for="c in activeObjects.characters" class="link" data-toggle="collapse" href="#menu" @click="menu=3">{{c.name}}</div>
+            </div>
             <button class="btn btn-info btn-block my-1" type="button" data-toggle="collapse" href="#crewMenu">Crews</button>
             <div class="collapse m-1" id="crewMenu">
               <div class="input-group">
-                <select class="custom-select" v-model="nwid">
+                <select class="custom-select" v-model="newType">
                   <option v-for="c in allCrewTypes" :value="c.id">{{c.name}}</option>
                 </select>
                 <div class="input-group-append">
                   <button class="btn btn-success" type="button" data-toggle="collapse" href="#menu" @click="addCrew()">New</button>
                 </div>
               </div>
-              <div v-for="c in allCrews" data-toggle="collapse" href="#menu" @click="menu=1">{{c.name}}</div>
+              <div v-for="c in activeObjects.crews" class="link" data-toggle="collapse" href="#menu" @click="crew=JSON.parse(JSON.stringify(c)),menu=1">{{c.name}}</div>
             </div>
             <button class="btn btn-info btn-block my-1" type="button" @click="menu=2" data-toggle="collapse" href="#menu">Factions</button>
           </div>
         </div>
         <!--END MENU---------------------------------------------->
+        <!--CHARACTER-------------------------------------------->
+        <div class="card" v-if="menu==3" v-cloak>
+          <div class="btn-group btn-group-sm d-flex" role="group">
+            <button type="button" class="btn btn-success w-100" v-if="character.name.length>0 && !showDelete" @click="save('characters')">Save</button>
+            <button type="button" class="btn btn-secondary w-100" @click="menu=-1,showDelete=false">Close</button>
+            <button type="button" class="btn btn-warning w-100" @click="showDelete=true" v-if="!showDelete">Delete</button>
+            <button type="button" class="btn btn-danger w-100" v-if="showDelete" @click="remove('characters',character.id),crew={},menu=-1,showDelete=false">Are You Shure? (Delete)</button>
+            <button type="button" class="btn btn-success w-100" @click="showDelete=false" v-if="showDelete">Cancel</button>
+          </div>
+          <div class="card-header p-0">
+            <h5>{{playbook.name}}</h5>
+          </div>
+          <div>
+            <input type="text" class="form-control" placeholder="NAME" v-model="character.name">
+            <textarea class="form-control" placeholder="Info / Notes"></textarea>
+          </div>
+          <h6 class="p-1 bg-secondary accordion-toggle collapsed" data-toggle="collapse" href="#char-stress">Stress / Harm / Trauma</h6>
+          <div id="char-stress" class="container collapse">
+            <div align="left">
+              <span>Stress </span>
+              <div class="fillable filled" v-for="n in character.stress" @click="fillable('stress',n)"></div>
+              <div class="fillable" v-for="n in 9-character.stress" @click="fillable('stress',character.stress+n)"></div>
+              <div class="m-1">
+                <span>Recovery </span>
+                <div class="fillable filled" v-for="n in character.recovery" @click="fillable('recovery',n)"></div>
+                <div class="fillable" v-for="n in 6-character.recovery" @click="fillable('recovery',character.recovery+n)"></div>
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text">Harm</span>
+                  </div>
+                  <select class="custom-select" v-model="charData.newHarm">
+                    <option v-for="n in 3" :value="n">Level {{n}}</option>
+                  </select>
+                  <div class="input-group-append">
+                    <button class="btn btn-warning" type="button" @click="character.harm.push([charData.newHarm,''])">Add</button>
+                  </div>
+                </div>
+                <div class="input-group input-group-sm" v-for="(h,i) in character.harm">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text">Level {{h[0]}}</span>
+                  </div>
+                  <input type="text" class="form-control" placeholder="Harm Info" v-model="character.harm[i][1]">
+                  <div class="input-group-append">
+                    <button class="btn btn-secondary" type="button" @click="character.harm.splice(i,1)">&#10008;</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="m-1" align="center">
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text">Trauma</span>
+                </div>
+                <select class="custom-select" v-model="charData.newTrauma">
+                  <option v-for="t in rules.trauma" :value="t">{{t}}</option>
+                </select>
+                <div class="input-group-append">
+                  <button class="btn btn-warning" type="button" @click="character.trauma.push(charData.newTrauma)">Add</button>
+                </div>
+              </div>
+              <span v-if="character.trauma.length==0">None</span>
+              <div v-for="(t,i) in character.trauma" class="btn-group btn-group-sm d-inline-flex mr-1" role="group">
+                <button type="button" class="btn btn-secondary">{{t}}</button>
+                <button type="button" class="btn btn-secondary" @click="character.trauma.splice(i,1)">&#10008;</button>
+              </div>
+            </div>
+          </div>
+          <h6 class="p-1 bg-secondary accordion-toggle collapsed" data-toggle="collapse" href="#char-actions">Actions</h6>
+          <div id="char-actions" class="collapse">
+            <div v-for="(at,i) in rules.attributes" align="left">
+              <div>
+                <span>{{at}}</span>
+                <div class="fillable filled" v-for="n in character.xp[i+1]" @click="fillable('xp.'+(i+1),n)"></div>
+                <div class="fillable" v-for="n in 6-character.xp[i+1]" @click="fillable('xp.'+(i+1),character.xp[i+1]+n)"></div>
+              </div>
+              <div v-for="aci in rules.cross.attributes[i]">
+                <div class="arrow-right filled" v-for="n in character.actions[aci]" @click="fillable('actions.'+aci,n)"></div>
+                <div class="arrow-right" v-for="n in 4-character.actions[aci]" @click="fillable('actions.'+aci,character.actions[aci]+n)"></div>
+                <span>{{rules.actions[aci][0]}}</span>
+              </div>
+            </div>
+          </div>
+          <h6 class="p-1 bg-secondary accordion-toggle collapsed" data-toggle="collapse" href="#char-abilities">Special Abilities</h6>
+          <div id="char-abilities" class="collapse">
+            <span>XP </span>
+            <div class="fillable filled" v-for="n in character.xp[0]" @click="fillable('xp.0',n)"></div>
+            <div class="fillable" v-for="n in 8-character.xp[0]" @click="fillable('xp.0',character.xp[0]+n)"></div>
+            <div v-for="a in playbook._abilities" align="left">
+              <div class="circle-select" :class="{filled : character.abilities.includes(a[0])}" @click="addCrewSpecial('a',a[0],1)"></div>
+              <span class="font-weight-bold">{{a[1]}}:</span>
+              <span>{{a[2]}}</span>
+            </div>
+          </div>
+        </div>
+        <!--END CHARACTER---------------------------------------------->
         <!--CREW---------------------------------------------->
         <div class="card" v-if="menu==1" v-cloak>
+          <div class="btn-group btn-group-sm d-flex" role="group">
+            <button type="button" class="btn btn-success w-100" v-if="crew.name.length>0 && !showDelete" @click="save('crews')">Save</button>
+            <button type="button" class="btn btn-secondary w-100" @click="menu=-1,showDelete=false">Close</button>
+            <button type="button" class="btn btn-warning w-100" @click="showDelete=true" v-if="!showDelete">Delete</button>
+            <button type="button" class="btn btn-danger w-100" v-if="showDelete" @click="remove('crews',crew.id),crew={},menu=-1,showDelete=false">Are You Shure? (Delete)</button>
+            <button type="button" class="btn btn-success w-100" @click="showDelete=false" v-if="showDelete">Cancel</button>
+          </div>
           <div class="card-header p-0">
-            <button type="button" class="close mr-2" @click="menu=-1">&times;</button>
             <h5>{{crewBook.name}}</h5>
             <div>
               <input type="text" class="form-control" v-model="crew.name">
-              <div><span>XP </span>
+              <div>
+                <span>XP </span>
                 <div class="fillable filled" v-for="n in crew.xp" @click="fillable('xp',n)"></div>
                 <div class="fillable" v-for="n in 8-crew.xp" @click="fillable('xp',crew.xp+n)"></div>
               </div>
             </div>
+            <h6 class="p-1 bg-secondary">Lairs</h6>
             <h6 class="p-1 bg-secondary">Special Abilities</h6>
             <div v-for="a in crewBook._abilities" align="left">
-              <div class="circle-select" :class="{filled : crew.abilities.includes(a[0])}" @click="addAbility(a[0])"></div>
-              <span class="font-weight-bold">{{a[1]}}:</span> <span>{{a[2]}}</span>
+              <div class="circle-select" :class="{filled : crew.abilities.includes(a[0])}" @click="addCrewSpecial('a',a[0],1)"></div>
+              <span class="font-weight-bold">{{a[1]}}:</span>
+              <span>{{a[2]}}</span>
             </div>
             <h6 class="p-1 bg-secondary">Upgrades</h6>
             <div class="container">
-              <div class="row">
-                <div class="col"></div>
-                <div class="col">
-                  <div></div>
+              <div class="row no-gutters" align="left">
+                <div class="col-sm-3 col-6 mb-1">
+                  <div class="font-weight-bold">{{crewBook.name}}</div>
                 </div>
-                <div class="col"></div>
-                <div class="col"></div>
+                <div class="col-sm-3 col-6 mb-1">
+                  <div class="font-weight-bold">Lair</div>
+                  <div v-for="n in 7">
+                    <div v-for="m in allUpgrades[n-1][1]" class="circle-select" :class="{filled : m<=hasSpecial('u',n-1)}" @click="addCrewSpecial('u',n-1,m)"></div>
+                    <span>{{allUpgrades[n-1][2]}}</span>
+                  </div>
+                </div>
+                <div class="col-sm-3 col-6 mb-1">
+                  <div class="font-weight-bold">Quality</div>
+                  <div v-for="n in 6">
+                    <div v-for="m in allUpgrades[n+11][1]" class="circle-select" :class="{filled : m<=hasSpecial('u',n+11)}" @click="addCrewSpecial('u',n+11,m)"></div>
+                    <span>{{allUpgrades[n+11][2]}}</span>
+                  </div>
+                </div>
+                <div class="col-sm-3 col-6 mb-1">
+                  <div class="font-weight-bold">Training</div>
+                  <div v-for="n in 5">
+                    <div v-for="m in allUpgrades[n+6][1]" class="circle-select" :class="{filled : m<=hasSpecial('u',n+6)}" @click="addCrewSpecial('u',n+6,m)"></div>
+                    <span>{{allUpgrades[n+6][2]}}</span>
+                  </div>
+                </div>
               </div>
             </div>
             <h6 class="p-1 bg-secondary">Cohorts</h6>
-            <h6 class="p-1 bg-secondary">Lairs</h6>
           </div>
         </div>
         <!--END CREW---------------------------------------------->
@@ -86,7 +219,7 @@
               </button>
               <h5>
                 <div class="factionColor" :style="'background-color:'+faction.color"></div>
-                {{faction.name}}
+                <span>{{faction.name}}</span>
               </h5>
             </div>
             <div>{{faction.text}}</div>
