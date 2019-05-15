@@ -7,19 +7,7 @@ body {
   background-color: silver;
 }
 
-.overlay {
-  position: fixed;
-  top: 5px;
-  left: 50%;
-  width: 400px;
-  transform: translateX(-50%);
-  background-color: whitesmoke;
-}
-
-.link {
-  text-decoration: underline;
-  color: blue;
-}
+/* CORE DATA DIV */
 
 #info-bar {
   position: absolute;
@@ -29,6 +17,70 @@ body {
 }
 #info-bar.wide {
   width: 600px;
+}
+
+@media only screen and (max-width: 600px) {
+  #info-bar {
+    position: absolute;
+    top:0px;
+    left:0px;
+    padding: 3px;
+    width: 100%;
+    z-index:1;
+  }
+  #info-bar.wide {
+    width: 100%;
+  }
+}
+
+/* OVERLAY FOR CENTER DATA */
+
+.overlay {
+  position: fixed;
+  top: 5px;
+  left: 50%;
+  width: 400px;
+  transform: translateX(-50%);
+  background-color: whitesmoke;
+}
+
+/* Standard style link */
+.link {
+  text-decoration: underline;
+  color: blue;
+  cursor: pointer;
+}
+
+/*Accordion helper for chevron*/
+.accordion-toggle:before {
+  display: inline-block;
+  margin-right: 5px;
+  content : "❯";
+  transform: rotate(90deg);
+}
+.accordion-toggle.collapsed:before {
+  transform: rotate(0deg);
+}
+
+/*CSS shapes for Fillable toggles */
+.arrow-right {
+  display:inline-block;
+  margin-right:3px;
+  width: 0; 
+  height: 0; 
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent; 
+  border-left: 10px solid lightgray;
+}
+.arrow-down {
+  width: 0; 
+  height: 0; 
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 10px solid lightgray;
+}
+.arrow-right.filled {
+  border-left: 10px solid red;
 }
 
 .circle-select {
@@ -49,6 +101,7 @@ body {
   background-color: red;
 }
 
+/*CSS Circle for Faction Color */
 .factionColor {
   display:inline-block;
   height: 16px;
@@ -57,6 +110,7 @@ body {
   border-radius: 50%;
 }
 
+/*CSS styling for Maps */
 path.slice {
   stroke:black;
 }

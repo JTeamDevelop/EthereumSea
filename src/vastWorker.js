@@ -220,12 +220,20 @@ const circlePack = (seed, opts) => {
   return RNG.shuffle(map)
 }
 
-//Handle loading save state
-DB.getItem("state").then(function(state) {
+//Handle loading saving and loading 
+let state = null
+let activeObjects = {
+  characters: [],
+  crews : [],
+  locations : [],
+  factions : []
+}
+
+DB.getItem("state").then(function(savedState) {
   //check if it exists
-  if(!state) {
+  if(!savedState) {
     let hash = chance.hash()
-    state = {
+    savedState = {
       time : Date.now(),
       lastSave : hash,
       saves : [hash]
@@ -233,22 +241,66 @@ DB.getItem("state").then(function(state) {
   }
   else {
     //update time
-    state.time = Date.now()
+    savedState.time = Date.now()
   }
   //save state
-  DB.setItem("state",state)
+  DB.setItem("state",savedState)
+  state = savedState
   //pull saved data 
-  DB.getItem(state.lastSave+".crews").then()
-  DB.getItem(state.lastSave+".factions").then()
-  DB.getItem(state.lastSave+".locations").then()
+  for(let x in activeObjects){
+    DB.getItem(state.lastSave+"."+x).then(save => {
+      activeObjects[x] = save || []
+      //send to app 
+      postMessage({
+        f : "load",
+        what : x,
+        data : activeObjects[x]
+      });
+    })
+  }
 })
 
 onmessage = function(e) {
   let d = e.data
 
-  if(d.f = "generate") {
+  if(d.f === "generate") {
     //now generate
     GEN[d.data.opts.what](d.data) 
+  }
+  //save 
+  else if(d.f === "save") {
+    //get save objects
+    let what = activeObjects[d.what]
+    //find if it is there
+    let i = what.findIndex(o => o.id == d.data.id)
+    if(i == -1) what.push(d.data);
+    else what[i] = d.data;
+    //now save all objects 
+    let where = state.lastSave+"."+d.what    
+    DB.setItem(where,what)
+    //notify 
+    postMessage({
+      f : "saved",
+      what : d.what,
+      data : what
+    });
+  }
+  //delete
+  else if(d.f === "delete"){
+    //get save objects
+    let what = activeObjects[d.what]
+    //find if it is there - and delete
+    let i = what.findIndex(o => o.id == d.data)
+    if(i > -1) what.splice(i,1);
+    //now save all objects 
+    let where = state.lastSave+"."+d.what    
+    DB.setItem(where,what)
+    //notify 
+    postMessage({
+      f : "saved",
+      what : d.what,
+      data : what
+    });
   }
 }
 

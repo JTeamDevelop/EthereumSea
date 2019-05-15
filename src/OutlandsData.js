@@ -522,29 +522,6 @@ const UNITS = [{
   text: "evades and navigates"
 }, ]
 
-const CREWS = [{
-  id: 1,
-  name: "Envoys",
-  text: ""
-}, {
-  id: 2,
-  name: "Falcons",
-  text: "Private Investigators, Bounty Hunters, Mercs",
-  abilities : [8,9,10,11,12,13,5]
-}, {
-  id: 3,
-  name: "Profiteers",
-  text: "Merchants, Smugglers"
-}, {
-  id: 4,
-  name: "Owls",
-  text: "Scientists, Engineers, Arcane"
-}, {
-  id: 5,
-  name: "Shadows",
-  text: ""
-}, ]
-
 const CREWABILITIES = [
   [1,"Deadly", "Each PC may add +1 action rating to Hunt, Prowl, or Skirmish (up to a max rating of 3)."], 
   [2,"Crow's Veil", "Due to hard-won experience or occult ritual, your activities are hidden from the notice of the death-seeker crows. You don't take extra heat when killing is involved on a score."], 
@@ -584,13 +561,25 @@ const CREWABILITIES = [
   [36,`Just Passing Through`,`During downtime, take -1 heat. When your heat is 4 or less, you get +1d to deceive people when you pass yourselves off as ordinary citizens.`],
   [37,`Leverage`,`Your crew supplies contraband for other factions. Your success is good for them. Whenever you gain rep, gain +1 rep.`],
   [38,`Reavers`,`When you go into conflict aboard a vehicle, you gain +1 effect for vehicle damage and speed. Your vehicle gains armor.`],
-  [39,`Renegades`,`Each PC may add +1 action rating to Finesse, Prowl, or Skirmish (up to a max rating of 3).`]
+  [39,`Renegades`,`Each PC may add +1 action rating to Finesse, Prowl, or Skirmish (up to a max rating of 3).`],
+  [40,`Licensed`,`Take -2 heat on any legitimate bounty hunting job. Your ship can carry particle weapons, and your crew can carry and legally use heavy blasters in the pursuit of a target.`],
+  [41,`On The Trail`,`Your crew gains an extra downtime activity to work on long term projects that track bounties that have gone to ground.`],
+  [42,`Light Touch`,`You gain potency when tailing a target, or when gathering info at a target's previous location.`],
+  [43,`Snatch'N'Grab`,`When you use a deception, infiltration, or social plan to execute a kidnapping, add +1d to the engagement roll.`],
+  [44,`Loaded for Bear`,`Your crew can carry +1 load. They have distinctive and high quality armor. When you wear armor, it counts as heavy armor (2 uses).`],
+  [45,`Play Both Sides`,`When you release a bounty target, make them a crew contact and add +2 heat.`],
+  [46,`Deadly`,`Each crew member may add 1 action rating to command, scrap, or skulk (up to a max of 3).`],
+  [47,`The Getaway`,`You gain potency when you scramble or helm to avoid capture or run a blockade. When doing a delivery job, take +1d to the engagement roll.`],  [48,`Cargo Eye`,`Your crew gains +1 cred for smuggling or delivery jobs. Whenever you gather info you can always ask: what is most valuable here?`],
+  [49,`Graduate`,`Each PC may add +1 action rating to Interface, Study, or Sway (up to a max rating of 3).`],
+  [50,`Experimentation`,`Each PC gains an additional tragedy: Experimentation. When you cut loose with a focus on experimentation and gather a significant data set, you don't overindulge if you clear excess stress. In addition, your theories will give you +1d on any one action roll you make—from now until you cut loose again.`],
+  [51,`Irons In The Fire`,`Your squad is excellent at multitasking. When you work on long term projects during downtime and have multiple incomplete projects, you get +1d but must split the resulting ticks between the projects as evenly as possible.`],
 ]
 
 const CREWUPGRADES = [
+  //core
   [1,2,`Carriage House`],
   [2,2,`Boat House`],
-  [3,1,`Hidden Lair`],
+  [3,1,`Hidden`],
   [4,1,`Quarters`],
   [5,2,`Secure`],
   [6,2,`Vault`],
@@ -599,13 +588,26 @@ const CREWUPGRADES = [
   [9,1,`Prowess`],
   [10,1,`Resolve`],
   [11,1,`Playbook`],
-  [13,4,`Mastery`],
-  [14,1,`Documents`],
-  [15,1,`Gear`],
-  [16,1,`Implements`],
-  [17,1,`Supplies`],
-  [18,1,`Tools`],
-  [19,1,`Weapons`],
+  [12,4,`Mastery`],
+  [13,1,`Documents`],
+  [14,1,`Gear`],
+  [15,1,`Implements`],
+  [16,1,`Supplies`],
+  [17,1,`Tools`],
+  [18,1,`Armory`],
+  //Scum and Villainy
+  [19,2,`Shuttle`,`A small space-craft capable of carrying a few people from planet to orbit. Limited systems capacity - treat any system as quality 0 vs actual ships. Can attach to airlocks, but best stored in a landing bay if you don't want stray asteroids/fire affecting it.`],
+  [20,2,`Land Transport`,`Enough land-transportation for the entire crew. Tires or close-to-ground hover. These may be motorized bikes, land-skimmers, or very small cars.`],
+  [21,1,`Recon Drone: A small drone for surveillance, mapping, and intelligence gathering. Can be given simple instructions. Search the mine for heat signatures. Uses Comms quality when contested.`],
+  [22,1,`Survival Gear: Camping gear, rebreathers, climbing equipment, scuba gear. Everything an enterprising crew needs to survive on an inhospitable, but not uninhabitable, rock. Stillsuits included.`],
+  [23,1,`Armory`],
+  //S&V Cerberus
+  [24,1,`Tracers`,`A wide array of ways to track your targets. Includes tiny bugs that can be hidden on clothes with a suave pat on the back, beacons that can attach to hulls, and even bugs for comms. Legality varies.`],
+  [24,1,`Stun Weapons`,`A variety of weapons for capturing and securing prisoners without (serious) harm. Includes, but is not limited to: restraints (0 load), stun batons (1 load), stun settings on normal blasters (not the heavy kind), and even stun grenades (replace detonators on sheet), knockout drugs (0 load, may not work on some xenos). Not required to bring on jobs, but useful if you want to claim bounties. Generally legal.`],
+  [24,2,`Personal Vehicles`,`Sleek small craft that can fold up tight enough to fit into a reasonable parking space. Limited fuel, but can break atmo. Can carry basic weapons, though they can't seriously damage anything freighter-sized or larger. You may want a landing bay.`],
+  [24,2,`Hard Knocks (+1 gambit)`,`Sometimes luck is just hard-earned experience. Your crew starts each job with +1 gambit.`],
+  [24,3,`Smooth Criminal (+1 stress)`,`Sometimes legality is only a question of who has the gun. +1 stress box (total 10).`],
+  //
   [1,1,`Assassin rigging (2 free load of weapons or gear)`],
   [2,1,`Ironhook Contacts (+1 Tier in prison)`],
   [3,1,`Elite Skulks`],
@@ -613,8 +615,224 @@ const CREWUPGRADES = [
   [5,2,`Hardened (+1 trauma box)`]
 ]
 
+const CREWS = [{
+  id: 1,
+  name: "Envoys",
+  abilities : [14,15,18,5],
+  text: ""
+}, {
+  id: 2,
+  name: "Falcons",
+  text: "Private Investigators, Bounty Hunters, Mercs",
+  abilities : [8,9,10,11,12,13,5],
+  upgrades : []
+}, {
+  id: 3,
+  name: "Profiteers",
+  text: "Merchants, Smugglers",
+  abilities : [16,34,36,37,47,48],
+}, {
+  id: 4,
+  name: "Owls",
+  text: "Scientists, Engineers, Arcane",
+  abilities : [49,50,51],
+}, {
+  id: 5,
+  name: "Shadows",
+  abilities : [27,29,30,31,32],
+  text: ""
+}, ]
+
+const CHARACTERABILITIES = [
+  //EMPATH
+  [1,`Psychologist`,`When you gather information to discover the personality, motivation, or ambition of a person gain +1 effect. When you get +1d to rolls when you socially interact with that person.`],
+  [2,`Socialite`,`You gain +1d to Consort when you gather information on a target for a score. You get +1d to the engagement roll for that operation.`],
+  [3,`Empathic Read`,`You always know when someone is lying to you.`],
+  [4,`Telepathic Influence`,`You may push yourself to cloud a target's mind and sway them in the face of contradictory evidence. Spend 1 stress for each additional feature: they have only vague memories of the event — it works on a small group.`],
+  [5,`Connected`,`During downtime, you get +1d when you acquire assets or lay low. Any time you gather info take +1d.`],
+  [6,`Subterfuge`,`You may expend your special armor to resist a consequence of persuasion or suspicion. When you resist with insight, gain +1d.`],
+  [7,`Councilor`,`When you provide meaningful insight or heartfelt advice that a crewmate follows, you both clear 1 stress.`],
+  [8,`Old Friends`,`Whenever you land in a new location, write down a friend you know there (see Influential Friends below).`],
+  [9,`Disarming`,`Whenever you use a gambit while speaking, hostilities and danger also pause while you speak.`],
+  //FIGHTER
+  [10,`Battleborn`,`You may expend your special armor to reduce harm from an attack in combat or to push yourself during a fight.`],
+  [11,`Bodyguard`,`When you protect a teammate, take +1d to your resistance roll. When you gather info to anticipate possible threats in the current situation, you get +1 effect.`],
+  [12,`Leader`,`When you Command a cohort in combat, they continue to fight when they would otherwise break (they're not taken out when they suffer level 3 harm). They gain +1 effect and 1 armor.`],
+  [13,`Mule`,`Your load limits are higher. Light: 5. Normal: 7. Heavy: 8.`],
+  [14,`Vigorous`,`You recover from harm faster. Permanently fill in one of your healing clock segments. Take +1d to healing treatment rolls.`],
+  [15,`Sharpshooter`,`You can push yourself to do one of the following: make a ranged attack at extreme distance beyond what’s normal for the weapon—unleash a barrage of rapid fire to suppress the enemy.`],
+  [16,`Tough as Nails`,`Penalties from harm are one level less severe (though level 4 harm is still fatal).`],
+  [17,`Not to be Trifled With`,`You can push yourself to do one of the following: perform a feat of physical force that verges on the superhuman - engage a small gang on equal footing in close combat.`],
+  [18,`Wrecking Crew`,`Your strength and ferocity are infamous. When striking in melee, you gain +1d. Whenever you spend a gambit in combat, you also gain potency on that action.`],
+  //OPERATIVE
+  [19,`Infiltrator`,`You are not affected by quality or Tier when you bypass security measures.`],
+  [20,`Ambush`,`When you attack from hiding or spring a trap, you get +1d.`],
+  [21,`Daredevil`,`When you roll a desperate action, you get +1d to your roll if you also take -1d to any resistance rolls against consequences from your action.`],
+  [22,`Boosted Agility`,`When you push yourself, choose one of the following additional benefits: perform a feat of athletics that verges on the superhuman—maneuver to confuse your enemies so they mistakenly attack each other.`],
+  [23,`Expertise`,`Choose one of your action ratings. When you lead a group action using that action, you can suffer only 1 stress at most regardless of the number of failed rolls.`],
+  [24,`Ghost`,`You may shift partially into the Ethereal, becoming shadowy and insubstantial for a few moments. Take 2 stress when you shift, plus 1 stress for each extra feature: It lasts for a few minutes rather than moments—you are invisible rather than shadowy—you may float through the air like a ghost.`],
+  [25,`Reflexes`,`When there's a question about who acts first, the answer is you (two characters with Reflexes act simultaneously).`],
+  [26,`Shadow`,`You may expend your special armor to resist a consequence from detection or security measures, or to push yourself for a feat of athletics or stealth.`],
+  //OUTLANDER
+  [27,`Ranger`,`You have the ability to locate and navigate the paths to reach the Outlands. Use Attune to hone in on the location of the paths. You can take a number of people with you to the Outlands but it causes Stress to do so.`],
+  [28,`Pathfinder`,`Choose an environment in which you act as a quality guide. If you Protect the crew from consequences due to engagement in one of these zones take +1d and mark XP. Take this ability again to choose additional environments.`],
+  [29,`Scout`,`When you gather info to locate a target or way forward, you get +1 effect. When you hide in a prepared position or use camouflage, you get +1d to rolls to avoid detection.`],
+  [30,`Outland Bond`,`Your pet is imbued with the essence of the Outlands. It gains potency when tracking or fighting the supernatural, and gains an arcane ability: ghost-form, mind-link, or arrow-swift. Take this ability again to choose an additional arcane ability for your pet.`],
+  [31,`Fortitude`,`You may expend your special armor to resist a consequence of fatigue, weakness, or chemical effects, or to push yourself for ranged combat or tracking.`],
+  [32,`Otherworldly`,`The Outlands has imbued you with a presence that others find unnerving. When you Command an unsettled target, take +1d.`],
+  [33,`Rook's Gambit`,`Take 2 stress to roll your best action rating while performing a different action. Say how you adapt your skill to this us.`],
+  [34,`Tough as Nails`,`Penalties from harm are one level less severe (though level 4 harm is still fatal).`],
+  [35,`Survivor`,`From hard won experience you are immune to poison and you are always able to find and subsist on the flora and fauna of the Outlands. You get +1 stress box.`],
+  //PROXY
+  [36,`Mystic`,`You can spend a gambit instead of paying any stress cost. When you start select Mystic or Cosmic Bond.`],
+  [37,`Cosmic Bond`,`You are bound/have bound yourself in the service of a Cosmic or Cosmic organization. Say their name and describe how the power within physically manifests to identify you (noticeable aura, striking physical appearance, etc). In return they have empowered you. When you spend a downtime action communicating / reporting to your benefactor set your Power to 3. You may spend 1 Power instead of 2 stress to push yourself. You may also spend a Power to resist a source of physical or mundane harm. If do not spend a downtime action to communicate you lose 1 Power. When you start select Mystic or Cosmic Bond.`],
+  [38,`Burn Bright`,`You may push yourself twice.`],
+  [39,`Might`,`You may spend a Power to attempt of superhuman strength, agility, or endurance (run across ropes, bend iron with your hands, deflect bullets with your empty palms, etc) or project your cosmic power in a wave of energy.`],
+  [40,`Beyond Flesh and Blood`,`While you have at least one Power your flesh and bones are filled with cosmic essence. You do not need to eat, sleep, or breathe. Your body is a fine holy weapon and grants Potency against the enemies of your Cosmic’s Faction.`],
+  [41,`Cosmic Oracle`,`When you Gather Information you may Attune to communicate with your benefactor and tap into their vast information network. Take +1d when acting on the answers.`],
+  [42,`Protector`,`when you protect a teammate, take +1d to your Resistance roll. When you gather info to anticipate possible threats in the current situation you get +1 effect.`],
+  [43,`Lay on Hands`,`When you have a moment of respite and calm you may spend 2 Power to remove one harm from an ally you can touch skin to skin.`],
+  [44,`Greater Favor`,`The Power you gain from your downtime in communication is increased to 4. If you take this ability a second time it becomes 5. Each time you take this ability you lose 1 contact as you devote more of your life to working your benefactor’s goals.`],
+  [45,`Thaumaturgy`,`While you have at least 1 Power you may make yourself a conduit for the cosmic energy you store. You may Attune to call on your benefactor's elemental domains and bend them to your will. Say the effect you want and the GM will tell you what you risk and/or what harm you suffer.`],
+  [46,`Enhanced`,`The bond with your benefactor has enhanced your natural capability. Choose an Action and say how it represents your benefactor’s focus / attributes. You gain +1d in this Action as long as you have at least 1 Power. If you ever have 0 Power take -1d in this Action. You may take this twice choosing a different action each time.`],
+  //ROGUE
+  [47,`Serendipitous`,`Your crew starts with +1 gambit when the pool resets.`],
+  [48,`Never Tell Me the Odds`,`You also generate gambits on desperate rolls. You may also generate gambits even if you spent a gambit. `],
+  [49,`I Know a Guy`,`When you first dock at a port after being away, pick one and ask the GM about a job: it's not deadly -- it pays well enough -- it's not a rush job -- it comes from a faction you trust -- it targets an enemy you have. You may spend 1 cred per additional feature.`],
+  [50,`Tenacious`,`Penalties from harm are one level less severe (though level 4 harm is still fatal).`],
+  [51,`Devil's Own Luck`,`You may expend your special armor to resist the consequences of blaster fire, or to push yourself when talking your way out of or running from trouble.`],
+  [52,`Shoot First`,`When you attack from hiding or spring a trap, take +1d. When there's a question about who acts first, the answer is you (two characters with Shoot First act simultaneously).`],
+  [53,`Daredevil`,`When you make a desperate roll you may take +1d. If you do so, do not mark xp in that action's attribute.`],
+  [54,`Ask Questions Later`,`When you consort to gather info, you gain potency and can in addition ask: Who might this benefit?`],
+  [55,`When the Chips are Down`,`You gain a second use of special armor on each job.`],
+  //TECH
+  [56,`Tinker`,`When you work on a clock with rig or hack, or when you study a schematic, fill +1 segment.`],
+  [57,`Bailing Wire and Twine`,`During downtime the repair action costs you 0 cred.`],
+  [58,`Machine Bond`,`Machines speak to you when you study them. The first time you roll a critical while fixing or building a particular machine, you may add a simple modification to it (see Crafting).`],
+  [59,`Junkyard Find`,`When you acquire parts or equipment during downtime, you may either gain 2 assets, or gain +1 effect level on the roll.`],
+  [60,`Fixed`,`You may expend your special armor to resist a consequence from constructs breaking or being damaged, or to push yourself when repairing or building a device.`],
+  [61,`Hacker`,`You may expend your special armor to resist the consequences of hacking, or to push yourself when hacking or gathering info through the Astral.`],
+  [62,`Mechanic's Heart`,`When you speak from your heart, your words can reach even the most hardened criminal, and you gain potency.`],
+  [63,`Overclock`,`When you spend a gambit on a rig roll to repair or upgrade, treat the system you worked on as 1 quality higher for the remainder of the job.`],
+  [64,`Analyst`,`When you hack a system, you may also ask a question about the owner or location of the system as though you had rolled a 6 on gather info. When you resist the consequences of hacking, roll +1d.`],
+  //WIZARD
+  [65,`Spellcaster`,`You are a scholarly wizard who has spent years pouring over arcane tomes. When you spend a downtime action in arcane study set your spell-reserve to 3. You may spend 1 spell-reserve instead of 2 stress to push yourself. Also, select one school ability as an initial focus – select from: Abjuror, Conjuror, Diviner, Evoker, Illusionist, or Transmuter.`],
+  [66,`Artificer`,`When you invent or craft a creation with arcane features, take +1 result level to your roll. You begin with one arcane design already known.`],
+  [67,`Abjuror`,`when you protect a teammate, take +1d to your Resistance roll. When you gather info to anticipate possible threats in the current situation you get +1 effect.`],
+  [68,`Conjuror`,`you can summon tools or items in a time of need - add +2 to your load capacity.`],
+  [69,`Diviner`,`You can use Attune when you gather information on a target for a score. You get +1d to the engagement roll for that operation.`],
+  [70,`Evoker`,`You can push yourself to do one of the following: unleash elemental blast (fire, ice, electricity, force, etc) as a weapon—create a wall of raw elemental material (fire, ice, stone, force, etc) large enough to enclose a small room in your immediate vicinity.`],
+  [71,`Illusionist`,`You can push yourself to do one of the following: turn invisible to the eyes and ears—create illusions that look, sound, and feel real. When you push yourself to activate this ability, you also get one of the normal benefits of pushing yourself (+1d, +1 effect, etc.).`],
+  [72,`Transmuter`,`You can make superficial changes to an inanimate object, like small changes in texture or color that last for up to an hour. You can also use Attune to manipulate inanimate objects to grasp or trip an opponent or to destroy an object (+1d and use Attune instead of Wreck).`],
+  [73,`Spell for Every Occasion`,`Take 2 stress to roll Attune while performing a different action. Describe the spell you have studied that would be just perfect for the occasion.`],
+  [74,`Ritual`,`You can Study an arcane ritual (or create a new one) to summon a supernatural effect or being. You know the arcane methods to perform ritual sorcery. You begin with one ritual already learned.`],
+  [75,`Warded`,`You may expend your special armor to resist a supernatural consequence, or to push yourself when you deal with arcane force.`],
+]
+
+const CHARACTERS = [
+  {
+    id: 1,
+    name : "Empath",
+    text : "partial psychic diplomat and socialite",
+    abilities: [1,2,3,4,5,6,7,8,9],
+  },
+  {
+    id: 2,
+    name : "Fighter",
+    text : "durable warrior able to lead the charge in combat",
+    abilities: [10,11,12,13,14,15,16,17,18],
+  },
+  {
+    id: 3,
+    name : "Operative",
+    text : "expert spy and subterfuge specialist",
+    abilities: [],
+  },
+  {
+    id: 4,
+    name : "Outlander",
+    text : "guide, tracker, and explorer that knows the ways of the shifting Outlands",
+    abilities: [],
+  },
+  {
+    id: 5,
+    name : "Proxy",
+    text : "cosmic channeler or servant of a Cosmic being that wields a shard of cosmic",
+    abilities: [],
+  },
+  {
+    id: 6,
+    name : "Rogue",
+    text : "connected entrepreneur with flexible morals who always plays the odds",
+    abilities: [],
+  },
+  {
+    id: 7,
+    name : "Tech",
+    text : "savant with any machine – scientific or arcane - and proficient astral hacker",
+    abilities: [],
+  },
+  {
+    id: 8,
+    name : "Wizard",
+    text : "scholar of the many schools magic whose spells grant them adaptable utility",
+    abilities: [],
+  },
+]
+
+const RULESETS = {
+  core : {},
+  Outlands : {
+    coin : "cred",
+    actions : [
+/*0*/      [`Attune`,`Attune to the mystic power to communicate with non-sentient species or robots; sense unseen danger or killing intent; safely handle mystic artifacts.`],
+/*1*/      [`Command`,`Command obedience with your force of personality; intimidate or threaten; lead an action with contractors or passengers.`],
+/*2*/      [`Consort`,`Consort with connections from your heritage, background, friends, or rivals to gain access to resources, information, people, or places.`],
+/*3*/      [`Doctor`,`Doctor someone who's been injured; handle and identify substances; do science; comfort, support, or elicit sympathy.`],
+/*4*/      [`Hack`,`Hack computers, systems, and digital locks; reprogram robots or drones; jam surveillance and communications.`],
+/*5*/      [`Helm`,`Helm a ship, ship system, land vehicle, or beast; fire ship weaponry; plot a jump or in-system course.`],
+/*6*/      [`Rig`,`Rig together mechanical solutions; disable, modify, repair, or create mechanisms; disable a trap, pick a lock, or crack a safe; rig explosives.`],
+/*7*/      [`Scrap`,`Scrap with an opponent in blaster or physical combat; assault or hold a position; brawl, fight with melee weapons, or wrestle.`],
+/*8*/      [`Scramble`,`Scramble to a positon or away from danger; lift, run, climb, jump, or swim; traverse harsh environments.`],
+/*9*/      [`Skulk`,`Skulk about unseen; pick pockets; employ subtle misdirection or sleight of hand.`],
+/*10*/      [`Study`,`Study a person, document, or item with close scrutiny to gather information and apply knowledge; gain a deeper understanding; do research.`],
+/*11*/      [`Sway`,`Sway someone with charm, logic, deception, disguise or bluffing; change attitudes or behavior with manipulation or seduction.`],
+    ],
+    cross : {
+      actions : [2,2,2,0,0,1,0,1,1,1,0,2],
+      attributes : [[3,4,6,10],[5,8,7,9],[0,1,2,11]]
+    },
+    attributes : ["Insight","Prowess","Resolve"],
+    trauma : ["cold","haunted","obsessed","paranoid","reckless","soft","unstable","vicious"],
+    upgrades : {
+      lair : [19,20,3,4,5,6,7],
+    }
+  }
+}
+
 const TEMPLATES = {
+  character : {
+    id: "",
+    type: 0,
+    name: "",
+    info : "",
+    heritage: 0,
+    background: 0,
+    vice : 0,
+    notes : [],
+    actions : [0,0,0,0,0,0,0,0,0,0,0,0],
+    abilities: [],
+    xp: [0,0,0,0],
+    stress : 0,
+    trauma: [],
+    harm : [],
+    recovery : 0,
+    friends : [],
+    coin: 0,
+    stash:0,
+  },
   crew: {
+    id: "",
     type: 0,
     name: "",
     bases: [],
@@ -631,7 +849,7 @@ const TEMPLATES = {
   }
 }
 
-export {COLORS, CREWS, UNITS, LOCATIONS, FACTIONS, CREWABILITIES, CREWUPGRADES, TEMPLATES}
+export {COLORS, CHARACTERS, CHARACTERABILITIES, CREWS, UNITS, LOCATIONS, FACTIONS, CREWABILITIES, CREWUPGRADES, TEMPLATES, RULESETS}
 
 /*
 [

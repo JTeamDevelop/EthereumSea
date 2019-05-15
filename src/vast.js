@@ -4,7 +4,18 @@ let worker = new Worker('src/vastWorker.js')
 //chance
 import "../lib/chance.min.js"
 //data 
-import {CREWS,UNITS,FACTIONS,LOCATIONS,TEMPLATES,CREWABILITIES,CREWUPGRADES} from "../src/OutlandsData.js"
+import {
+  CHARACTERS,
+  CREWS,
+  CHARACTERABILITIES,
+  UNITS,
+  FACTIONS,
+  LOCATIONS,
+  TEMPLATES,
+  CREWABILITIES,
+  CREWUPGRADES,
+  RULESETS
+} from "../src/OutlandsData.js"
 
 let chance = new Chance()
 
@@ -105,8 +116,9 @@ const UIMain = new Vue({
   el: '#ui-main',
   data: {
     isWide: false,
+    showDelete : false,
     menu : 0,
-    nwid : 1, //new crew id 
+    newType : 1, //new crew/character id 
     cid : "",
     sid: -1,
     pid : "",
@@ -117,23 +129,42 @@ const UIMain = new Vue({
     nfid:1,
     nu: ["g",0,0,1,1],
     units : {},
-    crew : {}
+    crew : {},
+    character : {},
+    charData : {
+      newHarm: 0,
+      newTrauma: ""
+    },
+    activeObjects : {
+      characters : [],
+      crews : [],
+      locations : [],
+      factions : []
+    }
   },
   mounted() {
     this.updateFactions()
     let KU = LOCATIONS[0]
-    //updateMapPiece(0,this.maxMap)
     worker.postMessage({
       f: "generate",
       data : KU,
     });
   },
   computed: {
+    rules () { return RULESETS.Outlands },
     allColors () { return COLORS },
     allCrews () { return [] },
     allUnits () { return UNITS },
     allFactions () { return FACTIONS },
+    allCharacterTypes () { return CHARACTERS },
     allCrewTypes () { return CREWS },
+    allUpgrades () {return CREWUPGRADES},
+    playbook () { 
+      if(!this.character.type) return {}
+      let C = CHARACTERS.find(c=>c.id == this.character.type)
+      C._abilities = C.abilities.map(id => CHARACTERABILITIES.find(a=> a[0]==id)) 
+      return C       
+    },
     crewBook () { 
       if(!this.crew.type) return {}
       let C = CREWS.find(c=>c.id == this.crew.type)
@@ -163,6 +194,25 @@ const UIMain = new Vue({
   },
   methods: {
     info() {},
+    remove(what,id) {
+      worker.postMessage({
+        f: "delete",
+        what : what,
+        data : id,
+      });
+    },
+    save(what) {
+      let data = null
+      if(what==="crews") data = JSON.parse(JSON.stringify(this.crew));
+      else if (what==="characters") data = JSON.parse(JSON.stringify(this.character));
+      else return;
+
+      worker.postMessage({
+        f: "save",
+        what : what,
+        data : data,
+      });
+    },
     roll(n) {
       console.log(BitDRoll(n))
     },
@@ -227,21 +277,66 @@ const UIMain = new Vue({
       S.factions.push(this.nfid)
       this.updateFactions()
     },
+    addCharacter() {
+      this.menu = 3
+      //assign to the crew 
+      this.character = JSON.parse(JSON.stringify(TEMPLATES.character))
+      this.character.id = chance.hash()
+      this.character.type = this.newType
+    },
     addCrew() {
       this.menu = 1
       //assign to the crew 
       this.crew = JSON.parse(JSON.stringify(TEMPLATES.crew))
-      this.crew.type = this.nwid
+      this.crew.id = chance.hash()
+      this.crew.type = this.newType
     },
-    addAbility(i) {
-      let ai = this.crew.abilities.indexOf(i)
+    addCrewSpecial(what,i,m) {
+      //get current count 
+      let cc = this.hasSpecial(what,i)
+      //get the right object
+      what = what == "a" ? "abilities" : "upgrades"
+      let C = this.crew[what]
+      //see if they can have more than 1 
+      let n = what == "abilities" ? 1 : CREWUPGRADES[i][1]
+      let ai = C.indexOf(i)
       //add or remove abilities
-      if(ai>-1) this.crew.abilities.splice(ai,1);
-      else this.crew.abilities.push(i);
+      if(cc+1 > n || m == cc ) C.splice(ai,1);
+      else C.push(i);
+    },
+    //check if a crew has an upgrade 
+    hasSpecial(what,i) {
+      //load the right object
+      what = what == "a" ? "abilities" : "upgrades"
+      let C = this.crew[what]
+      //count the number 
+      return C.reduce((sum,val)=>{
+        sum = val === i ? sum+1 : sum
+        return sum 
+      },0)
     },
     fillable(what,val) {
-      val = val == 1 && this.crew[what] == val ? 0 : val
-      Vue.set(this.crew,what,val)
+      if(this.menu === 1){
+        val = val == 1 && this.crew[what] == val ? 0 : val
+        Vue.set(this.crew,what,val)
+      }
+      //multiple xp values for a character
+      else if(this.menu === 3){
+        let data = null
+        let id = null
+        if(["stress","trauma","recovery"].includes(what)){
+          data = this.character
+          id = what
+        }
+        else {
+          what = what.split(".")
+          data = this.character[what[0]]
+          id = Number(what[1])
+        }
+        val = val == 1 && data[id] == val ? 0 : val
+        //set the object
+        Vue.set(data,id,val)
+      }
     },
     enter(obj) {
       let i = LOCATIONS.findIndex(d=>d.seed == obj.seed)
@@ -396,7 +491,7 @@ const drawOrbital = () => {
 
 worker.onmessage = function(e) {
   let d = e.data
-  if (e.data.f = "generate") {
+  if (d.f === "generate") {
     display = Object.assign({
       get what () { return this.data.opts.what }
     },d)
@@ -405,5 +500,9 @@ worker.onmessage = function(e) {
     else if (display.what === "O") drawOrbital();
     //remove spinner
     d3.select("#spinner").attr("class", "lds-dual-ring hidden")
+  }
+  else if (["saved","load"].includes(d.f)) {
+    //load saved data
+    UIMain.activeObjects[d.what] = d.data
   }
 }
