@@ -308,6 +308,7 @@ const FACTIONS = [{
   "id": 1,
   "name": "Aboleth",
   "color": "#1E90FF",
+  "aspects" : ["Clever","Engineers","Transmutation"],
   "cfw": [3, 2, 3],
   "forces": ["Three eyed", "tentacled fish sorcerers; crab-centaur brutes; eel-people vassals"],
   "text": "Power hungry rulers of the ocean depths."
@@ -317,6 +318,7 @@ const FACTIONS = [{
   "color": "#C0C0C0",
   "vast": "Khulay",
   "lang": "Arabic",
+  "aspects" : ["Careful","Fighters",""],
   "cfw": [2, 4, 3],
   "forces": ["Dour", "highly skilled soldiers; Empathic", "incorruptible judges; clairvoyant", "connected investigators"],
   "text": "Judges and police of the vast frontiers of the Universe."
@@ -326,6 +328,7 @@ const FACTIONS = [{
   "color": "#DAA520",
   "vast": "Valldalen",
   "lang": "Nordic",
+  "aspects" : ["Forceful","Fighters",""],
   "cfw": [3, 5, 3],
   "forces": ["Battle scarred veteran; flashy", "lightning weilding evoker; boisterous brawny warrior"],
   "text": "Vigilant warriors locked in an eternal war with the Titans and Giants."
@@ -333,6 +336,7 @@ const FACTIONS = [{
   "id": 4,
   "name": "Blackflame",
   "color": "#8B0000",
+  "aspects" : ["Forceful","Fighters","Fire"],
   "cfw": [2, 5, 3],
   "forces": ["Onyx armored", "fire giant reaver; fire wyrms; orc shock troopers"],
   "text": "Giant ravagers - they would burn the whole Universe with fire given the opportunity."
@@ -343,6 +347,7 @@ const FACTIONS = [{
   "npc": "Azure Desert Fire",
   "vast": "Gahreb Desert",
   "lang": "Arabic",
+  "aspects" : ["Forceful","Fighters","Evocation"],
   "cfw": [3, 5, 4],
   "forces": "Titanic chromatic dragon tyrants; Haughty Dragonborn proxies; Sharp eyed hunting drakes",
   "text": "Dragon tyrants who used to serve the fallen queen."
@@ -352,6 +357,7 @@ const FACTIONS = [{
   "color": "#FFA500",
   "vast": "Ajayameru",
   "lang": "Hindi",
+  "aspects" : ["Flashy","Scholars","Divination"],
   "cfw": [2, 2, 3],
   "text": "Esoteric elementals whose quest is to uncover the secrets of the Universe."
 }, {
@@ -360,6 +366,7 @@ const FACTIONS = [{
   "color": "#20B2AA",
   "vast": "Grwarthaf",
   "lang": "Gaelic",
+  "aspects" : ["Quick","Rogues",""],
   "cfw": [2, 1, 2],
   "text": "Free spirited embodiments of nature."
 }, {
@@ -369,12 +376,14 @@ const FACTIONS = [{
   "npc": ["Ian Holdsworth - shrewd", "determined", "optimistic"],
   "vast": "Ironhold Islands",
   "lang": "English",
+  "aspects" : [],
   "cfw": [2, 3, 2],
   "text": "Self proclaimed jailers of the prison sector Tartarus."
 }, {
   "id": 9,
   "name": "Goblyns",
   "color": "#808000",
+  "aspects" : [],
   "cfw": [1, 2, 0],
   "text": "Animalistic beings made from the elements themselves"
 }, {
@@ -383,6 +392,7 @@ const FACTIONS = [{
   "color": "#FFD700",
   "vast": "Ileje",
   "lang": "Swahili",
+  "aspects" : [],
   "cfw": [2, 3, 4],
   "text": "Roving protectors of the innocent and oppressed."
 }, {
@@ -391,6 +401,7 @@ const FACTIONS = [{
   "color": "#3CB371",
   "vast": "Xincai",
   "lang": "Chinese",
+  "aspects" : [],
   "cfw": [4, 3, 5],
   "text": "Scolars, merchants and mystics seeking to return order to the Universe."
 }, {
@@ -399,12 +410,14 @@ const FACTIONS = [{
   "color": "#800080",
   "vast": "Epsilon Seven",
   "lang": "English",
+  "aspects" : [],
   "cfw": [2, 4, 5],
-  "text": ["Forge Worlds", "Primes", "Hedrons"]
+  "text": "Forge Worlds, Primes, Hedrons"
 }, {
   "id": 13,
   "name": "Myr",
   "color": "#00008B",
+  "aspects" : [],
   "cfw": [3, 2, 3],
   "text": "Shadow sorcerers who scour the Known Universe for powerful relics of the past."
 }, {
@@ -413,6 +426,7 @@ const FACTIONS = [{
   "color": "#F08080",
   "vast": "Novus Olympus",
   "lang": "Greek",
+  "aspects" : [],
   "cfw": [3, 3, 5],
   "text": "Children of the Titans vacillating between idyl and epic. "
 }, {
@@ -421,12 +435,14 @@ const FACTIONS = [{
   "color": "#DCDCDC",
   "vast": "Aomori",
   "lang": "Japan",
+  "aspects" : [],
   "cfw": [3, 3, 3],
   "text": "Draconic paladins who serve the legacy of the fallen Bahamut."
 }, {
   "id": 16,
   "name": "Sect",
   "color": "#ADFF2F",
+  "aspects" : [],
   "cfw": [1, 2, 3],
   "text": "Cosmic devouring horde of large robotic insects."
 }, {
@@ -436,12 +452,14 @@ const FACTIONS = [{
   "npc": "Nigel Urquest",
   "vast": "yes",
   "lang": "English",
+  "aspects" : [],
   "cfw": [3, 1, 2],
   "text": "Renowned vice dealers, thieves, spies and assassins."
 }, {
   "id": 18,
   "name": "StarHive",
   "color": "#9ACD32",
+  "aspects" : [],
   "cfw": [1, 5, 1],
   "text": "Building sized monstrosities that only seen to devour and spawn new horrors."
 }, {
@@ -450,6 +468,7 @@ const FACTIONS = [{
   "color": "#B0C4DE",
   "vast": "Svalbard",
   "lang": "Nodric",
+  "aspects" : [],
   "cfw": [3, 3, 3],
   "text": "Giants who seek to ursurp the power given to to Asgardians."
 }, {
@@ -457,12 +476,14 @@ const FACTIONS = [{
   "name": "Starlords",
   "color": "#D2691E",
   "vast": "Chicomoztoc",
+  "aspects" : [],
   "cfw": [2, 2, 3],
   "lang": "Nahuatl"
 }, {
   "id": 21,
   "name": "Cult of Cronus",
   "color": "#2F4F4F",
+  "aspects" : [],
   "cfw": [5, 2, 2],
   "text": "Servants of the imprisoned Titan Lord who are always seeking his freedom."
 }, {
@@ -470,6 +491,7 @@ const FACTIONS = [{
   "name": "Xaoti",
   "color": "#FF00FF",
   "cfw": [1, 2, 1],
+  "aspects" : [],
   "text": "Chaos incarnate. No goals or one goal - create more chaos."
 }, {
   "id": 23,
@@ -477,6 +499,7 @@ const FACTIONS = [{
   "color": "#8FBC8B",
   "vast": "Sankuru",
   "lang": "Swahili",
+  "aspects" : [],
   "cfw": [4, 3, 2],
   "text": "Hunters always on the lookout for signs of ancient darkness."
 }, {
@@ -484,6 +507,7 @@ const FACTIONS = [{
   "name": "Worms",
   "color": "#F5DEB3",
   "cfw": [4, 1, 3],
+  "aspects" : [],
   "text": "Insidious possessors, flesh warpers, and powers behind the throne."
 }, {
   "id": 25,
@@ -491,6 +515,7 @@ const FACTIONS = [{
   "color": "#BDB76B",
   "vast": "Kirov",
   "lang": "Russian",
+  "aspects" : [],
   "cfw": [2, 3, 4],
   "text": "War profiteers, arms manufacturers, and dealers in dangerous relics."
 }, ]
@@ -584,11 +609,13 @@ const CREWUPGRADES = [
   [5,2,`Secure`],
   [6,2,`Vault`],
   [7,1,`Workshop`],
+  //
   [8,1,`Insight`],
   [9,1,`Prowess`],
   [10,1,`Resolve`],
   [11,1,`Playbook`],
   [12,4,`Mastery`],
+  //
   [13,1,`Documents`],
   [14,1,`Gear`],
   [15,1,`Implements`],
@@ -608,39 +635,150 @@ const CREWUPGRADES = [
   [24,2,`Hard Knocks (+1 gambit)`,`Sometimes luck is just hard-earned experience. Your crew starts each job with +1 gambit.`],
   [24,3,`Smooth Criminal (+1 stress)`,`Sometimes legality is only a question of who has the gun. +1 stress box (total 10).`],
   //
-  [1,1,`Assassin rigging (2 free load of weapons or gear)`],
-  [2,1,`Ironhook Contacts (+1 Tier in prison)`],
-  [3,1,`Elite Skulks`],
-  [4,1,`Elite Thugs`],
-  [5,2,`Hardened (+1 trauma box)`]
+  [25,1,`Assassin rigging`,`You get 2 free load of weapons or gear.`],
+  [26,1,`Ironhook Contacts`,`Your Tier is effectively +1 higher in prison.`],
+  [27,1,`Elite Skulks`,`All of your cohorts with the Skulks type get +1d to quality rolls for Skulk-related actions.`],
+  [28,1,`Elite Thugs`,`All of your cohorts with the Thugs type get +1d to quality rolls for Thug-related actions.`],
+  [29,3,`Hardened`,`Each PC gets +1 trauma box. This costs three upgrades to unlock, not just one.`],
+  //
+  [30,1,`Bravos Rigging`,`You get 2 free load worth of weapon or armor items.`],
+  [31,1,`Elite Rovers`,`All of your cohorts with the Rovers type get +1d to quality rolls for Rover-related actions.`],
+  //
+  [32,1,`Cult Rigging`,`You get 2 free load worth of document or implement items.`],
+  [33,1,`Ritual Sanctum in Lair`,`This counts as a sacred and arcane workshop for occult practices and rituals.`],
+  [34,1,`Elite Adepts`,`All of your cohorts with the Adepts type get +1d to quality rolls for Adept-related actions.`],
+  //
+  [35,1,`Hawker Rigging`,`One carried item is concealed and has no load.`],
+  [36,1,`Elite Rooks`,`All of your cohorts with the Rooks type get +1d to quality rolls for Rook-related actions.`],
+  [37,3,`Composed`,`Each PC gets +1 stress box. This costs three upgrades to unlock, not just one.`],
+  //
+  [38,1,`Thief Rigging`,`You get 2 free load worth of tool or gear items.`],
+  [39,1,`Underground Maps and Passkeys`,`You have easy passage through the underground canals, tunnels, and basements of the city.`],
+  //
+  [40,1,`Smuggler Rigging`,`Two of your carried items are perfectly concealed.`],
+  [41,1,`Camouflage`,`Your vehicles are perfectly concealed when at rest. They blend in as part of the environment, or as an uninteresting civilian vehicle (your choice).`],
+  [42,1,`Barge`,`Add mobility to your lair. You can move it to a new location as a downtime activity.`],
+  [43,1,`Vehicle`,`All smugglers start with a vehicle. When the vehicle is upgraded (two boxes), it also gets armor.`],
+]
+
+const CREWCLAIMS = [
+  [0,`Base`,`Home territory`],
+  [1,`Turf`,`New territory for you to work in.`,`Where is it? Who did you take it from?`],
+  //
+  [2,`City Records`,`You get +1d to the engagement roll for stealth plans.`,`You can use blueprints and other documents to determine a good approach for infiltrations.`],
+  [3,`Cover Identities`,`You get +1d to the engagement roll for deception and social plans.`,`False identities help confuse the opposition.`],
+  [4,`Cover Operation`,`You get -2 heat per score.`,`The cover of a legitimate operation helps deflect some of the heat from law enforcement.`],
+  [5,`Envoy`,`You get +2 coin in payoff for scores that involve high-class clients.`,`This well-connected liaison will help arrange for a better payoff from rich clients.`],
+  [6,`Fixer`,`You get +2 coin in payoff for scores that involve lower-class clients.`,`This well-respected agent will help arrange for a better payoff from poorer clients.`],
+  [7,`Hagfish Farm`,`When you use the reduce heat downtime activity after a score that involves killing, you get +1d to the roll and quiet, convenient disposal of any corpses you left on the job.`,``],
+  [8,`Infirmary`,`You get +1d to healing treatment rolls.`,`The infirmary also has beds for long-term convalescence.`],
+  [9,`Informants`,`You get +1d to gather information for a score.`,`Your eyes and ears on the streets are always on the lookout for new targets.`],
+  [10,`Protection Racket`,`Any time during downtime, roll dice equal to your Tier. You earn coin equal to the highest result, minus your heat.`,`Some of the locals are terrified of you and will gladly pay for “protection.”`],
+  [11,`Training Rooms`,`Your Skulks cohorts get +1 scale.`,`Extra training enables them to fight like a larger gang.`],
+  [12,`Vice Den`,`Any time during downtime, roll dice equal to your Tier. You earn coin equal to the highest result, minus your heat.`,``],
+  [13,`Victim Trophies`,`You get +1 rep per score.`,`Word of your grisly “collection” gets around, and your boldness boosts your rep in the underworld.`],
+  //
+  [14,`Barracks`,`Your Thug cohorts get +1 scale.`,`Extra room means more gang members.`],
+  [15,`Bluecoat Confederates`,`You get +1d to the engagement roll for assault plans.`,`The street patrol around here helps you out now.`],
+  [16,`Bluecoat Intimidation`,`You get -2 heat per score.`,`The law doesn’t want any trouble from you; they look the other way.`],
+  [17,`Terrorized Citizens`,`You get +2 coin in your payoff for scores that involve battle or extortion.`,`The frightened locals offer you tribute whenever you lash out. They don’t want to be next.`],
+  [18,`Warehouses`,`You get +1d to acquire asset rolls.`,`You have space to hold all the various spoils you end up with after your battles. It can be useful on its own or for barter when you need it.`],
+  //
+  [19,`Ancient Altar`,`You get +1d to the engagement roll for occult plans.`,`Its blessing is with you.`],
+  [20,`Ancient Gate`,`Safe passage in the deathlands.`,`When you leave the city through this gate, the spirits of the deathlands will not molest you unless directly provoked.`],
+  [21,`Ancient Obelisk`,`-1 stress cost for all arcane powers and rituals.`,`This effect applies to all cultists, everywhere—so long as the deity is well-pleased. You don’t have to be on-site at the obelisk to benefit from its power.`],
+  [22,`Ancient Tower`,`You get +1d to Consort with arcane entities on-site.`,`This tower was prepared by sorcery from the pre-cataclysm and acts as an arcane lens to focus eldritch energy across the black mirror into the void.`],
+  [23,`Cloister`,`Your Adept cohorts get +1 scale.`,`More room for hopeful novices desperate to pledge their service.`],
+  [24,`Offertory`,`You get +2 coin in your payoff for scores that involve occult operations.`,`The frightened locals offer you tribute when you perform your dark practices. They don’t want to be next.`],
+  [25,`Sanctuary`,`+1d to Command and Sway rolls on-site.`,`Your sanctuary maintains its effect as long as your deity is well-pleased with your service.`],
+  [26,`Spirit Well`,`You get +1d to Attune rolls on-site.`,`A spirit well draws ghosts and other things to its power, which you harness to aid your arts.`],
+  //
+  [27,`Cover Identities: You get +1d to the engagement roll for deception and social plans.`,`False identities help confuse the opposition.`],
+  [28,`Local Graft`,`You get +2 coin in payoff for scores that involve a show of force or socializing.`,`A few city officials share bribe money with those who show that they’re players on the scene.`],
+  [29,`Lookouts`,`You get +1d to Hunt or Survey on your turf.`,``],
+  [30,`Luxury Venue`,`+1d to Consort and Sway rolls on-site.`,`Silks, paintings, and crystal impress the clientele.`],
+  [31,`Personal Clothier`,`You get +1d to the engagement roll for social plans.`,`You always arrive on the scene in the most current and alluring fashion.`],
+  [32,`Surplus Cache`,`You get +2 coin in payoff for scores that involve product sale or supply.`,`You have an abundance of product, which pads your pockets every now and then.`],
+  //
+  [33,`Covert Drop`,`You get +2 coin in payoff for scores that involve espionage or sabotage.`,`The perfect hidden exchange point is worth the extra coin to discerning clientele.`],
+  [34,`Interrogation Chamber`,`You get +1d to Command and Sway on-site.`,`Grisly business, but effective.`],
+  [35,`Loyal Fence`,`You get +2 coin in payoff for scores that involve burglary or robbery.`,`It requires a skilled eye and good contacts to move stolen goods.`],
+  [36,`Secret Pathways`,`You get +1d to the engagement roll for stealth plans.`,`You might have access to long-forgotten underground canals, rooftop walkways, or some other route of your choosing.`],
+  //
+  [37,`Fleet`,`Your cohorts have their own vehicles.`,`Each cohort has a common vehicle, with quality equal to your Tier.`],
+  [38,`Secret Routes`,`You get +1d to the engagement roll for transport plans.`,`You might have access to longforgotten underground canals, dark streets normally hidden behind debris, or some other route of your choosing.`],
 ]
 
 const CREWS = [{
   id: 1,
   name: "Envoys",
+  text: "Diplomats and deal makers",
   abilities : [14,15,18,5],
-  text: ""
+  upgrades: {
+    ids : [37],
+    altText: []
+  },
+  claims : {
+    ids : [1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
+    altText : [],
+    links : ["r.b","l.b.r","l.b","b.r","l.b","t.b","t.r.b","l.t.r.b","l.t.r.b","l.t.b","t.r","l.t","t","t.r","l.t"]
+  }
 }, {
   id: 2,
   name: "Falcons",
-  text: "Private Investigators, Bounty Hunters, Mercs",
+  text: "Private investigators, hired security, and bounty hunters",
   abilities : [8,9,10,11,12,13,5],
-  upgrades : []
+  upgrades: {
+    ids : [29],
+    altText: []
+  },
+  claims : {
+    ids : [1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
+    altText : [],
+    links : ["r.b","l.b.r","l.b","b.r","l.b","t.b","t.r.b","l.t.r.b","l.t.r.b","l.t.b","t.r","l.t","t","t.r","l.t"]
+  }
 }, {
   id: 3,
   name: "Profiteers",
-  text: "Merchants, Smugglers",
+  text: "Merchants and smugglers",
   abilities : [16,34,36,37,47,48],
-}, {
+  upgrades: {
+    ids : [37],
+    altText: []
+  },
+  claims : {
+    ids : [1,12,5,12,30,20,1,0,1,1,38,9,37,4,18],
+    altText : [[1,`Side Buisness`],[3,`Foreign Markets`],[4,`Restaurant`]],
+    links : ["r.b","l.b.r","l.b","b.r","l.b","t.b","t.r.b","l.t.r.b","l.t.r.b","l.t.b","t.r","l.t","t","t.r","l.t"]  
+  }
+  }, {
   id: 4,
   name: "Owls",
-  text: "Scientists, Engineers, Arcane",
+  text: "Scientists, arcane adepts, and engineers",
   abilities : [49,50,51],
+  upgrades: {
+    ids : [37],
+    altText: []
+  },
+  claims : {
+    ids : [1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
+    altText : [],
+    links : ["r.b","l.b.r","l.b","b.r","l.b","t.b","t.r.b","l.t.r.b","l.t.r.b","l.t.b","t.r","l.t","t","t.r","l.t"]
+  }
 }, {
   id: 5,
   name: "Shadows",
+  text: "Spies and thieves",
   abilities : [27,29,30,31,32],
-  text: ""
+  upgrades: {
+    ids : [29],
+    altText: []
+  },
+  claims : {
+    ids : [1,1,1,1,1,1,1,0,1,1,1,1,1,1,1],
+    altText : [],
+    links : ["r.b","l.b.r","l.b","b.r","l.b","t.b","t.r.b","l.t.r.b","l.t.r.b","l.t.b","t.r","l.t","t","t.r","l.t"]
+  }
 }, ]
 
 const CHARACTERABILITIES = [
@@ -729,54 +867,134 @@ const CHARACTERABILITIES = [
   [75,`Warded`,`You may expend your special armor to resist a supernatural consequence, or to push yourself when you deal with arcane force.`],
 ]
 
+const CHARACTERITEMS = [
+  //CORE
+  [1,1,`Blaster Pistol`,`A pistol that shoot bolts of hot plasma. Accurate only at close range.`],
+  [2,2,`Heavy Blaster`,`Can do considerable damage to vehicles and things like unshielded doors. Has about a dozen shots.`],
+  [3,1,`Detonator`,`Extremely deadly explosive weapon that fits in the palm of your hand and can be thrown. Takes care of those shielded doors heavy blasters can't handle. Illegal.`],
+  [4,1,`Hacking Tools`,`Deck, splicing pliers, plugs and ports, keypad crackers, specialized software, custom chips, rainbow dictionaries, automated exploits.`],
+  [5,1,`Repair Tools`,`Things you need to fix ship engines, speeders, hovercars, and the like. Also, tools to hot-splice consoles, and tweak machinery. Hammers, a welder, screwdrivers, wrenches, battery chargers, spray-painters.`],
+  [6,2,`Medkit`,`Blood for a few common races, gauze, anti-radiation injector, laser scalpel, antiseptics, thread, painkillers, etc.`],
+  [7,1,`Melee Weapon`,`Sharp. Blunt. Pointy. Stabby. Slicy. All different sizes. Some come with lazer edges. Some vibrate.`],
+  [8,1,`Spy Gear`,`Disguises, voice modulators, mini-cameras, thermal scanners, false thumbprints, and audio filters.`],
+  [9,0,`Communicator`,`Has a few bands, likely even a few encrypted. Works within one orbit.`],
+  [10,2,`Armor`,`Unsubtle, full body stuff. Stops a few bolts. Will shrug off a knife without noticing. Powered. Assists in movement.`],
+  [11,2,`Spacesuit`,`Some radiation protection, survival in toxic atmospheres, EVA. Half a day of oxygen (or whatever you breathe).`],
+  [12,0,`Mystic Ammunition`,`A large-caliber shell, designed to be fired from a specialized gun that releases mystic energies when it hits. Grants potency against mystic targets.`],
+  //EMPATH
+  [13,0,`Fine Clothes`,`Silk sarongs, suits, fine blue capes. Which ones did you wear this time?`,`If you’re carrying this item as a second outfit to change into, it counts as 2 load.`],
+  [14,0,`Luxury Item`,`Fine brandies, small but thoughtful gifts, spices and perfumes, fine instruments, popular games, etc. Note: comes in a few varied sizes.`],
+  [15,0,`Concealed holdout pistol`,`A small firearm, easily concealed in a sleeve or jacket. This pistol is effective against targets that are close by or unarmored. It’s very difficult to detect on your person, even if you’re searched.`],
+  [16,0,`Memento of a Past Encounter`,`A distinctive piece of jewelry, a fine blade with a house crest, a signet ring, a small statue.`],
+  [17,0,`Empathic Modulator`,`Others can feel a "vibe" when they get close - it can make you repulsive or attractive (you choose each mission). Each use consumes a charge, of which you have a single use each mission.`,`When you activate this, feel free to tell us the people to which your modulator is keyed to this time. During downtime, you may automatically recharge and tune your modulator, so long as you have reasonable access to a supplier or workshop.`],
+  //FIGHTER
+  [18,1,`Fine Melee Weapon`,`A finely crafted melee weapon of your choice.`,`Is this a wellcrafted standard weapon, like a perfectly-balanced knife, or something medieval, like a dueling rapier or a morningstar?`],
+  [19,2,`Fine Heavy Melee Weapon`,`A finely crafted two-handed melee weapon of your choice.`,`A sledge hammer, a katana, a pole arm, a battle axe, etc. A heavy weapon has more reach and hits harder than a standard weapon. This might give you potency when the power or reach of the weapon is a factor.`],
+  [20,2,`Fine Sniper Rifle`,`A full-bore auto-lock with customized trigger, double cartridge, thorough gauge. Can fire mystic ammo.`],
+  [21,2,`Fine Heavy Blaster`,`Takes heavy damage to the next level. May fire some form of exotic energy.`],
+  [22,0,`Fine Martial Arts Style`,`Your own custom blend of combat techniques, unique as a fingerprint.`],
+  [23,1,`Fine Blaster Pistol`,`Everyone knows who this belongs to. Keyed to work only for you.`],
+  //OPERATIVE
+  [24,1,`Fine Stealth Outfit`,`A full bodysuit of smart clothing designed to blend you into the darkess around you.`,`This item improves your effect level when you sneak around.`],
+  [25,1,`Fine Surveillance Gear`,`Finely made communications gear for clandestine observation; bugs, tracer RFID tags, binoculars, long-range cameras and microphones`],
+  [26,1,`Spider Gloves and Boots`,`You can climb any surface - even ceilings - with ease.`],
+  [27,0,`Jammer`,`A small device which jams nearby wireless signals. Can be Engineered to exclude certain signals.`],
+  [28,0,`Vision Enhancing Goggles`,`Eyewear with settings for thermal and ultraviolet, and magnification levels in the thousands.`],
+  //OUTLANDER
+  [29,2,`Fine Rifle`,`A full-bore, long firearm with an excellent site. Not great at close range, but deadly at long range. Can fire mystic ammo.`,``],
+  [30,0,`Trained Hunting Pet`,`Your animal companion obeys your commands and anticipates your actions.`,`Cohort (Expert: Hunter).`],
+  [31,1,`Fine Pair of Pistols`,`A matched set of excellently crafted pistols. May use exotic energy.`],
+  [32,1,`Artifact`,`A magical artifact of bygone ages.`,`What does it do?`],
+  [33,1,`Maps`,`Compact holo emitter full of maps. Many are current but a lot are historical.`],
+  //PROXY
+  [34,0,`Cosmic Tech`,`A small artifact of cosmic technology that is tied to your benefactor or source. Draws attention when you use it.`,`What does it do?`],
+  //[35,0,``,``],
+  //ROGUE
+  [36,0,`Fine probability shifter`,`Gambling interface device subtly altered to favor particular outcomes.`,`The fine quality of this item may increase the effect of your deceptive actions when you use it.`],
+  [37,0,`Forged Documents`,`Reasonably well-made facsimiles of documents that you just happened to find.`,``],
+  [38,1,`Fine Coat`,`A heavy, but well-made and well-kept, coat.`,`It has a story - where and how did you get it?`],
+  [39,2,`Fine Small Robot`,`A small robot that supports piloting and can carry a few items. Seems eerily sentient.`,`What is its designation?`],
+  //WIZARD
+  [40,1,`Scrolls and books`,`A collection of books on arcane theory and practice along with some rarer esoteric subjects contained on scrolls. If there is a topic concerning the arcane, you probably have some information...somewhere.`,`Where did you get the books and scrolls from? What has been the focus of your study?`],
+  [41,2,`Fine Magical Staff`,`A finely carved staff - no long bearded wizard would be without one. You can use it to bash people or, as long as you have one spell-reserve, you can fire bolts of arcane energy from it equivalent to using a pistol.`,`What type of elemental energy is bound to the staff? How did you acquire it?`],
+  [42,0,`Magical Bracers`,`These provide magical defense equivalent to wearing armor, but with no load. You cannot wear armor as well.`,`How did you acquire these bracers?`],
+  [43,1,`Familiar`,`A small creature incapable of speaking, but can understand language and assist with basic tasks. Likes you. Anticipates your actions.`,`What type of creature is it? Where did you acquire it?`],
+  [44,0,`Arcane Implements`,`Specialized components and reagents used for spellcasting.`],
+  //TECH
+  [45,1,`Fine Hacking Rig`,`Visualization goggles, overclocked non-market chips, optical vampire taps.`],
+  [46,2,`Fine Ship Repair Tools`,`Power-assisted wrenches, a sonic drill, testing probes, power calibrators, a rivet gun.`],
+  [47,1,`Spare Parts`,`Usually for ship repairs and electronics. Often forgotten in a pocket or tool belt.`],
+  [48,0,`Fine Programmed Drone`,`A drone programmed to obey your commands and anticipate your actions.`,`Cohort (Expert: scout).`],
+  [49,0,`Gadgets`,`You may create gadgets during downtime by Engineering with tools and materials.`],
+]
+
 const CHARACTERS = [
   {
     id: 1,
     name : "Empath",
-    text : "partial psychic diplomat and socialite",
+    text : "A diplomat, socialite, and partial psychic.",
+    trigger: `deception or influence.`,
     abilities: [1,2,3,4,5,6,7,8,9],
+    gear:[13,14,15,16,17],
+    actions: [],
+    builds : [],
+    contacts : []
   },
   {
     id: 2,
     name : "Fighter",
-    text : "durable warrior able to lead the charge in combat",
+    text : "A durable warrior able to lead the charge in combat.",
+    trigger: `force or leadership.`,
     abilities: [10,11,12,13,14,15,16,17,18],
+    gear:[18,19,20,21,22,23]
   },
   {
     id: 3,
     name : "Operative",
-    text : "expert spy and subterfuge specialist",
-    abilities: [],
+    text : "An expert spy and subterfuge specialist.",
+    trigger: `with stealth or evasion.`,
+    abilities: [19,20,21,22,23,24,25,26],
+    gear:[24,25,26,27,28]
   },
   {
     id: 4,
     name : "Outlander",
-    text : "guide, tracker, and explorer that knows the ways of the shifting Outlands",
-    abilities: [],
+    text : "A guide, tracker, and explorer that knows the ways of the shifting Outlands.",
+    trigger: `with fortitude or tracking.`,
+    abilities: [27,28,29,30,31,32,33,34,35],
+    gear:[29,30,31,32,33]
   },
   {
     id: 5,
     name : "Proxy",
-    text : "cosmic channeler or servant of a Cosmic being that wields a shard of cosmic",
-    abilities: [],
+    text : "A cosmic channeler or servant of a Cosmic being that wields a shard of cosmic.",
+    trigger: `cosmic power or wisdom.`,
+    abilities: [36,37,38,39,40,41,42,43,44,45,46],
+    gear: [18,32,16,34,43]
   },
   {
     id: 6,
     name : "Rogue",
-    text : "connected entrepreneur with flexible morals who always plays the odds",
-    abilities: [],
+    text : "A connected entrepreneur with flexible morals who always plays the odds.",
+    trigger: `charm or audacity.`,
+    abilities: [47,48,49,50,51,52,53,54,55],
+    gear: [31,36,37,38,39]
   },
   {
     id: 7,
     name : "Tech",
-    text : "savant with any machine – scientific or arcane - and proficient astral hacker",
-    abilities: [],
+    text : "A savant with any machine – scientific or arcane - and proficient astral hacker.",
+    trigger: `technical skill or ingenuity.`,
+    abilities: [56,57,58,59,60,61,62,63,64],
+    gear:[45,46,47,48,49]
   },
   {
     id: 8,
     name : "Wizard",
-    text : "scholar of the many schools magic whose spells grant them adaptable utility",
-    abilities: [],
+    text : "A scholar of the many schools magic whose spells grant them adaptable utility.",
+    trigger: `knowledge or supernatural power.`,
+    abilities: [65,66,67,68,69,70,71,72,73,74,75],
+    gear:[40,41,42,43,44]
   },
 ]
 
@@ -811,6 +1029,11 @@ const RULESETS = {
 }
 
 const TEMPLATES = {
+  faction : {
+    id: -1,
+    cfw : [0,0,0],
+    clocks : []
+  },
   character : {
     id: "",
     type: 0,
@@ -849,7 +1072,7 @@ const TEMPLATES = {
   }
 }
 
-export {COLORS, CHARACTERS, CHARACTERABILITIES, CREWS, UNITS, LOCATIONS, FACTIONS, CREWABILITIES, CREWUPGRADES, TEMPLATES, RULESETS}
+export {COLORS, CHARACTERS, CHARACTERITEMS, CHARACTERABILITIES, CREWS, UNITS, LOCATIONS, FACTIONS, CREWABILITIES, CREWCLAIMS, CREWUPGRADES, TEMPLATES, RULESETS}
 
 /*
 [

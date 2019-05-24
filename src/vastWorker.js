@@ -5,6 +5,8 @@ importScripts('../lib/d3-delaunay.min.js');
 importScripts('../lib/localforage.1.7.1.min.js');
 //chance RNG 
 importScripts('../lib/chance.min.js'); 
+//plate gen 
+importScripts('terrainGenerate.js'); 
 //names 
 importScripts('nameGen.js'); 
 
@@ -169,6 +171,20 @@ const GEN = {
     });
   },
   Y(data) {},
+  L(data) {
+    opts = data.opts || {}
+    opts.npts = opts.npts || 8000
+    opts.ncities = 15
+    opts.nterrs = 5
+
+    let map = TerrainGenerate(opts)
+
+    postMessage({
+      f : "generate",
+      data,
+      map : map
+    });
+  },
 }
 
 const withinCircle = (px,py,cx,cy,r) => {

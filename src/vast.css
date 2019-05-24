@@ -8,13 +8,13 @@ body {
 }
 
 /* CORE DATA DIV */
-
 #info-bar {
   position: absolute;
-  right:5px;
+  right: 5px;
   width: 300px;
-  z-index:10;
+  z-index: 10;
 }
+
 #info-bar.wide {
   width: 600px;
 }
@@ -22,19 +22,19 @@ body {
 @media only screen and (max-width: 600px) {
   #info-bar {
     position: absolute;
-    top:0px;
-    left:0px;
+    top: 0px;
+    left: 0px;
     padding: 3px;
     width: 100%;
-    z-index:1;
+    z-index: 1;
   }
+
   #info-bar.wide {
     width: 100%;
   }
 }
 
 /* OVERLAY FOR CENTER DATA */
-
 .overlay {
   position: fixed;
   top: 5px;
@@ -42,6 +42,15 @@ body {
   width: 400px;
   transform: translateX(-50%);
   background-color: whitesmoke;
+}
+
+/* Center horizontal and vertical text in div */
+.center-vertical {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 /* Standard style link */
@@ -58,52 +67,57 @@ body {
   content : "❯";
   transform: rotate(90deg);
 }
+
 .accordion-toggle.collapsed:before {
   transform: rotate(0deg);
 }
 
 /*CSS shapes for Fillable toggles */
 .arrow-right {
-  display:inline-block;
-  margin-right:3px;
-  width: 0; 
-  height: 0; 
+  display: inline-block;
+  margin-right: 3px;
+  width: 0;
+  height: 0;
   border-top: 6px solid transparent;
-  border-bottom: 6px solid transparent; 
+  border-bottom: 6px solid transparent;
   border-left: 10px solid lightgray;
 }
+
 .arrow-down {
-  width: 0; 
-  height: 0; 
+  width: 0;
+  height: 0;
   border-left: 6px solid transparent;
   border-right: 6px solid transparent;
   border-top: 10px solid lightgray;
 }
+
 .arrow-right.filled {
   border-left: 10px solid red;
 }
 
 .circle-select {
-  display:inline-block;
+  display: inline-block;
   height: 14px;
   width: 14px;
   border: grey solid 1px;
   border-radius: 50%;
 }
+
 .fillable {
-  display:inline-block;
+  display: inline-block;
   height: 20px;
   width: 8px;
-  margin-right:3px;
+  margin-right: 3px;
   border: black solid 1px;
 }
+
 .fillable.filled, .circle-select.filled {
   background-color: red;
 }
 
 /*CSS Circle for Faction Color */
 .factionColor {
-  display:inline-block;
+  display: inline-block;
   height: 16px;
   width: 16px;
   border: black solid 1px;
@@ -112,10 +126,15 @@ body {
 
 /*CSS styling for Maps */
 path.slice {
-  stroke:black;
+  stroke: black;
+  fill: white;
 }
+path.slice.filled {
+  fill: red;
+}
+
 rect.plate {
-  fill:lightblue;
+  fill: lightblue;
   stroke: black;
 }
 
@@ -126,8 +145,23 @@ circle.water {
 circle.land {
   fill: green;
 }
+
+polygon.tris {
+  fill: none;
+}
+
 polygon.land {
   fill: darkgreen;
+  stroke: darkgreen;
+}
+
+polygon.water {
+  fill: lightblue;
+  stroke: lightblue;
+}
+
+polygon.deep-water, rect.deep-water {
+  fill: blue;
 }
 
 circle.sector {
@@ -137,13 +171,13 @@ circle.sector {
   fill: none;
 }
 
-circle.orbital   {
+circle.orbital {
   stroke-width : 2;
   stroke: black;
   fill: none;
 }
 
-circle.system   {
+circle.system {
   fill: green;
 }
 
@@ -151,8 +185,94 @@ circle.selected {
   fill: rgba(0,0,255,0.5);
 }
 
-.system.selected   {
+.system.selected {
   stroke-width : 3;
   stroke: yellow;
 }
+
+/*CSS styling for Plate Maps */
+path, line {
+  fill: none;
+  stroke: black;
+  stroke-linecap: round;
+}
+
+.field {
+  stroke: none;
+  fill-opacity: 1.0;
+}
+
+.slope {
+  stroke-width: 1;
+  stroke: brown;
+}
+
+.river {
+  stroke-width: 2;
+  stroke: blue;
+}
+
+.coast {
+  stroke-width: 4;
+}
+
+.border {
+  stroke-width: 5;
+  stroke-dasharray: 4,4;
+  stroke-linecap: butt;
+}
+
+/*CSS styling for Crew Playbooks */
+.claim-map {
+  width: 550px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.claim-node {
+  width: 100px;
+  height: 85px;
+  background-color: lightgray;
+  padding: 5px;
+  margin: 5px;
+  position: relative;
+  float: left;
+}
+
+.node-link.l {
+  content: " ";
+  background: lightgray;
+  position: absolute;
+  left: -20px;
+  top: 35px;
+  height: 20px;
+  width: 20px;
+} 
+.node-link.r {
+  content: " ";
+  background: lightgray;
+  position: absolute;
+  right: -20px;
+  top: 35px;
+  height: 20px;
+  width: 20px;
+}
+.node-link.b {
+  content: " ";
+  background: lightgray;
+  position: absolute;
+  left: 42px;
+  bottom: -20px;
+  height: 20px;
+  width: 20px;
+} 
+.node-link.t {
+  content: " ";
+  background: lightgray;
+  position: absolute;
+  left: 42px;
+  top: -20px;
+  height: 20px;
+  width: 20px;
+}  
 

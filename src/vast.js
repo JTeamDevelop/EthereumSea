@@ -6,16 +6,21 @@ import "../lib/chance.min.js"
 //data 
 import {
   CHARACTERS,
-  CREWS,
+  CHARACTERITEMS,
   CHARACTERABILITIES,
+  CREWS,
+  CREWCLAIMS,
+  CREWABILITIES,
+  CREWUPGRADES,
   UNITS,
   FACTIONS,
   LOCATIONS,
   TEMPLATES,
-  CREWABILITIES,
-  CREWUPGRADES,
   RULESETS
 } from "../src/OutlandsData.js"
+
+//data 
+import {plateMap} from "../src/terrain.js"
 
 let chance = new Chance()
 
@@ -145,20 +150,88 @@ const UIMain = new Vue({
   mounted() {
     this.updateFactions()
     let KU = LOCATIONS[0]
+
+    /*
     worker.postMessage({
       f: "generate",
-      data : KU,
+      data : {
+        opts : {
+          what : "L",
+          npts : 8000,
+          generator: "continent",
+          seed: chance.hash()//"bdf850a4f9bf2c7090ec290ecac1b4bc06490469"//
+        }
+      }
     });
+    */
   },
   computed: {
     rules () { return RULESETS.Outlands },
     allColors () { return COLORS },
     allCrews () { return [] },
     allUnits () { return UNITS },
-    allFactions () { return FACTIONS },
+    allFactions () { 
+      return FACTIONS.map(f => {
+        let sfi = this.activeObjects.factions.findIndex(ao => ao.id == f.id)
+        let sfo = sfi > -1 ? this.activeObjects.factions[sfi] : {}
+        return Object.assign({},f,sfo)
+      }) 
+    },
     allCharacterTypes () { return CHARACTERS },
     allCrewTypes () { return CREWS },
     allUpgrades () {return CREWUPGRADES},
+    allCharacterPlaybooks() {
+      return CHARACTERS.map(c => {
+        c._abilities = c.abilities.map(id => CHARACTERABILITIES.find(a=> a[0]==id)) 
+        c._gear = c.gear.map(id => CHARACTERITEMS.find(a=> a[0]==id)) 
+        return c
+      })
+    },
+    allCrewPlaybooks() {
+      return CREWS.map(c => {
+        c._abilities = c.abilities.map(id => CREWABILITIES.find(a=> a[0]==id)) 
+        
+        //CLAIMS
+        let allClaimNames = []
+        c.claimList = []
+        c._claims = c.claims.ids.map((id,i) => {
+          //original claim 
+          let claim = CREWCLAIMS.find(a=> a[0]==id).slice()
+          //find if alterante text exists
+          let ati = c.claims.altText.findIndex(ai => ai[0] == i) 
+          if(ati > -1) {
+            claim[1] = c.claims.altText[ati][1]
+            //check for flavor text
+            if(c.claims.altText[ati].length>2) claim[2] = c.claims.altText[ati][2]
+          }
+          //keep track of all claims 
+          if(!allClaimNames.includes(claim[1]) && claim[1] != "Base"){
+            allClaimNames.push(claim[1])
+            c.claimList.push(claim)
+          }
+
+          //return result
+          return claim
+        })
+
+        //UPGRADES
+        c._upgrades = c.upgrades.ids.map((id,i) => {
+          //original claim 
+          let upgrade = CREWUPGRADES.find(a=> a[0]==id).slice()
+          //find if alterante text exists
+          let ati = c.upgrades.altText.findIndex(ai => ai[0] == i) 
+          if(ati > -1) {
+            upgrade[2] = c.upgrade.altText[ati][1]
+            //check for flavor text
+            if(c.upgrade.altText[ati].length>3) upgrade[3] = c.upgrade.altText[ati][3]
+          }
+          //return result
+          return upgrade
+        })
+
+        return c
+      })
+    },
     playbook () { 
       if(!this.character.type) return {}
       let C = CHARACTERS.find(c=>c.id == this.character.type)
@@ -186,8 +259,11 @@ const UIMain = new Vue({
     },
     faction () {
       if(this.fid<0) return {}
-      let F = Object.assign({},FACTIONS.find(f=>f.id == this.fid))
+      //pull data from factions 
+      let F = Object.assign({},this.allFactions.find(f=>f.id == this.fid))
+      //assign clocks and update 
       this.clocks = F.clocks || []
+      Vue.nextTick(this.updateClocks)
        
       return F
     },
@@ -205,6 +281,15 @@ const UIMain = new Vue({
       let data = null
       if(what==="crews") data = JSON.parse(JSON.stringify(this.crew));
       else if (what==="characters") data = JSON.parse(JSON.stringify(this.character));
+      else if (what==="factions") {
+        let F = this.faction
+        //pull template
+        data = JSON.parse(JSON.stringify(TEMPLATES.faction))
+        //save limited data 
+        data.id = F.id
+        data.cfw = F.cfw.slice().map(Number)
+        data.clocks = this.clocks.slice()
+      }
       else return;
 
       worker.postMessage({
@@ -352,8 +437,14 @@ const UIMain = new Vue({
         data : S
       });
     },
+    showCrews() {
+      this.menu = 2
+    }
   }
 })
+
+const drawClaimMaps = () => {
+}
 
 const drawClocks = () => {
   UIMain.clocks.forEach((c,i) => {
@@ -368,16 +459,22 @@ const drawClocks = () => {
     //append the g to shift center
     let vis = svg.append("g").attr("transform", "translate(" + 17 + "," + 17 + ")")
     //append the arcs
-    vis.selectAll("path").data(pie).enter().append("path").attr("d",arc)
-      .classed("slice",true)
-      .attr("fill",(d,j)=> j<c[2] ? "red" : "white")
+    vis.selectAll("path").data(pie).enter().append("path")
+      .attr("d",arc)
+      .attr("class",(d,j)=> "slice " + (j<c[2] ? "filled" : "") )
       //add interaction 
-      .on("click tap",(d,j) => {
+      .on("click",(d,j) => {
         //update clocks
         c[2] = j==0 && c[2] == 1 ? 0 : j+1
         drawClocks()
       })
   })
+}
+
+const drawPlate = () => {
+  //set size
+  let svg = d3.select("#map svg").attr("width", 800)
+  plateMap(svg,display)
 }
 
 const drawCircleMap = ()=>{
@@ -498,6 +595,7 @@ worker.onmessage = function(e) {
     //check for which display
     if(["U","B","S"].includes(display.what)) drawCircleMap();
     else if (display.what === "O") drawOrbital();
+    else if (display.what === "L") drawPlate();
     //remove spinner
     d3.select("#spinner").attr("class", "lds-dual-ring hidden")
   }
